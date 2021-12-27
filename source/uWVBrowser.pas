@@ -91,7 +91,11 @@ type
       property OnPrintCompleted;
       property OnRetrieveHTMLCompleted;
       property OnRetrieveTextCompleted;
-
+      property OnRetrieveMHTMLCompleted;
+      property OnClearCacheCompleted;
+      property OnClearDataForOriginCompleted;
+      property OnOfflineCompleted;
+      property OnIgnoreCertificateErrorsCompleted;
   end;
 
 {$IFDEF FPC}
