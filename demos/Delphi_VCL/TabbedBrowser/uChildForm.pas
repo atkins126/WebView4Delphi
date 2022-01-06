@@ -17,6 +17,7 @@ type
     procedure FormShow(Sender: TObject);
 
     procedure WVBrowser1AfterCreated(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
     procedure WVBrowser1WindowCloseRequested(Sender: TObject);
 
   private
@@ -24,7 +25,7 @@ type
     FDeferral : TCoreWebView2Deferral;
 
   public
-    constructor Create(AOwner: TComponent; const aArgs : ICoreWebView2NewWindowRequestedEventArgs); reintroduce;
+    constructor Create(AOwner: TComponent; const aArgs : TCoreWebView2NewWindowRequestedEventArgs); reintroduce;
   end;
 
 var
@@ -37,17 +38,26 @@ implementation
 uses
   uWVCoreWebView2WindowFeatures;
 
-constructor TChildForm.Create(AOwner: TComponent; const aArgs : ICoreWebView2NewWindowRequestedEventArgs);
+constructor TChildForm.Create(AOwner: TComponent; const aArgs : TCoreWebView2NewWindowRequestedEventArgs);
 begin
   inherited Create(AOwner);
 
-  FArgs     := TCoreWebView2NewWindowRequestedEventArgs.Create(aArgs);
+  FArgs     := aArgs;
   FDeferral := TCoreWebView2Deferral.Create(FArgs.Deferral);
 end;
 
 procedure TChildForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Action := caFree;
+end;
+
+procedure TChildForm.FormDestroy(Sender: TObject);
+begin
+  if assigned(FDeferral) then
+    FreeAndNil(FDeferral);
+
+  if assigned(FArgs) then
+    FreeAndNil(FArgs);
 end;
 
 procedure TChildForm.FormShow(Sender: TObject);

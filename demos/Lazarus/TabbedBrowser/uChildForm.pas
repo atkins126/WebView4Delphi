@@ -1,14 +1,19 @@
 unit uChildForm;
 
+{$MODE Delphi}
+
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
+  LCLIntf, LCLType, LMessages, Messages, SysUtils, Variants, Classes, Graphics,
+  Controls, Forms, Dialogs,
   uWVBrowser, uWVWinControl, uWVWindowParent, uWVTypes, uWVTypeLibrary,
   uWVBrowserBase, uWVCoreWebView2Args, uWVCoreWebView2Deferral;
 
 type
+
+  { TChildForm }
+
   TChildForm = class(TForm)
     WVWindowParent1: TWVWindowParent;
     WVBrowser1: TWVBrowser;
@@ -17,6 +22,7 @@ type
     procedure FormShow(Sender: TObject);
 
     procedure WVBrowser1AfterCreated(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
     procedure WVBrowser1WindowCloseRequested(Sender: TObject);
 
   private
@@ -24,7 +30,7 @@ type
     FDeferral : TCoreWebView2Deferral;
 
   public
-    constructor Create(AOwner: TComponent; const aArgs : ICoreWebView2NewWindowRequestedEventArgs); reintroduce;
+    constructor Create(AOwner: TComponent; const aArgs : TCoreWebView2NewWindowRequestedEventArgs); reintroduce;
   end;
 
 var
@@ -32,22 +38,36 @@ var
 
 implementation
 
-{$R *.dfm}
+{$R *.lfm}
 
 uses
   uWVCoreWebView2WindowFeatures;
 
-constructor TChildForm.Create(AOwner: TComponent; const aArgs : ICoreWebView2NewWindowRequestedEventArgs);
+constructor TChildForm.Create(AOwner: TComponent; const aArgs : TCoreWebView2NewWindowRequestedEventArgs);
 begin
   inherited Create(AOwner);
 
-  FArgs     := TCoreWebView2NewWindowRequestedEventArgs.Create(aArgs);
+  FArgs     := aArgs;
   FDeferral := TCoreWebView2Deferral.Create(FArgs.Deferral);
 end;
 
 procedure TChildForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Action := caFree;
+end;
+
+procedure TChildForm.FormDestroy(Sender: TObject);
+begin
+  if assigned(FDeferral) then
+    FreeAndNil(FDeferral);
+
+  if assigned(FArgs) then
+    FreeAndNil(FArgs);
+end;
+
+procedure TChildForm.WVBrowser1WindowCloseRequested(Sender: TObject);
+begin
+  PostMessage(Handle, WM_CLOSE, 0, 0);
 end;
 
 procedure TChildForm.FormShow(Sender: TObject);
@@ -93,11 +113,6 @@ begin
     end;
 
   WVWindowParent1.UpdateSize;
-end;
-
-procedure TChildForm.WVBrowser1WindowCloseRequested(Sender: TObject);
-begin
-  PostMessage(Handle, WM_CLOSE, 0, 0);
 end;
 
 end.

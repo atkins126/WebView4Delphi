@@ -1,23 +1,25 @@
 object ChildForm: TChildForm
-  Left = 577
-  Height = 441
-  Top = 355
-  Width = 624
+  Left = 0
+  Top = 0
   Caption = 'ChildForm'
   ClientHeight = 441
   ClientWidth = 624
   Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
   Font.Name = 'Segoe UI'
+  Font.Style = []
   OnClose = FormClose
+  OnDestroy = FormDestroy
   OnShow = FormShow
-  LCLVersion = '2.0.12.0'
+  PixelsPerInch = 96
+  TextHeight = 15
   object WVWindowParent1: TWVWindowParent
     Left = 0
-    Height = 441
     Top = 0
     Width = 624
+    Height = 441
     Align = alClient
     TabOrder = 0
     Browser = WVBrowser1
