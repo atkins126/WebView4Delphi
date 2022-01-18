@@ -15,6 +15,8 @@ uses
   uWVLibFunctions, uWVInterfaces, uWVTypeLibrary, uWVTypes, uWVEvents, uWVCoreWebView2Environment;
 
 type
+  TWVProxySettings = class;
+
   TWVLoader = class(TComponent, IWVLoaderEvents)
     protected
       FCoreWebView2Environment                : TCoreWebView2Environment;
@@ -117,9 +119,7 @@ type
       // Custom properties
       property Environment                            : ICoreWebView2Environment           read GetEnvironment;
       property Status                                 : TWV2LoaderStatus                   read FStatus;
-      property AvailableBrowserVersion                : wvstring                           read GetAvailableBrowserVersion;
-      property BrowserExecPath                        : wvstring                           read FBrowserExecPath                         write FBrowserExecPath;
-      property UserDataFolder                         : wvstring                           read FUserDataFolder                          write FUserDataFolder;
+      property AvailableBrowserVersion                : wvstring                           read GetAvailableBrowserVersion;                                                             // GetAvailableCoreWebView2BrowserVersionString
       property ErrorMessage                           : string                             read FErrorMsg;
       property ErrorCode                              : int64                              read FError;
       property SetCurrentDir                          : boolean                            read FSetCurrentDir                           write FSetCurrentDir;
@@ -134,10 +134,12 @@ type
       property InstalledRuntimeVersion                : wvstring                           read GetInstalledRuntimeVersion;
 
       // Properties used to create the environment
-      property AdditionalBrowserArguments             : wvstring                           read FAdditionalBrowserArguments              write FAdditionalBrowserArguments;
-      property Language                               : wvstring                           read FLanguage                                write FLanguage;
-      property TargetCompatibleBrowserVersion         : wvstring                           read FTargetCompatibleBrowserVersion          write FTargetCompatibleBrowserVersion;
-      property AllowSingleSignOnUsingOSPrimaryAccount : boolean                            read FAllowSingleSignOnUsingOSPrimaryAccount  write FAllowSingleSignOnUsingOSPrimaryAccount;
+      property BrowserExecPath                        : wvstring                           read FBrowserExecPath                         write FBrowserExecPath;                        // CreateCoreWebView2EnvironmentWithOptions "browserExecutableFolder" parameter
+      property UserDataFolder                         : wvstring                           read FUserDataFolder                          write FUserDataFolder;                         // CreateCoreWebView2EnvironmentWithOptions "userDataFolder" parameter
+      property AdditionalBrowserArguments             : wvstring                           read FAdditionalBrowserArguments              write FAdditionalBrowserArguments;             // ICoreWebView2EnvironmentOptions.get_AdditionalBrowserArguments
+      property Language                               : wvstring                           read FLanguage                                write FLanguage;                               // ICoreWebView2EnvironmentOptions.get_Language
+      property TargetCompatibleBrowserVersion         : wvstring                           read FTargetCompatibleBrowserVersion          write FTargetCompatibleBrowserVersion;         // ICoreWebView2EnvironmentOptions.get_TargetCompatibleBrowserVersion
+      property AllowSingleSignOnUsingOSPrimaryAccount : boolean                            read FAllowSingleSignOnUsingOSPrimaryAccount  write FAllowSingleSignOnUsingOSPrimaryAccount; // ICoreWebView2EnvironmentOptions.get_AllowSingleSignOnUsingOSPrimaryAccount
 
       // Properties used to set command line switches
       property EnableGPU                              : boolean                            read FEnableGPU                               write FEnableGPU;                        // --enable-gpu-plugin
@@ -157,7 +159,7 @@ type
       property MuteAudio                              : boolean                            read FMuteAudio                               write FMuteAudio;                        // --mute-audio
       property DefaultEncoding                        : wvstring                           read FDefaultEncoding                         write FDefaultEncoding;                  // --default-encoding
       property KioskPrinting                          : boolean                            read FKioskPrinting                           write FKioskPrinting;                    // --kiosk-printing
-      property ProxySettings                          : TWVProxySettings                   read FProxySettings                           write FProxySettings;                    // --no-proxy-server --proxy-auto-detect --proxy-bypass-list --proxy-pac-url --proxy-server
+      property ProxySettings                          : TWVProxySettings                   read FProxySettings;                                                                   // --no-proxy-server  --proxy-auto-detect  --proxy-bypass-list  --proxy-pac-url  --proxy-server
       property AllowFileAccessFromFiles               : boolean                            read FAllowFileAccessFromFiles                write FAllowFileAccessFromFiles;         // --allow-file-access-from-files
       property AllowRunningInsecureContent            : boolean                            read FAllowRunningInsecureContent             write FAllowRunningInsecureContent;      // --allow-running-insecure-content
       property DisableBackgroundNetworking            : boolean                            read FDisableBackgroundNetworking             write FDisableBackgroundNetworking;      // --disable-background-networking
@@ -166,11 +168,31 @@ type
 
       // Custom events
       property OnEnvironmentCreated                   : TLoaderNotifyEvent                      read FOnEnvironmentCreated                    write FOnEnvironmentCreated;
-
-      // Environment events
-      property OnNewBrowserVersionAvailable           : TLoaderNewBrowserVersionAvailableEvent  read FOnNewBrowserVersionAvailable            write FOnNewBrowserVersionAvailable;
       property OnInitializationError                  : TLoaderNotifyEvent                      read FOnInitializationError                   write FOnInitializationError;
+
+      // ICoreWebView2Environment events
+      property OnNewBrowserVersionAvailable           : TLoaderNewBrowserVersionAvailableEvent  read FOnNewBrowserVersionAvailable            write FOnNewBrowserVersionAvailable;
+
+      // ICoreWebView2Environment5 events
       property OnBrowserProcessExited                 : TLoaderBrowserProcessExitedEvent        read FOnBrowserProcessExited                  write FOnBrowserProcessExited;
+  end;
+
+  TWVProxySettings = class
+    protected
+      FNoProxyServer : boolean;
+      FAutoDetect    : boolean;
+      FByPassList    : wvstring;
+      FPacUrl        : wvstring;
+      FServer        : wvstring;
+
+    public
+      constructor Create;
+
+      property NoProxyServer : boolean    read FNoProxyServer  write FNoProxyServer;
+      property AutoDetect    : boolean    read FAutoDetect     write FAutoDetect;
+      property ByPassList    : wvstring   read FByPassList     write FByPassList;
+      property PacUrl        : wvstring   read FPacUrl         write FPacUrl;
+      property Server        : wvstring   read FServer         write FServer;
   end;
 
 var
@@ -242,14 +264,11 @@ begin
   FMuteAudio                              := False;
   FDefaultEncoding                        := '';
   FKioskPrinting                          := False;
-  FProxySettings.NoProxyServer            := False;
-  FProxySettings.AutoDetect               := False;
-  FProxySettings.ByPassList               := '';
-  FProxySettings.PacUrl                   := '';
-  FProxySettings.Server                   := '';
   FAllowFileAccessFromFiles               := False;
   FAllowRunningInsecureContent            := False;
   FDisableBackgroundNetworking            := False;
+
+  FProxySettings := TWVProxySettings.Create;
 
   SetExceptionMask([exInvalidOp, exDenormalized, exZeroDivide, exOverflow, exUnderflow, exPrecision]);
 end;
@@ -262,6 +281,8 @@ begin
 
     if FInitCOMLibrary then
       CoUnInitialize;
+
+    FreeAndNil(FProxySettings);
   finally
     inherited Destroy;
   end;
@@ -1118,6 +1139,20 @@ function TWVLoader.BrowserProcessExitedEventHandler_Invoke(const sender : ICoreW
 begin
   Result := S_OK;
   doOnBrowserProcessExitedEvent(sender, args);
+end;
+
+
+// TWVProxySettings
+
+constructor TWVProxySettings.Create;
+begin
+  inherited Create;
+
+  FNoProxyServer := False;
+  FAutoDetect    := False;
+  FByPassList    := '';
+  FPacUrl        := '';
+  FServer        := '';
 end;
 
 initialization
