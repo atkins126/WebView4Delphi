@@ -24,6 +24,7 @@ type
       FOnNewBrowserVersionAvailable           : TLoaderNewBrowserVersionAvailableEvent;
       FOnInitializationError                  : TLoaderNotifyEvent;
       FOnBrowserProcessExited                 : TLoaderBrowserProcessExitedEvent;
+      FOnProcessInfosChanged                  : TLoaderProcessInfosChangedEvent;
       FLibHandle                              : THandle;
       FErrorMsg                               : string;
       FError                                  : int64;
@@ -67,6 +68,8 @@ type
       FAllowRunningInsecureContent            : boolean;
       FDisableBackgroundNetworking            : boolean;
       FRemoteDebuggingPort                    : integer;
+      FDebugLog                               : TWV2DebugLog;
+      FDebugLogLevel                          : TWV2DebugLogLevel;
 
       function  GetAvailableBrowserVersion : wvstring;
       function  GetInitialized : boolean;
@@ -74,13 +77,13 @@ type
       function  GetEnvironmentIsInitialized : boolean;
       function  GetDefaultUserDataPath : string;
       function  GetEnvironment : ICoreWebView2Environment;
+      function  GetProcessInfos : ICoreWebView2ProcessInfoCollection;
       function  GetCustomCommandLineSwitches : wvstring;
       function  GetInstalledRuntimeVersion : wvstring;
 
       function  CreateEnvironment : boolean;
       procedure DestroyEnvironment;
 
-      function  GetModulePath : wvstring;
       function  GetDLLVersion(const aDLLFile : wvstring; var aVersionInfo : TFileVersionInfo) : boolean;
       function  GetExtendedFileVersion(const aFileName : wvstring) : uint64;
       function  LoadLibProcedures : boolean;
@@ -101,10 +104,12 @@ type
       procedure doOnEnvironmentCreated; virtual;
       procedure doOnNewBrowserVersionAvailable(const aEnvironment: ICoreWebView2Environment); virtual;
       procedure doOnBrowserProcessExitedEvent(const sender: ICoreWebView2Environment; const args: ICoreWebView2BrowserProcessExitedEventArgs); virtual;
+      procedure doProcessInfosChangedEvent(const sender: ICoreWebView2Environment); virtual;
 
       function  EnvironmentCompletedHandler_Invoke(errorCode: HResult; const createdEnvironment: ICoreWebView2Environment): HRESULT;
       function  NewBrowserVersionAvailableEventHandler_Invoke(const sender: ICoreWebView2Environment; const args: IUnknown): HRESULT;
       function  BrowserProcessExitedEventHandler_Invoke(const sender: ICoreWebView2Environment; const args: ICoreWebView2BrowserProcessExitedEventArgs): HRESULT;
+      function  ProcessInfosChangedEventHandler_Invoke(const sender: ICoreWebView2Environment; const args: IUnknown): HRESULT;
 
       property  DefaultUserDataPath       : string              read GetDefaultUserDataPath;
       property  EnvironmentIsInitialized  : boolean             read GetEnvironmentIsInitialized;
@@ -165,6 +170,11 @@ type
       property DisableBackgroundNetworking            : boolean                            read FDisableBackgroundNetworking             write FDisableBackgroundNetworking;      // --disable-background-networking
       property ForcedDeviceScaleFactor                : single                             read FForcedDeviceScaleFactor                 write FForcedDeviceScaleFactor;          // --force-device-scale-factor
       property RemoteDebuggingPort                    : integer                            read FRemoteDebuggingPort                     write FRemoteDebuggingPort;              // --remote-debugging-port
+      property DebugLog                               : TWV2DebugLog                       read FDebugLog                                write FDebugLog;                         // --enable-logging
+      property DebugLogLevel                          : TWV2DebugLogLevel                  read FDebugLogLevel                           write FDebugLogLevel;                    // --log-level
+
+      // ICoreWebView2Environment8 properties
+      property ProcessInfos                           : ICoreWebView2ProcessInfoCollection read GetProcessInfos;
 
       // Custom events
       property OnEnvironmentCreated                   : TLoaderNotifyEvent                      read FOnEnvironmentCreated                    write FOnEnvironmentCreated;
@@ -175,6 +185,9 @@ type
 
       // ICoreWebView2Environment5 events
       property OnBrowserProcessExited                 : TLoaderBrowserProcessExitedEvent        read FOnBrowserProcessExited                  write FOnBrowserProcessExited;
+
+      // ICoreWebView2Environment8 events
+      property OnProcessInfosChanged                  : TLoaderProcessInfosChangedEvent         read FOnProcessInfosChanged                   write FOnProcessInfosChanged;
   end;
 
   TWVProxySettings = class
@@ -222,6 +235,7 @@ begin
   FCoreWebView2Environment                := nil;
   FOnEnvironmentCreated                   := nil;
   FOnNewBrowserVersionAvailable           := nil;
+  FOnProcessInfosChanged                  := nil;
   FOnInitializationError                  := nil;
   FOnBrowserProcessExited                 := nil;
   FStatus                                 := wvlsCreated;
@@ -267,6 +281,8 @@ begin
   FAllowFileAccessFromFiles               := False;
   FAllowRunningInsecureContent            := False;
   FDisableBackgroundNetworking            := False;
+  FDebugLog                               := TWV2DebugLog.dlDisabled;
+  FDebugLogLevel                          := TWV2DebugLogLevel.dllDefault;
 
   FProxySettings := TWVProxySettings.Create;
 
@@ -318,13 +334,10 @@ begin
     FOnBrowserProcessExited(self, sender, args);
 end;
 
-function TWVLoader.GetModulePath : wvstring;
+procedure TWVLoader.doProcessInfosChangedEvent(const sender: ICoreWebView2Environment);
 begin
-  {$IFDEF FPC}
-  Result := UTF8Decode(IncludeTrailingPathDelimiter(ExtractFileDir(GetModuleName(HINSTANCE))));
-  {$ELSE}
-  Result := IncludeTrailingPathDelimiter(ExtractFileDir(GetModuleName(HINSTANCE)));
-  {$ENDIF}
+  if assigned(FOnProcessInfosChanged) then
+    FOnProcessInfosChanged(self, sender);
 end;
 
 function TWVLoader.GetExtendedFileVersion(const aFileName : wvstring) : uint64;
@@ -797,11 +810,13 @@ begin
 
   // The list of features you can enable is here :
   // https://chromium.googlesource.com/chromium/src/+/master/chrome/common/chrome_features.cc
+  // https://source.chromium.org/chromium/chromium/src/+/main:content/public/common/content_features.cc
   if (length(FEnableFeatures) > 0) then
     Result := Result + '--enable-features=' + FEnableFeatures + ' ';
 
   // The list of features you can disable is here :
   // https://chromium.googlesource.com/chromium/src/+/master/chrome/common/chrome_features.cc
+  // https://source.chromium.org/chromium/chromium/src/+/main:content/public/common/content_features.cc
   TempFeatures := FDisableFeatures;
 
   if not(FSmartScreenProtectionEnabled) then
@@ -911,6 +926,19 @@ begin
 
   if (FRemoteDebuggingPort > 0) then
     Result := Result + '--remote-debugging-port=' + inttostr(FRemoteDebuggingPort) + ' ';
+
+  case FDebugLog of
+    TWV2DebugLog.dlEnabled       : Result := Result + '--enable-logging ';
+    TWV2DebugLog.dlEnabledStdOut : Result := Result + '--enable-logging=stdout ';
+    TWV2DebugLog.dlEnabledStdErr : Result := Result + '--enable-logging=stderr ';
+  end;
+
+  case FDebugLogLevel of
+    TWV2DebugLogLevel.dllInfo    : Result := Result + '--log-level=0 ';
+    TWV2DebugLogLevel.dllWarning : Result := Result + '--log-level=1 ';
+    TWV2DebugLogLevel.dllError   : Result := Result + '--log-level=2 ';
+    TWV2DebugLogLevel.dllFatal   : Result := Result + '--log-level=3 ';
+  end;
 
   if (length(FAdditionalBrowserArguments) > 0) then
     Result := Result + FAdditionalBrowserArguments
@@ -1053,6 +1081,14 @@ begin
     Result := nil;
 end;
 
+function TWVLoader.GetProcessInfos : ICoreWebView2ProcessInfoCollection;
+begin
+  if EnvironmentIsInitialized then
+    Result := FCoreWebView2Environment.ProcessInfos
+   else
+    Result := nil;
+end;
+
 function TWVLoader.GetAvailableBrowserVersion : wvstring;
 var
   TempVersion : PWideChar;
@@ -1141,6 +1177,12 @@ begin
   doOnBrowserProcessExitedEvent(sender, args);
 end;
 
+function TWVLoader.ProcessInfosChangedEventHandler_Invoke(const sender : ICoreWebView2Environment;
+                                                          const args   : IUnknown): HRESULT;
+begin
+  Result := S_OK;
+  doProcessInfosChangedEvent(sender);
+end;
 
 // TWVProxySettings
 

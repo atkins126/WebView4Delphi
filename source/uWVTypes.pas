@@ -42,6 +42,7 @@ type
   TWVPrintOrientation                     = type COREWEBVIEW2_PRINT_ORIENTATION;
   TWVColor                                = type COREWEBVIEW2_COLOR;
   TWVDefaultDownloadDialogCornerAlignment = type COREWEBVIEW2_DEFAULT_DOWNLOAD_DIALOG_CORNER_ALIGNMENT;
+  TWVProcessKind                          = type COREWEBVIEW2_PROCESS_KIND;
 
   TWV2LoaderStatus = (wvlsCreated,
                       wvlsLoading,
@@ -55,6 +56,15 @@ type
                       ketKeyUp,
                       ketRawKeyDown,
                       ketChar);
+
+  TWV2DebugLog = (dlDisabled, dlEnabled, dlEnabledStdOut, dlEnabledStdErr);
+
+  // Debug log level used when the logging is enabled
+  TWV2DebugLogLevel = (dllDefault,
+                       dllInfo,
+                       dllWarning,
+                       dllError,
+                       dllFatal);
 
   // Blink editing commands used by the "Input.dispatchKeyEvent" DevTools method.
   // https://chromedevtools.github.io/devtools-protocol/1-3/Input/#method-dispatchKeyEvent

@@ -14,6 +14,9 @@ uses
   {$ENDIF}
   uWVConstants, uWVTypeLibrary, uWVTypes;
 
+const
+  SHLWAPIDLL  = 'shlwapi.dll';
+
 function AllocCoTaskMemStr(const aString : wvstring): PWideChar;
 function LowestChromiumVersion : wvstring;
 function LowestLoaderDLLVersion : wvstring;
@@ -21,6 +24,7 @@ function EnvironmentCreationErrorToString(aErrorCode : HRESULT) : wvstring;
 function GetScreenDPI : integer;
 function GetDeviceScaleFactor : single;
 function EditingCommandToString(aEditingCommand : TWV2EditingCommand): wvstring;
+function DeleteDirContents(const aDirectory : string; const aExcludeFiles : TStringList = nil) : boolean;
 
 procedure OutputDebugMessage(const aMessage : string);
 function  CustomExceptionHandler(const aFunctionName : string; const aException : exception) : boolean;
@@ -31,6 +35,23 @@ function DelphiColorToCoreWebViewColor(const aColor : TColor) : COREWEBVIEW2_COL
 function TryIso8601BasicToDate(const Str: string; out Date: TDateTime): Boolean;
 function JSONUnescape(const Source: wvstring): wvstring;
 function JSONEscape(const Source: wvstring): wvstring;
+
+function CustomPathIsRelative(const aPath : wvstring) : boolean;
+function CustomPathCanonicalize(const aOriginalPath : wvstring; var aCanonicalPath : wvstring) : boolean;
+function CustomAbsolutePath(const aPath : wvstring) : wvstring;
+function CustomPathIsURL(const aPath : wvstring) : boolean;
+function CustomPathIsUNC(const aPath : wvstring) : boolean;
+function GetModulePath : wvstring;
+function EscapeCommandLineParameter(const aParameter : wvstring) : wvstring;
+
+function PathIsRelativeAnsi(pszPath: LPCSTR): BOOL; stdcall; external SHLWAPIDLL name 'PathIsRelativeA';
+function PathIsRelativeUnicode(pszPath: LPCWSTR): BOOL; stdcall; external SHLWAPIDLL name 'PathIsRelativeW';
+function PathCanonicalizeAnsi(pszBuf: LPSTR; pszPath: LPCSTR): BOOL; stdcall; external SHLWAPIDLL name 'PathCanonicalizeA';
+function PathCanonicalizeUnicode(pszBuf: LPWSTR; pszPath: LPCWSTR): BOOL; stdcall; external SHLWAPIDLL name 'PathCanonicalizeW';
+function PathIsUNCAnsi(pszPath: LPCSTR): BOOL; stdcall; external SHLWAPIDLL name 'PathIsUNCA';
+function PathIsUNCUnicode(pszPath: LPCWSTR): BOOL; stdcall; external SHLWAPIDLL name 'PathIsUNCW';
+function PathIsURLAnsi(pszPath: LPCSTR): BOOL; stdcall; external SHLWAPIDLL name 'PathIsURLA';
+function PathIsURLUnicode(pszPath: LPCWSTR): BOOL; stdcall; external SHLWAPIDLL name 'PathIsURLW';
 
 implementation
 
@@ -171,7 +192,6 @@ function JSONUnescape(const Source: wvstring): wvstring;
 const
   ESCAPE_CHAR = '\';
   QUOTE_CHAR = '"';
-  EXCEPTION_FMT = 'Invalid escape at position %d';
 var
   EscapeCharPos, TempPos: Integer;
   Temp: string;
@@ -396,6 +416,137 @@ begin
     ecYankAndSelect                                : Result := 'YankAndSelect';
     else                                             Result := '';
   end;
+end;
+
+function DeleteDirContents(const aDirectory : string; const aExcludeFiles : TStringList) : boolean;
+var
+  TempRec  : TSearchRec;
+  TempPath : string;
+  TempIdx  : integer;
+begin
+  Result := True;
+
+  try
+    if (length(aDirectory) > 0) and
+       DirectoryExists(aDirectory) and
+       (FindFirst(aDirectory + '\*', faAnyFile, TempRec) = 0) then
+      try
+        repeat
+          TempPath := aDirectory + PathDelim + TempRec.Name;
+
+          if ((TempRec.Attr and faDirectory) <> 0) then
+            begin
+              if (TempRec.Name <> '.') and (TempRec.Name <> '..') then
+                begin
+                  if DeleteDirContents(TempPath, aExcludeFiles) then
+                    Result := RemoveDir(TempPath) and Result
+                   else
+                    Result := False;
+                end;
+            end
+           else
+            if (aExcludeFiles <> nil) then
+              begin
+                TempIdx := aExcludeFiles.IndexOf(TempRec.Name);
+                Result  := ((TempIdx >= 0) or
+                            ((TempIdx < 0) and DeleteFile(TempPath))) and
+                           Result;
+              end
+             else
+              Result := DeleteFile(TempPath) and Result;
+
+        until (FindNext(TempRec) <> 0) or not(Result);
+      finally
+        FindClose(TempRec);
+      end;
+  except
+    on e : exception do
+      if CustomExceptionHandler('DeleteDirContents', e) then raise;
+  end;
+end;
+
+function CustomPathIsRelative(const aPath : wvstring) : boolean;
+begin
+  Result := PathIsRelativeUnicode(PWideChar(aPath));
+end;
+
+function CustomPathIsURL(const aPath : wvstring) : boolean;
+begin
+  Result := PathIsURLUnicode(PWideChar(aPath + #0));
+end;
+
+function CustomPathIsUNC(const aPath : wvstring) : boolean;
+begin
+  Result := PathIsUNCUnicode(PWideChar(aPath + #0));
+end;
+
+function CustomPathCanonicalize(const aOriginalPath : wvstring; var aCanonicalPath : wvstring) : boolean;
+var
+  TempBuffer: array [0..pred(MAX_PATH)] of WideChar;
+begin
+  Result         := False;
+  aCanonicalPath := '';
+
+  if (length(aOriginalPath) > MAX_PATH) or
+     (Copy(aOriginalPath, 1, 4) = '\\?\') or
+     CustomPathIsUNC(aOriginalPath) then
+    exit;
+
+  FillChar(TempBuffer, MAX_PATH * SizeOf(WideChar), 0);
+
+  if PathCanonicalizeUnicode(@TempBuffer[0], PWideChar(aOriginalPath + #0)) then
+    begin
+      aCanonicalPath := TempBuffer;
+      Result         := True;
+    end;
+end;
+
+function CustomAbsolutePath(const aPath : wvstring) : wvstring;
+var
+  TempNewPath, TempOldPath : wvstring;
+begin
+  if (length(aPath) > 0) then
+    begin
+      if CustomPathIsRelative(aPath) then
+        TempOldPath := GetModulePath + aPath
+       else
+        TempOldPath := aPath;
+
+      if not(CustomPathCanonicalize(TempOldPath, TempNewPath)) then
+        TempNewPath := TempOldPath;
+
+      Result := TempNewPath;
+    end
+   else
+    Result := '';
+end;
+
+function GetModulePath : wvstring;
+begin
+  {$IFDEF FPC}
+  Result := UTF8Decode(IncludeTrailingPathDelimiter(ExtractFileDir(GetModuleName(HINSTANCE))));
+  {$ELSE}
+  Result := IncludeTrailingPathDelimiter(ExtractFileDir(GetModuleName(HINSTANCE)));
+  {$ENDIF}
+end;
+
+function EscapeCommandLineParameter(const aParameter : wvstring) : wvstring;
+const
+  RESERVEDCHARS = ['`', '~', '!', '#', '$', '&', '*', '(', ')', #9, '{', '[', '|', '\', ';', #39, '"', #10, '<', '>', '?', ' '];
+var
+  i : integer;
+begin
+  i := 1;
+
+  while (i <= length(aParameter)) do
+    begin
+      if CharInSet(aParameter[i], RESERVEDCHARS) then
+        Result := Result + '\' + aParameter[i]
+       else
+        Result := Result + aParameter[i];
+
+      inc(i);
+    end;
 end;
 
 end.
