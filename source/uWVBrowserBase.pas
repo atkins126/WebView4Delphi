@@ -13,7 +13,7 @@ uses
   {$ELSE}
     Winapi.Windows, System.Classes, System.Types, System.UITypes, System.SysUtils,
     Winapi.ActiveX, Winapi.Messages, {$IFDEF DELPHI20_UP}System.JSON,{$ENDIF}
-    {$IFDEF DELPHI26_UP}System.NetEncoding,{$ELSE}Web.HTTPApp,{$ENDIF}
+    {$IFDEF DELPHI21_UP}System.NetEncoding,{$ELSE}Web.HTTPApp,{$ENDIF}
   {$ENDIF}
   uWVTypes, uWVConstants, uWVTypeLibrary, uWVLibFunctions, uWVLoader,
   uWVInterfaces, uWVEvents, uWVCoreWebView2, uWVCoreWebView2Settings,
@@ -2942,7 +2942,7 @@ begin
 
       if succeeded(aErrorCode) then
         begin
-          {$IFDEF DELPHI26_UP}
+          {$IFDEF DELPHI21_UP}
             TempHTML := TNetEncoding.URL.Decode(aResultObjectAsJson);
           {$ELSE}
             {$IFDEF FPC}
@@ -2979,7 +2979,7 @@ begin
 
       if succeeded(aErrorCode) then
         begin
-          {$IFDEF DELPHI26_UP}
+          {$IFDEF DELPHI21_UP}
             TempText := TNetEncoding.URL.Decode(aResultObjectAsJson);
           {$ELSE}
             {$IFDEF FPC}
