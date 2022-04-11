@@ -70,6 +70,7 @@ type
       FRemoteDebuggingPort                    : integer;
       FDebugLog                               : TWV2DebugLog;
       FDebugLogLevel                          : TWV2DebugLogLevel;
+      FJavaScriptFlags                        : wvstring;
 
       function  GetAvailableBrowserVersion : wvstring;
       function  GetInitialized : boolean;
@@ -172,6 +173,7 @@ type
       property RemoteDebuggingPort                    : integer                            read FRemoteDebuggingPort                     write FRemoteDebuggingPort;              // --remote-debugging-port
       property DebugLog                               : TWV2DebugLog                       read FDebugLog                                write FDebugLog;                         // --enable-logging
       property DebugLogLevel                          : TWV2DebugLogLevel                  read FDebugLogLevel                           write FDebugLogLevel;                    // --log-level
+      property JavaScriptFlags                        : wvstring                           read FJavaScriptFlags                         write FJavaScriptFlags;                  // --js-flags
 
       // ICoreWebView2Environment8 properties
       property ProcessInfos                           : ICoreWebView2ProcessInfoCollection read GetProcessInfos;
@@ -283,6 +285,7 @@ begin
   FDisableBackgroundNetworking            := False;
   FDebugLog                               := TWV2DebugLog.dlDisabled;
   FDebugLogLevel                          := TWV2DebugLogLevel.dllDefault;
+  FJavaScriptFlags                        := '';
 
   FProxySettings := TWVProxySettings.Create;
 
@@ -920,9 +923,9 @@ begin
       TempFormatSettings.DecimalSeparator := '.';
       Result := Result + '--force-device-scale-factor=' +
         {$IFDEF FPC}
-        UTF8Decode(FloatToStr(FForcedDeviceScaleFactor, TempFormatSettings));
+        UTF8Decode(FloatToStr(FForcedDeviceScaleFactor, TempFormatSettings)) + ' ';
         {$ELSE}
-        FloatToStr(FForcedDeviceScaleFactor, TempFormatSettings);
+        FloatToStr(FForcedDeviceScaleFactor, TempFormatSettings) + ' ';
         {$ENDIF}
     end;
 
@@ -941,6 +944,11 @@ begin
     TWV2DebugLogLevel.dllError   : Result := Result + '--log-level=2 ';
     TWV2DebugLogLevel.dllFatal   : Result := Result + '--log-level=3 ';
   end;
+
+  // The list of JavaScript flags is here :
+  // https://chromium.googlesource.com/v8/v8/+/master/src/flags/flag-definitions.h
+  if (length(FJavaScriptFlags) > 0) then
+    Result := Result + '--js-flags="' + FJavaScriptFlags + '" ';
 
   if (length(FAdditionalBrowserArguments) > 0) then
     Result := Result + FAdditionalBrowserArguments
@@ -1011,7 +1019,7 @@ function TWVLoader.CreateEnvironment : boolean;
 var
   TempOptions : ICoreWebView2EnvironmentOptions;
   TempHandler : ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler;
-  TempResult  : HRESULT;
+  TempHResult : HRESULT;
 begin
   Result := False;
 
@@ -1025,18 +1033,25 @@ begin
                                                               FTargetCompatibleBrowserVersion,
                                                               FAllowSingleSignOnUsingOSPrimaryAccount);
 
-        TempResult := CreateCoreWebView2EnvironmentWithOptions(PWideChar(FBrowserExecPath),
-                                                               PWideChar(FUserDataFolder),
-                                                               TempOptions,
-                                                               TempHandler);
+        TempHResult := CreateCoreWebView2EnvironmentWithOptions(PWideChar(FBrowserExecPath),
+                                                                PWideChar(FUserDataFolder),
+                                                                TempOptions,
+                                                                TempHandler);
 
-        if succeeded(TempResult) then
+        if succeeded(TempHResult) then
           Result := True
          else
           begin
             FStatus   := wvlsError;
-            FError    := TempResult;
-            FErrorMsg := 'There was a problem creating the browser environment.';
+            FError    := TempHResult;
+            FErrorMsg := 'There was an error creating the browser environment. (1)' + CRLF +
+                         'Error code : 0x' +
+                         {$IFDEF FPC}
+                         UTF8Decode(inttohex(TempHResult, 8))
+                         {$ELSE}
+                         inttohex(TempHResult, 8)
+                         {$ENDIF}
+                         + CRLF + EnvironmentCreationErrorToString(TempHResult);
 
             ShowErrorMessageDlg(FErrorMsg);
           end;

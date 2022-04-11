@@ -21,6 +21,8 @@ function AllocCoTaskMemStr(const aString : wvstring): PWideChar;
 function LowestChromiumVersion : wvstring;
 function LowestLoaderDLLVersion : wvstring;
 function EnvironmentCreationErrorToString(aErrorCode : HRESULT) : wvstring;
+function ControllerCreationErrorToString(aErrorCode : HRESULT) : wvstring;
+function CompositionControllerCreationErrorToString(aErrorCode : HRESULT) : wvstring;
 function GetScreenDPI : integer;
 function GetDeviceScaleFactor : single;
 function EditingCommandToString(aEditingCommand : TWV2EditingCommand): wvstring;
@@ -29,6 +31,7 @@ function SystemCursorIDToDelphiCursor(aSystemCursorID : cardinal) : TCursor;
 
 procedure OutputDebugMessage(const aMessage : string);
 function  CustomExceptionHandler(const aFunctionName : string; const aException : exception) : boolean;
+procedure LogMouseEvent(aEventKind : TWVMouseEventKind; aVirtualKeys : TWVMouseEventVirtualKeys; aMouseData : cardinal; aPoint : TPoint);
 
 function CoreWebViewColorToDelphiColor(const aColor : COREWEBVIEW2_COLOR) : TColor;
 function DelphiColorToCoreWebViewColor(const aColor : TColor) : COREWEBVIEW2_COLOR;
@@ -122,7 +125,39 @@ begin
                 Result := 'Could not find Edge installation.'
                else
                 if (aErrorCode = HResultFromWin32(ERROR_FILE_EXISTS)) then
-                  Result := 'User data folder cannot be created because a file with the same name already exists.';
+                  Result := 'User data folder cannot be created because a file with the same name already exists.'
+                 else
+                  Result := 'Unexpected error result.';
+  end;
+end;
+
+function ControllerCreationErrorToString(aErrorCode : HRESULT) : wvstring;
+const
+  // Undefined GetLastError error values
+  ERROR_INVALID_STATE       = 5023;
+begin
+  case aErrorCode of
+    E_ABORT : Result := 'The parent window was destroyed before the controller creation was finished.';
+    else
+      if (aErrorCode = HResultFromWin32(ERROR_INVALID_STATE)) then
+        Result := 'Another browser is using the same user data folder.'
+       else
+        Result := 'Unexpected error result.';
+  end;
+end;
+
+function CompositionControllerCreationErrorToString(aErrorCode : HRESULT) : wvstring;
+const
+  // Undefined GetLastError error values
+  ERROR_INVALID_STATE       = 5023;
+begin
+  case aErrorCode of
+    E_ABORT : Result := 'The parent window was destroyed before the composition controller creation was finished.';
+    else
+      if (aErrorCode = HResultFromWin32(ERROR_INVALID_STATE)) then
+        Result := 'Another browser is using the same user data folder.'
+       else
+        Result := 'Unexpected error result.';
   end;
 end;
 
@@ -165,6 +200,14 @@ begin
   OutputDebugMessage(aFunctionName + ' error : ' + aException.message);
 
   Result := (GlobalWebView2Loader <> nil) and GlobalWebView2Loader.ReRaiseExceptions;
+end;
+
+procedure LogMouseEvent(aEventKind : TWVMouseEventKind; aVirtualKeys : TWVMouseEventVirtualKeys; aMouseData : cardinal; aPoint : TPoint);
+begin
+  OutputDebugMessage('aEventKind: $' + IntToHex(integer(aEventKind), 4) + ', ' +
+                     'aVirtualKeys: $' + IntToHex(Integer(aVirtualKeys), 2) + ', ' +
+                     'aMouseData: ' + IntToStr(integer(aMouseData)) + ', ' +
+                     'aPoint: (' + IntToStr(aPoint.x) + ',' + IntToStr(aPoint.y) + ')');
 end;
 
 // Basic ISO8601ToDate alternative written by David Heffernan

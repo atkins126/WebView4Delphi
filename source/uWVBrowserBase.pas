@@ -129,6 +129,7 @@ type
       FOnFrameContentLoading                          : TOnFrameContentLoadingEvent;
       FOnFrameDOMContentLoaded                        : TOnFrameDOMContentLoadedEvent;
       FOnFrameWebMessageReceived                      : TOnFrameWebMessageReceivedEvent;
+      FOnBasicAuthenticationRequested                 : TOnBasicAuthenticationRequestedEvent;
 
       function  GetBrowserProcessID : cardinal;
       function  GetBrowserVersionInfo : wvstring;
@@ -289,6 +290,7 @@ type
       function FrameContentLoadingEventHandler_Invoke(const sender: ICoreWebView2Frame; const args: ICoreWebView2ContentLoadingEventArgs; aFrameID: integer): HRESULT;
       function FrameDOMContentLoadedEventHandler_Invoke(const sender: ICoreWebView2Frame; const args: ICoreWebView2DOMContentLoadedEventArgs; aFrameID: integer): HRESULT;
       function FrameWebMessageReceivedEventHandler_Invoke(const sender: ICoreWebView2Frame; const args: ICoreWebView2WebMessageReceivedEventArgs; aFrameID: integer): HRESULT;
+      function BasicAuthenticationRequestedEventHandler_Invoke(const sender: ICoreWebView2; const args: ICoreWebView2BasicAuthenticationRequestedEventArgs): HRESULT;
 
       procedure doOnInitializationError(aErrorCode: HRESULT; const aErrorMessage: wvstring); virtual;
       procedure doOnEnvironmentCompleted; virtual;
@@ -357,6 +359,7 @@ type
       procedure doOnFrameContentLoadingEvent(const sender: ICoreWebView2Frame; const args: ICoreWebView2ContentLoadingEventArgs; aFrameID: integer); virtual;
       procedure doOnFrameDOMContentLoadedEvent(const sender: ICoreWebView2Frame; const args: ICoreWebView2DOMContentLoadedEventArgs; aFrameID: integer); virtual;
       procedure doOnFrameWebMessageReceivedEvent(const sender: ICoreWebView2Frame; const args: ICoreWebView2WebMessageReceivedEventArgs; aFrameID: integer); virtual;
+      procedure doOnBasicAuthenticationRequestedEvent(const sender: ICoreWebView2; const args: ICoreWebView2BasicAuthenticationRequestedEventArgs); virtual;
 
     public
       constructor Create(AOwner: TComponent); override;
@@ -602,6 +605,9 @@ type
       // ICoreWebView2_9 events
       property OnIsDefaultDownloadDialogOpenChanged            : TOnIsDefaultDownloadDialogOpenChangedEvent            read FOnIsDefaultDownloadDialogOpenChanged            write FOnIsDefaultDownloadDialogOpenChanged;
 
+      // ICoreWebView2_10 events
+      property OnBasicAuthenticationRequested                  : TOnBasicAuthenticationRequestedEvent                  read FOnBasicAuthenticationRequested                  write FOnBasicAuthenticationRequested;
+
       // ICoreWebView2Controller events
       property OnAcceleratorKeyPressed                         : TOnAcceleratorKeyPressedEvent                         read FOnAcceleratorKeyPressed                         write FOnAcceleratorKeyPressed;
       property OnGotFocus                                      : TNotifyEvent                                          read FOnGotFocus                                      write FOnGotFocus;
@@ -774,6 +780,7 @@ begin
   FOnIsMutedChanged                                := nil;
   FOnIsDocumentPlayingAudioChanged                 := nil;
   FOnIsDefaultDownloadDialogOpenChanged            := nil;
+  FOnBasicAuthenticationRequested                  := nil;
 end;
 
 destructor TWVBrowserBase.Destroy;
@@ -1075,8 +1082,8 @@ end;
 
 function TWVBrowserBase.EnvironmentCompletedHandler_Invoke(errorCode: HRESULT; const createdEnvironment: ICoreWebView2Environment): HRESULT;
 var
-  TempResult : boolean;
-  TempError  : wvstring;
+  TempError   : wvstring;
+  TempHResult : HRESULT;
 begin
   Result := S_OK;
 
@@ -1088,16 +1095,39 @@ begin
       doOnEnvironmentCompleted;
 
       if FUseCompositionController then
-        TempResult := FCoreWebView2Environment.CreateCoreWebView2CompositionController(FWindowParentHandle, self)
-       else
-        TempResult := FCoreWebView2Environment.CreateCoreWebView2Controller(FWindowParentHandle, self);
+        begin
+          if not(FCoreWebView2Environment.CreateCoreWebView2CompositionController(FWindowParentHandle, self, TempHResult)) then
+            begin
+              TempError := 'There was an error creating the composition controller. (1)' + CRLF +
+                           'Error code : 0x' +
+                           {$IFDEF FPC}
+                           UTF8Decode(inttohex(TempHResult, 8))
+                           {$ELSE}
+                           inttohex(TempHResult, 8)
+                           {$ENDIF}
+                            + CRLF + CompositionControllerCreationErrorToString(TempHResult);
 
-      if not(TempResult) then
-        doOnInitializationError(E_FAIL, 'There was an error creating the controller');
+              doOnInitializationError(TempHResult, TempError);
+            end;
+        end
+       else
+        if not(FCoreWebView2Environment.CreateCoreWebView2Controller(FWindowParentHandle, self, TempHResult)) then
+          begin
+            TempError := 'There was an error creating the controller. (1)' + CRLF +
+                         'Error code : 0x' +
+                         {$IFDEF FPC}
+                         UTF8Decode(inttohex(TempHResult, 8))
+                         {$ELSE}
+                         inttohex(TempHResult, 8)
+                         {$ENDIF}
+                         + CRLF + ControllerCreationErrorToString(TempHResult);
+
+            doOnInitializationError(TempHResult, TempError);
+          end;
     end
    else
     begin
-      TempError := 'There was a problem initializing the browser environment.' + CRLF + CRLF +
+      TempError := 'There was an error creating the browser environment. (3)' + CRLF +
                    'Error code : 0x' +
                    {$IFDEF FPC}
                    UTF8Decode(inttohex(errorCode, 8))
@@ -1115,6 +1145,7 @@ var
   TempSettings      : ICoreWebView2Settings;
   TempPrintSettings : ICoreWebView2PrintSettings;
   TempCoreWebView2  : ICoreWebView2;
+  TempError         : wvstring;
 begin
   Result            := S_OK;
   TempSettings      := nil;
@@ -1169,7 +1200,18 @@ begin
           doOnInitializationError(E_FAIL, 'There was an error getting the browser webview.');
       end
      else
-      doOnInitializationError(errorCode, 'There was an error creating the controller.');
+      begin
+        TempError := 'There was an error creating the controller. (2)' + CRLF +
+                     'Error code : 0x' +
+                     {$IFDEF FPC}
+                     UTF8Decode(inttohex(errorCode, 8))
+                     {$ELSE}
+                     inttohex(errorCode, 8)
+                     {$ENDIF}
+                     + CRLF + ControllerCreationErrorToString(errorCode);
+
+        doOnInitializationError(errorCode, TempError);
+      end;
   finally
     TempSettings      := nil;
     TempCoreWebView2  := nil;
@@ -1392,6 +1434,8 @@ end;
 function TWVBrowserBase.CreateCoreWebView2CompositionControllerCompletedHandler_Invoke(errorCode: HResult; const webView: ICoreWebView2CompositionController): HRESULT;
 var
   TempControllerIntf : ICoreWebView2Controller;
+  TempError          : wvstring;
+  TempHResult        : HRESULT;
 begin
   Result := S_OK;
 
@@ -1402,13 +1446,26 @@ begin
 
       doOnCompositionControllerCompleted;
 
-      if succeeded(webView.QueryInterface(IID_ICoreWebView2Controller, TempControllerIntf)) then
+      TempHResult := webView.QueryInterface(IID_ICoreWebView2Controller, TempControllerIntf);
+
+      if succeeded(TempHResult) then
         Result := ControllerCompletedHandler_Invoke(errorCode, TempControllerIntf)
        else
-        doOnInitializationError(E_FAIL, 'There was an error creating the controller.');
+        doOnInitializationError(TempHResult, 'There was an error creating the controller. (3)');
     end
    else
-    doOnInitializationError(E_FAIL, 'There was an error creating the composition controller.');
+    begin
+      TempError := 'There was an error creating the composition controller. (2)' + CRLF +
+                   'Error code : 0x' +
+                   {$IFDEF FPC}
+                   UTF8Decode(inttohex(errorCode, 8))
+                   {$ELSE}
+                   inttohex(errorCode, 8)
+                   {$ENDIF}
+                    + CRLF + CompositionControllerCreationErrorToString(errorCode);
+
+      doOnInitializationError(errorCode, TempError);
+    end;
 end;
 
 function TWVBrowserBase.CursorChangedEventHandler_Invoke(const sender: ICoreWebView2CompositionController; const args: IUnknown): HRESULT;
@@ -1596,34 +1653,51 @@ begin
     FOnProcessInfosChanged(self, sender);
 end;
 
-procedure TWVBrowserBase.doOnFrameNavigationStarting2(const sender: ICoreWebView2Frame; const args: ICoreWebView2NavigationStartingEventArgs; aFrameID : integer);
+procedure TWVBrowserBase.doOnFrameNavigationStarting2(const sender   : ICoreWebView2Frame;
+                                                      const args     : ICoreWebView2NavigationStartingEventArgs;
+                                                            aFrameID : integer);
 begin
   if assigned(FOnFrameNavigationStarting2) then
     FOnFrameNavigationStarting2(self, sender, args, aFrameID);
 end;
 
-procedure TWVBrowserBase.doOnFrameNavigationCompleted2(const sender: ICoreWebView2Frame; const args: ICoreWebView2NavigationCompletedEventArgs; aFrameID : integer);
+procedure TWVBrowserBase.doOnFrameNavigationCompleted2(const sender   : ICoreWebView2Frame;
+                                                       const args     : ICoreWebView2NavigationCompletedEventArgs;
+                                                             aFrameID : integer);
 begin
   if assigned(FOnFrameNavigationCompleted2) then
     FOnFrameNavigationCompleted2(self, sender, args, aFrameID);
 end;
 
-procedure TWVBrowserBase.doOnFrameContentLoadingEvent(const sender: ICoreWebView2Frame; const args: ICoreWebView2ContentLoadingEventArgs; aFrameID: integer);
+procedure TWVBrowserBase.doOnFrameContentLoadingEvent(const sender   : ICoreWebView2Frame;
+                                                      const args     : ICoreWebView2ContentLoadingEventArgs;
+                                                            aFrameID : integer);
 begin
   if assigned(FOnFrameContentLoading) then
     FOnFrameContentLoading(self, sender, args, aFrameID);
 end;
 
-procedure TWVBrowserBase.doOnFrameDOMContentLoadedEvent(const sender: ICoreWebView2Frame; const args: ICoreWebView2DOMContentLoadedEventArgs; aFrameID: integer);
+procedure TWVBrowserBase.doOnFrameDOMContentLoadedEvent(const sender   : ICoreWebView2Frame;
+                                                        const args     : ICoreWebView2DOMContentLoadedEventArgs;
+                                                              aFrameID : integer);
 begin
   if assigned(FOnFrameDOMContentLoaded) then
     FOnFrameDOMContentLoaded(self, sender, args, aFrameID);
 end;
 
-procedure TWVBrowserBase.doOnFrameWebMessageReceivedEvent(const sender: ICoreWebView2Frame; const args: ICoreWebView2WebMessageReceivedEventArgs; aFrameID: integer);
+procedure TWVBrowserBase.doOnFrameWebMessageReceivedEvent(const sender   : ICoreWebView2Frame;
+                                                          const args     : ICoreWebView2WebMessageReceivedEventArgs;
+                                                                aFrameID : integer);
 begin
   if assigned(FOnFrameWebMessageReceived) then
     FOnFrameWebMessageReceived(self, sender, args, aFrameID);
+end;
+
+procedure TWVBrowserBase.doOnBasicAuthenticationRequestedEvent(const sender : ICoreWebView2;
+                                                               const args   : ICoreWebView2BasicAuthenticationRequestedEventArgs);
+begin
+  if assigned(FOnBasicAuthenticationRequested) then
+    FOnBasicAuthenticationRequested(self, sender, args);
 end;
 
 procedure TWVBrowserBase.doOnRetrieveMHTMLCompleted(aErrorCode: HRESULT; const aReturnObjectAsJson: wvstring);
@@ -1801,6 +1875,13 @@ begin
   doOnFrameWebMessageReceivedEvent(sender, args, aFrameID);
 end;
 
+function TWVBrowserBase.BasicAuthenticationRequestedEventHandler_Invoke(const sender : ICoreWebView2;
+                                                                        const args   : ICoreWebView2BasicAuthenticationRequestedEventArgs): HRESULT;
+begin
+  Result := S_OK;
+  doOnBasicAuthenticationRequestedEvent(sender, args);
+end;
+
 function TWVBrowserBase.ExecuteScriptCompletedHandler_Invoke(errorCode: HRESULT; resultObjectAsJson: PWideChar; aExecutionID : integer): HRESULT;
 begin
   Result := S_OK;
@@ -1849,6 +1930,9 @@ end;
 
 // This function is asynchronous and it triggers the TWVBrowserBase.OnAfterCreated event when the browser is fully initialized
 function TWVBrowserBase.CreateBrowser(aHandle : THandle; const aEnvironment : ICoreWebView2Environment) : boolean;
+var
+  TempError   : wvstring;
+  TempHResult : HRESULT;
 begin
   Result := False;
 
@@ -1865,7 +1949,21 @@ begin
       DestroyEnvironment;
       FUseDefaultEnvironment   := True;
       FCoreWebView2Environment := TCoreWebView2Environment.Create(aEnvironment);
-      Result                   := FCoreWebView2Environment.CreateCoreWebView2Controller(FWindowParentHandle, self);
+      Result                   := FCoreWebView2Environment.CreateCoreWebView2Controller(FWindowParentHandle, self, TempHResult);
+
+      if not(Result) then
+        begin
+          TempError := 'There was an error creating the controller. (4)' + CRLF +
+                       'Error code : 0x' +
+                       {$IFDEF FPC}
+                       UTF8Decode(inttohex(TempHResult, 8))
+                       {$ELSE}
+                       inttohex(TempHResult, 8)
+                       {$ENDIF}
+                       + CRLF + ControllerCreationErrorToString(TempHResult);
+
+          doOnInitializationError(TempHResult, TempError);
+        end;
     end
    else
     Result := CreateEnvironment;
@@ -1882,6 +1980,9 @@ end;
 
 // This function is asynchronous and it triggers the TWVBrowserBase.OnAfterCreated event when the browser is fully initialized
 function TWVBrowserBase.CreateWindowlessBrowser(aHandle : THandle; const aEnvironment : ICoreWebView2Environment) : boolean;
+var
+  TempError   : wvstring;
+  TempHResult : HRESULT;
 begin
   Result := False;
 
@@ -1901,7 +2002,25 @@ begin
       FCoreWebView2Environment := TCoreWebView2Environment.Create(aEnvironment);
 
       if FCoreWebView2Environment.SupportsCompositionController then
-        Result := FCoreWebView2Environment.CreateCoreWebView2CompositionController(FWindowParentHandle, self);
+        begin
+          Result := FCoreWebView2Environment.CreateCoreWebView2CompositionController(FWindowParentHandle, self, TempHResult);
+
+          if not(Result) then
+            begin
+              TempError := 'There was an error creating the composition controller. (3)' + CRLF +
+                           'Error code : 0x' +
+                           {$IFDEF FPC}
+                           UTF8Decode(inttohex(TempHResult, 8))
+                           {$ELSE}
+                           inttohex(TempHResult, 8)
+                           {$ENDIF}
+                            + CRLF + CompositionControllerCreationErrorToString(TempHResult);
+
+              doOnInitializationError(TempHResult, TempError);
+            end;
+        end
+       else
+        doOnInitializationError(E_FAIL, 'The environment doesn' + #39 + 't support a composition controller.');
     end
    else
     Result := CreateEnvironment;
@@ -2246,7 +2365,11 @@ function TWVBrowserBase.CreateEnvironment : boolean;
 var
   TempOptions : ICoreWebView2EnvironmentOptions;
   TempHandler : ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler;
+  TempError   : wvstring;
+  TempHResult : HRESULT;
 begin
+  Result := False;
+
   try
     TempHandler := TCoreWebView2EnvironmentCompletedHandler.Create(self);
 
@@ -2255,10 +2378,26 @@ begin
                                                           FTargetCompatibleBrowserVersion,
                                                           FAllowSingleSignOnUsingOSPrimaryAccount);
 
-    Result := succeeded(CreateCoreWebView2EnvironmentWithOptions(PWideChar(FBrowserExecPath),
-                                                                 PWideChar(FUserDataFolder),
-                                                                 TempOptions,
-                                                                 TempHandler));
+    TempHResult := CreateCoreWebView2EnvironmentWithOptions(PWideChar(FBrowserExecPath),
+                                                            PWideChar(FUserDataFolder),
+                                                            TempOptions,
+                                                            TempHandler);
+
+    if succeeded(TempHResult) then
+      Result := True
+     else
+      begin
+        TempError := 'There was an error creating the browser environment. (2)' + CRLF +
+                     'Error code : 0x' +
+                     {$IFDEF FPC}
+                     UTF8Decode(inttohex(TempHResult, 8))
+                     {$ELSE}
+                     inttohex(TempHResult, 8)
+                     {$ENDIF}
+                     + CRLF + EnvironmentCreationErrorToString(TempHResult);
+
+        doOnInitializationError(TempHResult, TempError);
+      end;
   finally
     TempOptions := nil;
     TempHandler := nil;
