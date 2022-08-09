@@ -142,6 +142,8 @@ type
       FOnClearBrowsingDataCompleted                   : TOnClearBrowsingDataCompletedEvent;
       FOnServerCertificateErrorActionsCompleted       : TOnServerCertificateErrorActionsCompletedEvent;
       FOnServerCertificateErrorDetected               : TOnServerCertificateErrorDetectedEvent;
+      FOnFaviconChanged                               : TOnFaviconChangedEvent;
+      FOnGetFaviconCompleted                          : TOnGetFaviconCompletedEvent;
 
       function  GetBrowserProcessID : cardinal;
       function  GetBrowserVersionInfo : wvstring;
@@ -192,6 +194,7 @@ type
       function  GetAllowExternalDrop : boolean;
       function  GetHiddenPdfToolbarItems : TWVPDFToolbarItems;
       function  GetCustomItemSelectedEventHandler : ICoreWebView2CustomItemSelectedEventHandler;
+      function  GetFaviconURI : wvstring;
 
       procedure SetBuiltInErrorPageEnabled(aValue: boolean);
       procedure SetDefaultContextMenusEnabled(aValue: boolean);
@@ -320,6 +323,8 @@ type
       function ClearBrowsingDataCompletedHandler_Invoke(errorCode: HResult): HRESULT;
       function ClearServerCertificateErrorActionsCompletedHandler_Invoke(errorCode: HResult): HRESULT;
       function ServerCertificateErrorDetectedEventHandler_Invoke(const sender: ICoreWebView2; const args: ICoreWebView2ServerCertificateErrorDetectedEventArgs): HRESULT;
+      function FaviconChangedEventHandler_Invoke(const sender: ICoreWebView2; const args: IUnknown): HRESULT;
+      function GetFaviconCompletedHandler_Invoke(errorCode: HResult; const faviconStream: IStream): HRESULT;
 
       procedure doOnInitializationError(aErrorCode: HRESULT; const aErrorMessage: wvstring); virtual;
       procedure doOnEnvironmentCompleted; virtual;
@@ -396,6 +401,9 @@ type
       procedure doOnClearBrowsingDataCompletedEvent(aErrorCode: HRESULT); virtual;
       procedure doOnServerCertificateErrorActionsCompletedEvent(aErrorCode: HRESULT); virtual;
       procedure doOnServerCertificateErrorDetectedEvent(const sender: ICoreWebView2; const args: ICoreWebView2ServerCertificateErrorDetectedEventArgs); virtual;
+      procedure doOnFaviconChangedEvent(const sender: ICoreWebView2; const args: IUnknown); virtual;
+      procedure doOnGetFaviconCompletedEvent(errorCode: HResult; const faviconStream: IStream); virtual;
+
     public
       constructor Create(AOwner: TComponent); override;
       destructor  Destroy; override;
@@ -497,6 +505,9 @@ type
       function    ClearBrowsingDataInTimeRange(dataKinds: TWVBrowsingDataKinds; const startTime, endTime: TDateTime): boolean;
       function    ClearBrowsingDataAll: boolean;
 
+      function    ClearServerCertificateErrorActions : boolean;
+      function    GetFavicon(aFormat: TWVFaviconImageFormat = COREWEBVIEW2_FAVICON_IMAGE_FORMAT_PNG) : boolean;
+
       // Custom properties
       property Initialized                            : boolean                                     read GetInitialized;
       property CoreWebView2PrintSettings              : TCoreWebView2PrintSettings                  read FCoreWebView2PrintSettings;
@@ -556,6 +567,9 @@ type
 
       // ICoreWebView2_12
       property StatusBarText                          : wvstring                                read GetStatusBarText;
+
+      // ICoreWebView2_15
+      property FaviconURI                             : wvstring                                read GetFaviconURI;
 
       // ICoreWebView2Controller properties
       property Bounds                                 : TRect                                   read GetBounds                                write SetBounds;                                  // ICoreWebView2Controller.get_Bounds
@@ -668,11 +682,15 @@ type
       property OnContextMenuRequested                          : TOnContextMenuRequestedEvent                          read FOnContextMenuRequested                          write FOnContextMenuRequested;
 
       // ICoreWebView2_12 events
-      property OnStatusBarTextChanged                         : TOnStatusBarTextChangedEvent                           read FOnStatusBarTextChanged                          write FOnStatusBarTextChanged;
+      property OnStatusBarTextChanged                          : TOnStatusBarTextChangedEvent                          read FOnStatusBarTextChanged                          write FOnStatusBarTextChanged;
 
       // ICoreWebView2_14 events
       property OnServerCertificateErrorActionsCompleted        : TOnServerCertificateErrorActionsCompletedEvent        read FOnServerCertificateErrorActionsCompleted        write FOnServerCertificateErrorActionsCompleted;
       property OnServerCertificateErrorDetected                : TOnServerCertificateErrorDetectedEvent                read FOnServerCertificateErrorDetected                write FOnServerCertificateErrorDetected;
+
+      // ICoreWebView2_15 events
+      property OnFaviconChanged                                : TOnFaviconChangedEvent                                read FOnFaviconChanged                                write FOnFaviconChanged;
+      property OnGetFaviconCompleted                           : TOnGetFaviconCompletedEvent                           read FOnGetFaviconCompleted                           write FOnGetFaviconCompleted;
 
       // ICoreWebView2Controller events
       property OnAcceleratorKeyPressed                         : TOnAcceleratorKeyPressedEvent                         read FOnAcceleratorKeyPressed                         write FOnAcceleratorKeyPressed;
@@ -1835,6 +1853,20 @@ begin
     FOnServerCertificateErrorDetected(self, sender, args);
 end;
 
+procedure TWVBrowserBase.doOnFaviconChangedEvent(const sender : ICoreWebView2;
+                                                 const args   : IUnknown);
+begin
+  if assigned(FOnFaviconChanged) then
+    FOnFaviconChanged(self, sender, args);
+end;
+
+procedure TWVBrowserBase.doOnGetFaviconCompletedEvent(      errorCode     : HResult;
+                                                      const faviconStream : IStream);
+begin
+  if assigned(FOnGetFaviconCompleted) then
+    FOnGetFaviconCompleted(self, errorCode, faviconStream);
+end;
+
 procedure TWVBrowserBase.doOnRetrieveMHTMLCompleted(      aErrorCode          : HRESULT;
                                                     const aReturnObjectAsJson : wvstring);
 var
@@ -2069,6 +2101,18 @@ function TWVBrowserBase.ServerCertificateErrorDetectedEventHandler_Invoke(const 
 begin
   Result := S_OK;
   doOnServerCertificateErrorDetectedEvent(sender, args);
+end;
+
+function TWVBrowserBase.FaviconChangedEventHandler_Invoke(const sender: ICoreWebView2; const args: IUnknown): HRESULT;
+begin
+  Result := S_OK;
+  doOnFaviconChangedEvent(sender, args);
+end;
+
+function TWVBrowserBase.GetFaviconCompletedHandler_Invoke(errorCode: HResult; const faviconStream: IStream): HRESULT;
+begin
+  Result := S_OK;
+  doOnGetFaviconCompletedEvent(errorCode, faviconStream);
 end;
 
 function TWVBrowserBase.ExecuteScriptCompletedHandler_Invoke(errorCode: HRESULT; resultObjectAsJson: PWideChar; aExecutionID : integer): HRESULT;
@@ -2611,6 +2655,14 @@ begin
   Result := FMenuItemHandler;
 end;
 
+function TWVBrowserBase.GetFaviconURI : wvstring;
+begin
+  if Initialized then
+    Result := FCoreWebView2.FaviconURI
+   else
+    Result := '';
+end;
+
 function TWVBrowserBase.GetZoomFactor: Double;
 begin
   if Initialized then
@@ -2899,6 +2951,19 @@ function TWVBrowserBase.CloseDefaultDownloadDialog : boolean;
 begin
   Result := Initialized and
             FCoreWebView2.CloseDefaultDownloadDialog;
+end;
+
+function TWVBrowserBase.ClearServerCertificateErrorActions : boolean;
+begin
+  Result := Initialized and
+            FCoreWebView2.ClearServerCertificateErrorActions(self);
+end;
+
+// This function is asynchronous and it triggers the TWVBrowserBase.OnGetFaviconCompleted event when it finishes
+function TWVBrowserBase.GetFavicon(aFormat: TWVFaviconImageFormat) : boolean;
+begin
+  Result := Initialized and
+            FCoreWebView2.GetFavicon(aFormat, self);
 end;
 
 // This function is asynchronous and it triggers the TWVBrowserBase.OnTrySuspendCompleted event when it finishes
