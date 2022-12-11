@@ -2,13 +2,15 @@ unit uWVCoreWebView2Args;
 
 {$IFDEF FPC}{$MODE Delphi}{$ENDIF}
 
+{$I webview2.inc}
+
 interface
 
 uses
-  {$IFDEF FPC}
-  Types, ActiveX,
-  {$ELSE}
+  {$IFDEF DELPHI16_UP}
   System.Types, Winapi.ActiveX,
+  {$ELSE}
+  Types, ActiveX,
   {$ENDIF}
   uWVTypeLibrary, uWVTypes;
 
@@ -712,10 +714,10 @@ end;
 
 function TCoreWebView2ContentLoadingEventArgs.GetNavigationId : uint64;
 var
-  TempID : uint64;
+  TempID : Largeuint;
 begin
   if Initialized and succeeded(FBaseIntf.Get_NavigationId(TempID)) then
-    Result := TempID
+    Result := uint64(TempID)
    else
     Result := 0;
 end;
@@ -868,10 +870,10 @@ end;
 
 function TCoreWebView2NavigationCompletedEventArgs.GetNavigationID : uint64;
 var
-  TempID : uint64;
+  TempID : Largeuint;
 begin
   if Initialized and succeeded(FBaseIntf.Get_NavigationId(TempID)) then
-    Result := TempID
+    Result := uint64(TempID)
    else
     Result := 0;
 end;
@@ -978,10 +980,10 @@ end;
 
 function TCoreWebView2NavigationStartingEventArgs.GetNavigationID : uint64;
 var
-  TempInt : uint64;
+  TempID : Largeuint;
 begin
-  if Initialized and succeeded(FBaseIntf.Get_NavigationId(TempInt)) then
-    Result := TempInt
+  if Initialized and succeeded(FBaseIntf.Get_NavigationId(TempID)) then
+    Result := uint64(TempID)
    else
     Result := 0;
 end;
@@ -1761,10 +1763,10 @@ end;
 
 function TCoreWebView2DOMContentLoadedEventArgs.GetNavigationID : uint64;
 var
-  TempID : uint64;
+  TempID : Largeuint;
 begin
   if Initialized and succeeded(FBaseIntf.Get_NavigationId(TempID)) then
-    Result := TempID
+    Result := uint64(TempID)
    else
     Result := 0;
 end;

@@ -2,13 +2,15 @@ unit uWVCoreWebView2CompositionController;
 
 {$IFDEF FPC}{$MODE Delphi}{$ENDIF}
 
+{$I webview2.inc}
+
 interface
 
 uses
-  {$IFDEF FPC}
-  Classes, Windows, ActiveX,
-  {$ELSE}
+  {$IFDEF DELPHI16_UP}
   System.Classes, System.Types, Winapi.Windows, Winapi.ActiveX,
+  {$ELSE}
+  Classes, Windows, ActiveX,
   {$ENDIF}
   uWVTypeLibrary, uWVTypes;
 
@@ -17,6 +19,7 @@ type
     protected
       FBaseIntf           : ICoreWebView2CompositionController;
       FBaseIntf2          : ICoreWebView2CompositionController2;
+      FBaseIntf3          : ICoreWebView2CompositionController3;
       FCursorChangedToken : EventRegistrationToken;
 
       function  GetInitialized : boolean;
@@ -39,6 +42,10 @@ type
       function    AddAllBrowserEvents(const aBrowserComponent : TComponent) : boolean;
       function    SendMouseInput(aEventKind : TWVMouseEventKind; aVirtualKeys : TWVMouseEventVirtualKeys; aMouseData : cardinal; aPoint : TPoint) : boolean;
       function    SendPointerInput(aEventKind : TWVPointerEventKind; const aPointerInfo : ICoreWebView2PointerInfo) : boolean;
+      function    DragEnter(const dataObject: IDataObject; keyState: LongWord; point: tagPOINT; out effect: LongWord) : HResult;
+      function    DragLeave : HResult;
+      function    DragOver(keyState: LongWord; point: tagPOINT; out effect: LongWord) : HResult;
+      function    Drop(const dataObject: IDataObject; keyState: LongWord; point: tagPOINT; out effect: LongWord) : HResult;
 
       property Initialized        : boolean                              read GetInitialized;
       property BaseIntf           : ICoreWebView2CompositionController   read FBaseIntf;
@@ -61,8 +68,9 @@ begin
 
   FBaseIntf := aBaseIntf;
 
-  if Initialized then
-    LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2CompositionController2, FBaseIntf2);
+  if Initialized and
+     LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2CompositionController2, FBaseIntf2) then
+    LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2CompositionController3, FBaseIntf3);
 end;
 
 destructor TCoreWebView2CompositionController.Destroy;
@@ -192,6 +200,49 @@ function TCoreWebView2CompositionController.SendPointerInput(      aEventKind   
 begin
   Result := Initialized and
             succeeded(FBaseIntf.SendPointerInput(aEventKind, aPointerInfo));
+end;
+
+function TCoreWebView2CompositionController.DragEnter(const dataObject : IDataObject;
+                                                            keyState   : LongWord;
+                                                            point      : tagPOINT;
+                                                      out   effect     : LongWord) : HResult;
+begin
+  Result := S_OK;
+  effect := DROPEFFECT_NONE;
+
+  if assigned(FBaseIntf3) then
+    Result := FBaseIntf3.DragEnter(dataObject, keyState, point, effect);
+end;
+
+function TCoreWebView2CompositionController.DragLeave : HResult;
+begin
+  Result := S_OK;
+
+  if assigned(FBaseIntf3) then
+    Result := FBaseIntf3.DragLeave;
+end;
+
+function TCoreWebView2CompositionController.DragOver(    keyState : LongWord;
+                                                         point    : tagPOINT;
+                                                     out effect   : LongWord) : HResult;
+begin
+  Result := S_OK;
+  effect := DROPEFFECT_NONE;
+
+  if assigned(FBaseIntf3) then
+    Result := FBaseIntf3.DragOver(keyState, point, effect);
+end;
+
+function TCoreWebView2CompositionController.Drop(const dataObject : IDataObject;
+                                                       keyState   : LongWord;
+                                                       point      : tagPOINT;
+                                                 out   effect     : LongWord) : HResult;
+begin
+  Result := S_OK;
+  effect := DROPEFFECT_NONE;
+
+  if assigned(FBaseIntf3) then
+    Result := FBaseIntf3.Drop(dataObject, keyState, point, effect);
 end;
 
 end.

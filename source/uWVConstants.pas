@@ -7,22 +7,22 @@ interface
 const
   WEBVIEW2LOADERLIB_VERSION_MAJOR   = 1;
   WEBVIEW2LOADERLIB_VERSION_MINOR   = 0;
-  WEBVIEW2LOADERLIB_VERSION_RELEASE = 1343;
-  WEBVIEW2LOADERLIB_VERSION_BUILD   = 22;
+  WEBVIEW2LOADERLIB_VERSION_RELEASE = 1462;
+  WEBVIEW2LOADERLIB_VERSION_BUILD   = 37;
 
   // For full API compatibility, WebView4Delphi requires the same
   // WebView2 Runtime version mentioned in the release notes :
   // https://docs.microsoft.com/en-us/microsoft-edge/webview2/release-notes
-  CHROMIUM_VERSION_MAJOR   = 105;
+  CHROMIUM_VERSION_MAJOR   = 108;
   CHROMIUM_VERSION_MINOR   = 0;
-  CHROMIUM_VERSION_RELEASE = 1343;
-  CHROMIUM_VERSION_BUILD   = 22;
+  CHROMIUM_VERSION_RELEASE = WEBVIEW2LOADERLIB_VERSION_RELEASE;
+  CHROMIUM_VERSION_BUILD   = WEBVIEW2LOADERLIB_VERSION_BUILD;
 
   CRLF = #13 + #10;
 
-  {$IFDEF FPC}
+  {$IF NOT DECLARED(USER_DEFAULT_SCREEN_DPI)}
   USER_DEFAULT_SCREEN_DPI = 96;
-  {$ENDIF}
+  {$IFEND}
 
   // These constants are declared in the "Windows" unit but
   // some old Delphi versions don't have them.

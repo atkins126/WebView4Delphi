@@ -15,6 +15,8 @@ unit uWVTypeLibrary;
 
 {$IFDEF FPC}{$MODE Delphi}{$ENDIF}
 
+{$I webview2.inc}
+
 
 // ************************************************************************ //
 // WARNING                                                                    
@@ -28,10 +30,10 @@ unit uWVTypeLibrary;
 // ************************************************************************ //
 
 // $Rev: 98336 $
-// File generated on 09/09/2022 20:38:06 from Type Library described below.
+// File generated on 06/12/2022 11:28:25 from Type Library described below.
 
 // ************************************************************************  //
-// Type Lib: T:\microsoft.web.webview2.1.0.1343.22.nupkg_FILES\WebView2.tlb (1)
+// Type Lib: S:\microsoft.web.webview2.1.0.1462.37.nupkg_FILES\WebView2.tlb (1)
 // LIBID: {26D34152-879F-4065-BEA2-3DAA2CFADFB8}
 // LCID: 0
 // Helpfile: 
@@ -55,10 +57,10 @@ unit uWVTypeLibrary;
 interface
 
 uses
-  {$IFDEF FPC}
-  Windows, Classes, Variants, Graphics, ActiveX;
-  {$ELSE}
+  {$IFDEF DELPHI16_UP}
   Winapi.Windows, System.Classes, System.Variants, System.Win.StdVCL, Vcl.Graphics, Winapi.ActiveX;
+  {$ELSE}
+  Windows, Classes, Variants, Graphics, ActiveX;
   {$ENDIF}
 
   
@@ -188,6 +190,7 @@ const
   IID_ICoreWebView2PointerInfo: TGUID = '{E6995887-D10D-4F5D-9359-4CE46E4F96B9}';
   IID_ICoreWebView2CursorChangedEventHandler: TGUID = '{9DA43CCC-26E1-4DAD-B56C-D8961C94C571}';
   IID_ICoreWebView2CompositionController2: TGUID = '{0B6A3D24-49CB-4806-BA20-B5E0734A7B26}';
+  IID_ICoreWebView2CompositionController3: TGUID = '{9570570E-4D76-4361-9EE1-F04D0DBDFB1E}';
   IID_ICoreWebView2Controller2: TGUID = '{C979903E-D4CA-4228-92EB-47EE3FA96EAB}';
   IID_ICoreWebView2Controller3: TGUID = '{F9614724-5D2B-41DC-AEF7-73D62B51543B}';
   IID_ICoreWebView2RasterizationScaleChangedEventHandler: TGUID = '{9C98C8B1-AC53-427E-A345-3049B5524BBE}';
@@ -552,6 +555,7 @@ const
   COREWEBVIEW2_PROCESS_FAILED_REASON_CRASHED = $00000003;
   COREWEBVIEW2_PROCESS_FAILED_REASON_LAUNCH_FAILED = $00000004;
   COREWEBVIEW2_PROCESS_FAILED_REASON_OUT_OF_MEMORY = $00000005;
+  COREWEBVIEW2_PROCESS_FAILED_REASON_PROFILE_DELETED = $00000006;
 
 // Constants for enum COREWEBVIEW2_BROWSING_DATA_KINDS
 type
@@ -597,6 +601,8 @@ const
   COREWEBVIEW2_PDF_TOOLBAR_ITEMS_BOOKMARKS = $00000100;
   COREWEBVIEW2_PDF_TOOLBAR_ITEMS_PAGE_SELECTOR = $00000200;
   COREWEBVIEW2_PDF_TOOLBAR_ITEMS_SEARCH = $00000400;
+  COREWEBVIEW2_PDF_TOOLBAR_ITEMS_FULL_SCREEN = $00000800;
+  COREWEBVIEW2_PDF_TOOLBAR_ITEMS_MORE_SETTINGS = $00001000;
 
 // Constants for enum COREWEBVIEW2_FAVICON_IMAGE_FORMAT
 type
@@ -721,6 +727,7 @@ type
   ICoreWebView2PointerInfo = interface;
   ICoreWebView2CursorChangedEventHandler = interface;
   ICoreWebView2CompositionController2 = interface;
+  ICoreWebView2CompositionController3 = interface;
   ICoreWebView2Controller2 = interface;
   ICoreWebView2Controller3 = interface;
   ICoreWebView2RasterizationScaleChangedEventHandler = interface;
@@ -2487,6 +2494,21 @@ type
   end;
 
 // *********************************************************************//
+// Interface: ICoreWebView2CompositionController3
+// Flags:     (0)
+// GUID:      {9570570E-4D76-4361-9EE1-F04D0DBDFB1E}
+// *********************************************************************//
+  ICoreWebView2CompositionController3 = interface(ICoreWebView2CompositionController2)
+    ['{9570570E-4D76-4361-9EE1-F04D0DBDFB1E}']
+    function DragEnter(const dataObject: IDataObject; keyState: LongWord; point: tagPOINT; 
+                       out effect: LongWord): HResult; stdcall;
+    function DragLeave: HResult; stdcall;
+    function DragOver(keyState: LongWord; point: tagPOINT; out effect: LongWord): HResult; stdcall;
+    function Drop(const dataObject: IDataObject; keyState: LongWord; point: tagPOINT; 
+                  out effect: LongWord): HResult; stdcall;
+  end;
+
+// *********************************************************************//
 // Interface: ICoreWebView2Controller2
 // Flags:     (0)
 // GUID:      {C979903E-D4CA-4228-92EB-47EE3FA96EAB}
@@ -3141,10 +3163,10 @@ type
 implementation
 
 uses
-  {$IFDEF FPC}
-  ComObj;
+  {$IFDEF DELPHI16_UP}  
+  System.Win.ComObj;    
   {$ELSE}
-  System.Win.ComObj;
+  ComObj;
   {$ENDIF}
 
 

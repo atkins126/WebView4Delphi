@@ -2,22 +2,28 @@ unit uWVTypes;
 
 {$IFDEF FPC}{$MODE Delphi}{$ENDIF}
 
+{$I webview2.inc}
+
 interface
 
 uses
-  {$IFDEF FPC}
-  Classes,
-  {$ELSE}
+  {$IFDEF DELPHI16_UP}
   System.Classes,
+  {$ELSE}
+  Classes,
   {$ENDIF}
   uWVTypeLibrary;
 
 type
-{$IFDEF FPC}
-  wvstring = type UnicodeString;
-{$ELSE}
+  {$IFDEF DELPHI12_UP}
   wvstring = type string;
-{$ENDIF}
+  {$ELSE}
+    {$IFDEF FPC}
+    wvstring = type UnicodeString;
+    {$ELSE}
+    wvstring = type WideString;
+    {$ENDIF}
+  {$ENDIF}
 
   TWVKeyEventKind                         = type COREWEBVIEW2_KEY_EVENT_KIND;
   TWVMoveFocusReason                      = type COREWEBVIEW2_MOVE_FOCUS_REASON;
@@ -217,10 +223,10 @@ type
                         ecYankAndSelect);
 
   TFileVersionInfo = record
-    MajorVer : uint16;
-    MinorVer : uint16;
-    Release  : uint16;
-    Build    : uint16;
+    MajorVer : word;
+    MinorVer : word;
+    Release  : word;
+    Build    : word;
   end;
 
   TWVWindowFeatures = record

@@ -7,10 +7,10 @@ unit uWVMiscFunctions;
 interface
 
 uses
-  {$IFDEF FPC}
-  Windows, Classes, ActiveX, SysUtils, Graphics, Math, Controls, StrUtils,
-  {$ELSE}
+  {$IFDEF DELPHI16_UP}
   Winapi.Windows, System.Classes, System.UITypes, Winapi.ActiveX, System.SysUtils, System.Math, System.StrUtils,
+  {$ELSE}
+  Windows, Classes, ActiveX, SysUtils, Graphics, Math, Controls, StrUtils,
   {$ENDIF}
   uWVConstants, uWVTypeLibrary, uWVTypes;
 
@@ -40,6 +40,7 @@ function DelphiColorToCoreWebViewColor(const aColor : TColor) : COREWEBVIEW2_COL
 function TryIso8601BasicToDate(const Str: string; out Date: TDateTime): Boolean;
 function JSONUnescape(const Source: wvstring): wvstring;
 function JSONEscape(const Source: wvstring): wvstring;
+function CustomURLDecode(const aEncodedStr : wvstring) : AnsiString;
 
 function CustomPathIsRelative(const aPath : wvstring) : boolean;
 function CustomPathCanonicalize(const aOriginalPath : wvstring; var aCanonicalPath : wvstring) : boolean;
@@ -57,6 +58,17 @@ function PathIsUNCAnsi(pszPath: LPCSTR): BOOL; stdcall; external SHLWAPIDLL name
 function PathIsUNCUnicode(pszPath: LPCWSTR): BOOL; stdcall; external SHLWAPIDLL name 'PathIsUNCW';
 function PathIsURLAnsi(pszPath: LPCSTR): BOOL; stdcall; external SHLWAPIDLL name 'PathIsURLA';
 function PathIsURLUnicode(pszPath: LPCWSTR): BOOL; stdcall; external SHLWAPIDLL name 'PathIsURLW';
+
+{$IFNDEF DELPHI12_UP}
+const
+  GWLP_WNDPROC    = GWL_WNDPROC;
+  GWLP_HWNDPARENT = GWL_HWNDPARENT;
+  {$IFDEF WIN64}
+    function SetWindowLongPtr(hWnd: HWND; nIndex: Integer; dwNewLong: int64): int64; stdcall; external user32 name 'SetWindowLongPtrW';
+  {$ELSE}
+    function SetWindowLongPtr(hWnd: HWND; nIndex: Integer; dwNewLong: LongInt): LongInt; stdcall; external user32 name 'SetWindowLongW';
+  {$ENDIF}
+{$ENDIF}
 
 implementation
 
@@ -192,7 +204,7 @@ end;
 procedure OutputDebugMessage(const aMessage : string);
 begin
   {$IFDEF DEBUG}
-  OutputDebugString({$IFDEF FPC}PAnsiChar{$ELSE}PWideChar{$ENDIF}(aMessage + #0));
+  OutputDebugString({$IFNDEF DELPHI16_UP}PAnsiChar{$ELSE}PWideChar{$ENDIF}(aMessage + #0));
   {$ENDIF}
 end;
 
@@ -543,7 +555,7 @@ begin
 
   if not(Result) then
     begin
-      TempMessage := 'The QueryInterface call for ' + aGUID.ToString + ' failed. ' +
+      TempMessage := 'The QueryInterface call for ' + GUIDToString(aGUID) + ' failed. ' +
                      'Error code : 0x' + {$IFDEF FPC}UTF8Decode({$ENDIF}inttohex(cardinal(TempResult), 8){$IFDEF FPC}){$ENDIF};
       GlobalWebView2Loader.AppendErrorLog(TempMessage);
     end;
@@ -627,13 +639,53 @@ begin
 
   while (i <= length(aParameter)) do
     begin
+      {$IFDEF DELPHI12_UP}
       if CharInSet(aParameter[i], RESERVEDCHARS) then
+      {$ELSE}
+      if (char(aParameter[i]) in RESERVEDCHARS) then
+      {$ENDIF}
         Result := Result + '\' + aParameter[i]
        else
         Result := Result + aParameter[i];
 
       inc(i);
     end;
+end;
+
+function CustomURLDecode(const aEncodedStr : wvstring) : AnsiString;
+const
+  HEXCHARS = ['A'..'F', 'a'..'z', '0'..'9'];
+var
+  i, TempLen : integer;
+begin
+  Result  := '';
+  i       := 1;
+  TempLen := length(aEncodedStr);
+
+  while (i <= TempLen) do
+    if (aEncodedStr[i] = '+') then
+      begin
+        Result := Result + ' ';
+        inc(i);
+      end
+     else
+      if (aEncodedStr[i] = '%') then
+        begin
+          if (i + 2 <= TempLen) and
+             {$IFDEF DELPHI12_UP}
+             CharInSet(aEncodedStr[i + 1], HEXCHARS) and CharInSet(aEncodedStr[i + 2], HEXCHARS) then
+             {$ELSE}
+             (char(aEncodedStr[i + 1]) in HEXCHARS) and (char(aEncodedStr[i + 2]) in HEXCHARS) then
+             {$ENDIF}
+            Result := Result + AnsiChar(StrToInt('$' + char(aEncodedStr[i + 1]) + char(aEncodedStr[i + 2])));
+
+          inc(i, 3);
+        end
+       else
+        begin
+          Result := Result + AnsiChar(aEncodedStr[i]);
+          inc(i);
+        end;
 end;
 
 end.

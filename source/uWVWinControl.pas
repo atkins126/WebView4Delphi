@@ -2,13 +2,15 @@ unit uWVWinControl;
 
 {$IFDEF FPC}{$MODE Delphi}{$ENDIF}
 
+{$I webview2.inc}
+
 interface
 
 uses
-  {$IFDEF FPC}
-  Windows, Classes, Controls, Graphics;
-  {$ELSE}
+  {$IFDEF DELPHI16_UP}
   WinApi.Windows, System.Classes, Vcl.Controls, Vcl.Graphics;
+  {$ELSE}
+  Windows, Classes, Controls, Graphics;
   {$ENDIF}
 
 type
@@ -46,11 +48,16 @@ type
       property  OnStartDrag;
       property  OnEndDrag;
       {$IFNDEF FPC}
+      property  OnCanResize;
+      {$ENDIF}
+      {$IFDEF DELPHI14_UP}
       property  Touch;
       property  OnGesture;
       {$ENDIF}
       property  DoubleBuffered;
+      {$IFDEF DELPHI12_UP}
       property  ParentDoubleBuffered;
+      {$ENDIF}
   end;
 
 implementation

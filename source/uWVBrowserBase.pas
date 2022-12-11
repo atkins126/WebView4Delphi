@@ -7,13 +7,13 @@ unit uWVBrowserBase;
 interface
 
 uses
-  {$IFDEF FPC}
-    Windows, Classes, Types, SysUtils, Graphics, ActiveX, Messages, httpprotocol,
-    CommCtrl, fpjson, jsonparser,
-  {$ELSE}
+  {$IFDEF DELPHI16_UP}
     Winapi.Windows, System.Classes, System.Types, System.UITypes, System.SysUtils,
     Winapi.ActiveX, Winapi.Messages, {$IFDEF DELPHI20_UP}System.JSON,{$ENDIF}
     {$IFDEF DELPHI21_UP}System.NetEncoding,{$ELSE}Web.HTTPApp,{$ENDIF}
+  {$ELSE}
+    Windows, Classes, Types, SysUtils, Graphics, ActiveX, Messages,
+    {$IFDEF FPC}httpprotocol, CommCtrl, fpjson, jsonparser,{$ENDIF}
   {$ENDIF}
   uWVTypes, uWVConstants, uWVTypeLibrary, uWVLibFunctions, uWVLoader,
   uWVInterfaces, uWVEvents, uWVCoreWebView2, uWVCoreWebView2Settings,
@@ -259,6 +259,7 @@ type
       procedure ReplaceWndProcs;
 
       function  ExtractJSONData(const aJSON: wvstring; var aData: wvstring) : boolean; virtual;
+      function  ExtractEncodedJSON(const aJSON: wvstring): wvstring;
 
       function EnvironmentCompletedHandler_Invoke(errorCode: HRESULT; const createdEnvironment: ICoreWebView2Environment): HRESULT;
       function ControllerCompletedHandler_Invoke(errorCode: HRESULT; const createdController: ICoreWebView2Controller): HRESULT;
@@ -500,6 +501,10 @@ type
 
       function    SendMouseInput(aEventKind : TWVMouseEventKind; aVirtualKeys : TWVMouseEventVirtualKeys; aMouseData : cardinal; aPoint : TPoint) : boolean;
       function    SendPointerInput(aEventKind : TWVPointerEventKind; const aPointerInfo : ICoreWebView2PointerInfo) : boolean;
+      function    DragEnter(const dataObject: IDataObject; keyState: LongWord; point: TPoint; out effect: LongWord) : HResult;
+      function    DragLeave : HResult;
+      function    DragOver(keyState: LongWord; point: TPoint; out effect: LongWord) : HResult;
+      function    Drop(const dataObject: IDataObject; keyState: LongWord; point: TPoint; out effect: LongWord) : HResult;
 
       function    ClearBrowsingData(dataKinds: TWVBrowsingDataKinds): boolean;
       function    ClearBrowsingDataInTimeRange(dataKinds: TWVBrowsingDataKinds; const startTime, endTime: TDateTime): boolean;
@@ -1973,6 +1978,28 @@ end;
 {$ENDIF}
 {$ENDIF}
 
+function TWVBrowserBase.ExtractEncodedJSON(const aJSON: wvstring): wvstring;
+begin
+  Result := '';
+
+  {$IFDEF DELPHI21_UP}
+  Result := TNetEncoding.URL.Decode(aJSON);
+  {$ELSE}
+    {$IFDEF FPC}
+    Result := UTF8Decode(HTTPDecode(UTF8Encode(aJSON)));
+    {$ELSE}
+      {$IFDEF DELPHI12_UP}
+      Result := UTF8ToWideString(CustomURLDecode(aJSON));
+      {$ELSE}
+      Result := UTF8Decode(CustomURLDecode(aJSON));
+      {$ENDIF}
+    {$ENDIF}
+  {$ENDIF}
+
+  if (length(Result) > 0) and (Result[1] = '"') and (Result[length(Result)] = '"') then
+    Result := copy(Result, 2, length(Result) - 2);
+end;
+
 function TWVBrowserBase.AddScriptToExecuteOnDocumentCreatedCompletedHandler_Invoke(errorCode: HResult; id: PWideChar): HRESULT;
 begin
   Result := S_OK;
@@ -2200,41 +2227,53 @@ var
   TempHResult     : HRESULT;
   TempOptions     : TCoreWebView2ControllerOptions;
   TempOptionsIntf : ICoreWebView2ControllerOptions;
+  TempOldWinVer   : boolean;
 begin
-  if FCoreWebView2Environment.CreateCoreWebView2ControllerOptions(TempOptionsIntf) then
-    try
-      TempOptions                        := TCoreWebView2ControllerOptions.Create(TempOptionsIntf);
-      TempOptions.ProfileName            := FProfileName;
-      TempOptions.IsInPrivateModeEnabled := FIsInPrivateModeEnabled;
+  Result        := False;
+  TempOldWinVer := False;
+  TempHResult   := S_OK;
 
-      Result := FCoreWebView2Environment.CreateCoreWebView2CompositionControllerWithOptions(FWindowParentHandle,
-                                                                                            TempOptions.BaseIntf,
-                                                                                            self,
-                                                                                            TempHResult);
-    finally
-      FreeAndNil(TempOptions);
-      TempOptionsIntf := nil;
-    end
+  if (Win32MajorVersion < 10) then
+    TempOldWinVer := True
    else
-    begin
-      FProfileName            := '';
-      FIsInPrivateModeEnabled := False;
+    if FCoreWebView2Environment.CreateCoreWebView2ControllerOptions(TempOptionsIntf) then
+      try
+        TempOptions                        := TCoreWebView2ControllerOptions.Create(TempOptionsIntf);
+        TempOptions.ProfileName            := FProfileName;
+        TempOptions.IsInPrivateModeEnabled := FIsInPrivateModeEnabled;
 
-      Result := FCoreWebView2Environment.CreateCoreWebView2CompositionController(FWindowParentHandle,
-                                                                                 self,
-                                                                                 TempHResult);
-    end;
+        Result := FCoreWebView2Environment.CreateCoreWebView2CompositionControllerWithOptions(FWindowParentHandle,
+                                                                                              TempOptions.BaseIntf,
+                                                                                              self,
+                                                                                              TempHResult);
+      finally
+        FreeAndNil(TempOptions);
+        TempOptionsIntf := nil;
+      end
+     else
+      begin
+        FProfileName            := '';
+        FIsInPrivateModeEnabled := False;
+
+        Result := FCoreWebView2Environment.CreateCoreWebView2CompositionController(FWindowParentHandle,
+                                                                                   self,
+                                                                                   TempHResult);
+      end;
 
   if not(Result) then
     begin
-      TempError := 'There was an error creating the composition controller. (3)' + CRLF +
-                   'Error code : 0x' +
-                   {$IFDEF FPC}
-                   UTF8Decode(inttohex(TempHResult, 8))
-                   {$ELSE}
-                   inttohex(TempHResult, 8)
-                   {$ENDIF}
-                    + CRLF + CompositionControllerCreationErrorToString(TempHResult);
+      TempError := 'There was an error creating the composition controller. (3)' + CRLF;
+
+      if TempOldWinVer then
+        TempError := TempError + 'The composition controller requires at least Windows 10 or Windows Server 2016.'
+       else
+        TempError := TempError + 'Error code : 0x' +
+                     {$IFDEF FPC}
+                     UTF8Decode(inttohex(TempHResult, 8))
+                     {$ELSE}
+                     inttohex(TempHResult, 8)
+                     {$ENDIF}
+                      + CRLF + CompositionControllerCreationErrorToString(TempHResult);
 
       doOnInitializationError(TempHResult, TempError);
     end;
@@ -2560,10 +2599,10 @@ begin
   if Initialized then
     Result := FCoreWebView2Controller.DefaultBackgroundColor
    else
-    {$IFDEF FPC}
-    Result := clNone;
-    {$ELSE}
+    {$IFDEF DELPHI16_UP}
     Result := TColors.SysNone;  // clNone
+    {$ELSE}
+    Result := clNone;
     {$ENDIF}
 end;
 
@@ -2866,7 +2905,11 @@ begin
 
   while (i <= length(aValue)) do
     begin
+      {$IFDEF DELPHI12_UP}
       if CharInSet(aValue[i], PROFILENAME_VALID_CHARS) then
+      {$ELSE}
+      if (Char(aValue[i]) in PROFILENAME_VALID_CHARS) then
+      {$ENDIF}
         TempValue := TempValue + aValue[i];
 
       inc(i);
@@ -2875,7 +2918,11 @@ begin
   TempValue := copy(TempValue, 1, PROFILENAME_MAX_LENGTH);
 
   while (length(TempValue) > 0) and
+        {$IFDEF DELPHI12_UP}
         CharInSet(TempValue[length(TempValue)], PROFILENAME_INVALID_ENDCHARS) do
+        {$ELSE}
+        (Char(TempValue[length(TempValue)]) in PROFILENAME_INVALID_ENDCHARS) do
+        {$ENDIF}
     TempValue := copy(TempValue, 1, pred(length(TempValue)));
 
   FProfileName := TempValue;
@@ -3459,75 +3506,23 @@ end;
 
 procedure TWVBrowserBase.doOnRetrieveHTMLCompleted(aErrorCode: HRESULT; const aResultObjectAsJson: wvstring);
 var
-  TempHTML   : wvstring;
-  TempResult : boolean;
-  TempLen    : integer;
+  TempResult : wvstring;
 begin
-  if assigned(FOnRetrieveHTMLCompleted) then
+  if succeeded(aErrorCode) and assigned(FOnRetrieveHTMLCompleted) then
     begin
-      TempHTML   := '';
-      TempResult := False;
-
-      if succeeded(aErrorCode) then
-        begin
-          {$IFDEF DELPHI21_UP}
-            TempHTML := TNetEncoding.URL.Decode(aResultObjectAsJson);
-          {$ELSE}
-            {$IFDEF FPC}
-            TempHTML := UTF8Decode(HTTPDecode(UTF8Encode(aResultObjectAsJson)));
-            {$ELSE}
-            TempHTML := HTMLDecode(aResultObjectAsJson);
-            {$ENDIF}
-          {$ENDIF}
-          TempLen := length(TempHTML);
-
-          if (TempLen > 0) then
-            begin
-              if (TempHTML[1] = '"') and (TempHTML[TempLen] = '"') then
-                TempHTML := copy(TempHTML, 2, TempLen - 2);
-
-              TempResult := True;
-            end;
-        end;
-
-      FOnRetrieveHTMLCompleted(self, TempResult, TempHTML);
+      TempResult := ExtractEncodedJSON(aResultObjectAsJson);
+      FOnRetrieveHTMLCompleted(self, length(TempResult) > 0, TempResult);
     end;
 end;
 
 procedure TWVBrowserBase.doOnRetrieveTextCompleted(aErrorCode: HRESULT; const aResultObjectAsJson: wvstring);
 var
-  TempText   : wvstring;
-  TempResult : boolean;
-  TempLen    : integer;
+  TempResult : wvstring;
 begin
-  if assigned(FOnRetrieveTextCompleted) then
+  if succeeded(aErrorCode) and assigned(FOnRetrieveTextCompleted) then
     begin
-      TempText   := '';
-      TempResult := False;
-
-      if succeeded(aErrorCode) then
-        begin
-          {$IFDEF DELPHI21_UP}
-            TempText := TNetEncoding.URL.Decode(aResultObjectAsJson);
-          {$ELSE}
-            {$IFDEF FPC}
-            TempText := UTF8Decode(HTTPDecode(UTF8Encode(aResultObjectAsJson)));
-            {$ELSE}
-            TempText := HTMLDecode(aResultObjectAsJson);
-            {$ENDIF}
-          {$ENDIF}
-          TempLen := length(TempText);
-
-          if (TempLen > 0) then
-            begin
-              if (TempText[1] = '"') and (TempText[TempLen] = '"') then
-                TempText := copy(TempText, 2, TempLen - 2);
-
-              TempResult := True;
-            end;
-        end;
-
-      FOnRetrieveTextCompleted(self, TempResult, TempText);
+      TempResult := ExtractEncodedJSON(aResultObjectAsJson);
+      FOnRetrieveTextCompleted(self, length(TempResult) > 0, TempResult);
     end;
 end;
 
@@ -3952,8 +3947,8 @@ end;
 // This function is asynchronous and it triggers the TWVBrowserBase.OnSimulateKeyEventCompleted event several times
 function TWVBrowserBase.KeyboardShortcutSearch : boolean;
 begin
-  Result := SimulateKeyEvent(TWV2KeyEventType.ketRawKeyDown, $100, VK_F3, integer($003D0001)) and
-            SimulateKeyEvent(TWV2KeyEventType.ketKeyUp,      $100, VK_F3, integer($C03D0001));
+  Result := SimulateKeyEvent(ketRawKeyDown, $100, VK_F3, integer($003D0001)) and
+            SimulateKeyEvent(ketKeyUp,      $100, VK_F3, integer($C03D0001));
 end;
 
 // Simulate that SHIFT + F5 keys were pressed and released
@@ -3962,10 +3957,10 @@ end;
 // This function is asynchronous and it triggers the TWVBrowserBase.OnSimulateKeyEventCompleted event several times
 function TWVBrowserBase.KeyboardShortcutRefreshIgnoreCache : boolean;
 begin
-  Result := SimulateKeyEvent(TWV2KeyEventType.ketRawKeyDown, $502, VK_Shift, integer($002A0001)) and
-            SimulateKeyEvent(TWV2KeyEventType.ketRawKeyDown, $102, VK_F5,    integer($003F0001)) and
-            SimulateKeyEvent(TWV2KeyEventType.ketKeyUp,      $102, VK_F5,    integer($C03F0001)) and
-            SimulateKeyEvent(TWV2KeyEventType.ketKeyUp,      $100, VK_Shift, integer($C02A0001));
+  Result := SimulateKeyEvent(ketRawKeyDown, $502, VK_Shift, integer($002A0001)) and
+            SimulateKeyEvent(ketRawKeyDown, $102, VK_F5,    integer($003F0001)) and
+            SimulateKeyEvent(ketKeyUp,      $102, VK_F5,    integer($C03F0001)) and
+            SimulateKeyEvent(ketKeyUp,      $100, VK_Shift, integer($C02A0001));
 end;
 
 function TWVBrowserBase.SendMouseInput(aEventKind : TWVMouseEventKind; aVirtualKeys : TWVMouseEventVirtualKeys; aMouseData : cardinal; aPoint : TPoint) : boolean;
@@ -3980,6 +3975,56 @@ begin
   Result := FUseCompositionController and
             Initialized and
             FCoreWebView2CompositionController.SendPointerInput(aEventKind, aPointerInfo);
+end;
+
+function TWVBrowserBase.DragEnter(const dataObject: IDataObject; keyState: LongWord; point: TPoint; out effect: LongWord) : HResult;
+var
+  TempPoint : tagPoint;
+begin
+  Result := S_OK;
+  effect := DROPEFFECT_NONE;
+
+  TempPoint.x := point.X;
+  TempPoint.y := point.Y;
+
+  if FUseCompositionController and Initialized then
+    Result := FCoreWebView2CompositionController.DragEnter(dataObject, keyState, TempPoint, effect);
+end;
+
+function TWVBrowserBase.DragLeave : HResult;
+begin
+  Result := S_OK;
+
+  if FUseCompositionController and Initialized then
+    Result := FCoreWebView2CompositionController.DragLeave;
+end;
+
+function TWVBrowserBase.DragOver(keyState: LongWord; point: TPoint; out effect: LongWord) : HResult;
+var
+  TempPoint : tagPoint;
+begin
+  Result := S_OK;
+  effect := DROPEFFECT_NONE;
+
+  TempPoint.x := point.X;
+  TempPoint.y := point.Y;
+
+  if FUseCompositionController and Initialized then
+    Result := FCoreWebView2CompositionController.DragOver(keyState, TempPoint, effect);
+end;
+
+function TWVBrowserBase.Drop(const dataObject: IDataObject; keyState: LongWord; point: TPoint; out effect: LongWord) : HResult;
+var
+  TempPoint : tagPoint;
+begin
+  Result := S_OK;
+  effect := DROPEFFECT_NONE;
+
+  TempPoint.x := point.X;
+  TempPoint.y := point.Y;
+
+  if FUseCompositionController and Initialized then
+    Result := FCoreWebView2CompositionController.Drop(dataObject, keyState, TempPoint, effect);
 end;
 
 function TWVBrowserBase.ClearBrowsingData(dataKinds: TWVBrowsingDataKinds): boolean;

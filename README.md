@@ -3,9 +3,9 @@ WebView4Delphi is an open source project created by Salvador Díaz Fau to embed 
 
 WebView4Delphi only supports Windows. If you need to embed a web browser in Linux, Windows or MacOS consider using [CEF4Delphi](https://github.com/salvadordf/CEF4Delphi) instead. 
 
-WebView4Delphi uses the [Microsoft Edge WebView2 Runtime](https://docs.microsoft.com/en-us/microsoft-edge/webview2/) and [Microsoft.Web.WebView2 NuGet package version 1.0.1343.22](https://www.nuget.org/packages/Microsoft.Web.WebView2) to embed a web browser.
+WebView4Delphi uses the [Microsoft Edge WebView2 Runtime](https://docs.microsoft.com/en-us/microsoft-edge/webview2/) and [Microsoft.Web.WebView2 NuGet package version 1.0.1462.37](https://www.nuget.org/packages/Microsoft.Web.WebView2) to embed a web browser.
 
-WebView4Delphi was developed and tested on Delphi 11.2, Delphi XE2 and Lazarus 2.2.4/FPC 3.2.2. 
+WebView4Delphi was developed and tested on Delphi 11.2, Delphi XE2, Delphi 7 and Lazarus 2.2.4/FPC 3.2.2. 
 
 WebView4Delphi includes VCL, FireMonkey (FMX) and Lazarus components.
 
@@ -25,6 +25,10 @@ If you find this project useful, please consider making a donation.
 You can also support this project with Patreon.
 
 <a href="https://patreon.com/salvadordf"><img src="https://c5.patreon.com/external/logo/become_a_patron_button.png" alt="Patreon donate button" /></a>
+
+You can also support this project with Liberapay.
+
+<a href="https://liberapay.com/salvadordf/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
 
 ## Related projects 
 * [CEF4Delphi](https://github.com/salvadordf/CEF4Delphi) 
