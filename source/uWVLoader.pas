@@ -25,6 +25,7 @@ type
       FOnInitializationError                  : TLoaderNotifyEvent;
       FOnBrowserProcessExited                 : TLoaderBrowserProcessExitedEvent;
       FOnProcessInfosChanged                  : TLoaderProcessInfosChangedEvent;
+      FOnGetCustomSchemes                     : TLoaderGetCustomSchemesEvent;
       FLibHandle                              : THandle;
       FErrorLog                               : TStringList;
       FError                                  : int64;
@@ -47,6 +48,8 @@ type
       FTargetCompatibleBrowserVersion         : wvstring;
       FAllowSingleSignOnUsingOSPrimaryAccount : boolean;
       FExclusiveUserDataFolderAccess          : boolean;
+      FCustomCrashReportingEnabled            : boolean;
+      FEnableTrackingPrevention               : boolean;
 
       // Fields used to set command line switches
       FEnableGPU                              : boolean;
@@ -71,10 +74,12 @@ type
       FAllowRunningInsecureContent            : boolean;
       FDisableBackgroundNetworking            : boolean;
       FRemoteDebuggingPort                    : integer;
+      FRemoteAllowOrigins                     : wvstring;
       FDebugLog                               : TWV2DebugLog;
       FDebugLogLevel                          : TWV2DebugLogLevel;
       FJavaScriptFlags                        : wvstring;
       FDisableEdgePitchNotification           : boolean;
+      FTreatInsecureOriginAsSecure            : wvstring;
 
       function  GetAvailableBrowserVersion : wvstring;
       function  GetInitialized : boolean;
@@ -88,6 +93,7 @@ type
       function  GetCustomCommandLineSwitches : wvstring;
       function  GetInstalledRuntimeVersion : wvstring;
       function  GetErrorMessage : wvstring;
+      function  GetFailureReportFolderPath : wvstring;
 
       function  CreateEnvironment : boolean;
       procedure DestroyEnvironment;
@@ -114,6 +120,7 @@ type
       procedure doOnNewBrowserVersionAvailable(const aEnvironment: ICoreWebView2Environment); virtual;
       procedure doOnBrowserProcessExitedEvent(const sender: ICoreWebView2Environment; const args: ICoreWebView2BrowserProcessExitedEventArgs); virtual;
       procedure doProcessInfosChangedEvent(const sender: ICoreWebView2Environment); virtual;
+      procedure doOnGetCustomSchemes(var aSchemeRegistrations : TWVCustomSchemeRegistrationArray); virtual;
 
       function  EnvironmentCompletedHandler_Invoke(errorCode: HResult; const createdEnvironment: ICoreWebView2Environment): HRESULT;
       function  NewBrowserVersionAvailableEventHandler_Invoke(const sender: ICoreWebView2Environment; const args: IUnknown): HRESULT;
@@ -159,6 +166,8 @@ type
       property TargetCompatibleBrowserVersion         : wvstring                           read FTargetCompatibleBrowserVersion          write FTargetCompatibleBrowserVersion;         // ICoreWebView2EnvironmentOptions.get_TargetCompatibleBrowserVersion
       property AllowSingleSignOnUsingOSPrimaryAccount : boolean                            read FAllowSingleSignOnUsingOSPrimaryAccount  write FAllowSingleSignOnUsingOSPrimaryAccount; // ICoreWebView2EnvironmentOptions.get_AllowSingleSignOnUsingOSPrimaryAccount
       property ExclusiveUserDataFolderAccess          : boolean                            read FExclusiveUserDataFolderAccess           write FExclusiveUserDataFolderAccess;          // ICoreWebView2EnvironmentOptions2.Get_ExclusiveUserDataFolderAccess
+      property CustomCrashReportingEnabled            : boolean                            read FCustomCrashReportingEnabled             write FCustomCrashReportingEnabled;            // ICoreWebView2EnvironmentOptions3.Get_IsCustomCrashReportingEnabled
+      property EnableTrackingPrevention               : boolean                            read FEnableTrackingPrevention                write FEnableTrackingPrevention;               // ICoreWebView2EnvironmentOptions5.Get_EnableTrackingPrevention
 
       // Properties used to set command line switches
       property EnableGPU                              : boolean                            read FEnableGPU                               write FEnableGPU;                        // --enable-gpu-plugin
@@ -184,10 +193,13 @@ type
       property DisableBackgroundNetworking            : boolean                            read FDisableBackgroundNetworking             write FDisableBackgroundNetworking;      // --disable-background-networking
       property ForcedDeviceScaleFactor                : single                             read FForcedDeviceScaleFactor                 write FForcedDeviceScaleFactor;          // --force-device-scale-factor
       property RemoteDebuggingPort                    : integer                            read FRemoteDebuggingPort                     write FRemoteDebuggingPort;              // --remote-debugging-port
+      property RemoteAllowOrigins                     : wvstring                           read FRemoteAllowOrigins                      write FRemoteAllowOrigins;               // --remote-allow-origins
       property DebugLog                               : TWV2DebugLog                       read FDebugLog                                write FDebugLog;                         // --enable-logging
       property DebugLogLevel                          : TWV2DebugLogLevel                  read FDebugLogLevel                           write FDebugLogLevel;                    // --log-level
       property JavaScriptFlags                        : wvstring                           read FJavaScriptFlags                         write FJavaScriptFlags;                  // --js-flags
       property DisableEdgePitchNotification           : boolean                            read FDisableEdgePitchNotification            write FDisableEdgePitchNotification;     // --disable-features=msEdgeRose
+      property TreatInsecureOriginAsSecure            : wvstring                           read FTreatInsecureOriginAsSecure             write FTreatInsecureOriginAsSecure;      // --unsafely-treat-insecure-origin-as-secure
+
 
       // ICoreWebView2Environment3 properties
       property SupportsCompositionController          : boolean                            read GetSupportsCompositionController;
@@ -198,9 +210,13 @@ type
       // ICoreWebView2Environment10 properties
       property SupportsControllerOptions              : boolean                            read GetSupportsControllerOptions;
 
+      // ICoreWebView2Environment11 properties
+      property FailureReportFolderPath                : wvstring                           read GetFailureReportFolderPath;
+
       // Custom events
       property OnEnvironmentCreated                   : TLoaderNotifyEvent                      read FOnEnvironmentCreated                    write FOnEnvironmentCreated;
       property OnInitializationError                  : TLoaderNotifyEvent                      read FOnInitializationError                   write FOnInitializationError;
+      property OnGetCustomSchemes                     : TLoaderGetCustomSchemesEvent            read FOnGetCustomSchemes                      write FOnGetCustomSchemes;
 
       // ICoreWebView2Environment events
       property OnNewBrowserVersionAvailable           : TLoaderNewBrowserVersionAvailableEvent  read FOnNewBrowserVersionAvailable            write FOnNewBrowserVersionAvailable;
@@ -239,7 +255,7 @@ implementation
 
 uses
   uWVConstants, uWVMiscFunctions, uWVCoreWebView2Delegates,
-  uWVCoreWebView2EnvironmentOptions, uWVLoaderInternal;
+  uWVCoreWebView2EnvironmentOptions, uWVLoaderInternal, uWVCoreWebView2CustomSchemeRegistration;
 
 const
   WEBVIEW2LOADERLIB = 'WebView2Loader.dll';
@@ -260,6 +276,7 @@ begin
   FOnProcessInfosChanged                  := nil;
   FOnInitializationError                  := nil;
   FOnBrowserProcessExited                 := nil;
+  FOnGetCustomSchemes                     := nil;
   FStatus                                 := wvlsCreated;
   FLibHandle                              := 0;
   FError                                  := 0;
@@ -274,6 +291,7 @@ begin
   FLoaderDllPath                          := '';
   FUseInternalLoader                      := False;
   FRemoteDebuggingPort                    := 0;
+  FRemoteAllowOrigins                     := '';
 
   UpdateDeviceScaleFactor;
 
@@ -283,6 +301,8 @@ begin
   FTargetCompatibleBrowserVersion         := LowestChromiumVersion;
   FAllowSingleSignOnUsingOSPrimaryAccount := False;
   FExclusiveUserDataFolderAccess          := False;
+  FCustomCrashReportingEnabled            := False;
+  FEnableTrackingPrevention               := True;
 
   // Fields used to set command line switches
   FEnableGPU                              := True;
@@ -309,6 +329,7 @@ begin
   FDebugLogLevel                          := dllDefault;
   FJavaScriptFlags                        := '';
   FDisableEdgePitchNotification           := True;
+  FTreatInsecureOriginAsSecure            := '';
   FProxySettings                          := nil;
   FErrorLog                               := nil;
 
@@ -376,6 +397,30 @@ procedure TWVLoader.doProcessInfosChangedEvent(const sender: ICoreWebView2Enviro
 begin
   if assigned(FOnProcessInfosChanged) then
     FOnProcessInfosChanged(self, sender);
+end;
+
+procedure TWVLoader.doOnGetCustomSchemes(var aSchemeRegistrations : TWVCustomSchemeRegistrationArray);
+var
+  TempArray : TWVCustomSchemeInfoArray;
+  i, TempLen : integer;
+begin
+  if not(assigned(FOnGetCustomSchemes)) then exit;
+
+  TempArray := nil;
+  FOnGetCustomSchemes(self, TempArray);
+  TempLen := length(TempArray);
+
+  if (TempLen = 0) then exit;
+
+  SetLength(aSchemeRegistrations,  TempLen);
+  ZeroMemory(aSchemeRegistrations, TempLen * SizeOf(ICoreWebView2CustomSchemeRegistration));
+
+  i := 0;
+  while (i < TempLen) do
+    begin
+      aSchemeRegistrations[i] := TCoreWebView2CustomSchemeRegistration.Create(TempArray[i]);
+      inc(i);
+    end;
 end;
 
 function TWVLoader.GetExtendedFileVersion(const aFileName : wvstring) : uint64;
@@ -1032,6 +1077,9 @@ begin
   if (FRemoteDebuggingPort > 0) then
     Result := Result + '--remote-debugging-port=' + inttostr(FRemoteDebuggingPort) + ' ';
 
+  if (length(FRemoteAllowOrigins) > 0) then
+    Result := Result + '--remote-allow-origins=' + FRemoteAllowOrigins + ' ';
+
   case FDebugLog of
     dlEnabled       : Result := Result + '--enable-logging ';
     dlEnabledStdOut : Result := Result + '--enable-logging=stdout ';
@@ -1044,6 +1092,9 @@ begin
     dllError   : Result := Result + '--log-level=2 ';
     dllFatal   : Result := Result + '--log-level=3 ';
   end;
+
+  if (length(FTreatInsecureOriginAsSecure) > 0) then
+    Result := Result + '--unsafely-treat-insecure-origin-as-secure=' + FTreatInsecureOriginAsSecure + ' ';
 
   // The list of JavaScript flags is here :
   // https://chromium.googlesource.com/v8/v8/+/master/src/flags/flag-definitions.h
@@ -1119,24 +1170,40 @@ begin
     Result := '';
 end;
 
+function TWVLoader.GetFailureReportFolderPath : wvstring;
+begin
+  if EnvironmentIsInitialized then
+    Result := FCoreWebView2Environment.FailureReportFolderPath
+   else
+    Result := '';
+end;
+
 function TWVLoader.CreateEnvironment : boolean;
 var
   TempOptions : ICoreWebView2EnvironmentOptions;
   TempHandler : ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler;
   TempHResult : HRESULT;
+  TempSchemeRegistrations : TWVCustomSchemeRegistrationArray;
+  i : integer;
 begin
-  Result := False;
+  Result                  := False;
+  TempSchemeRegistrations := nil;
 
   try
     if (FStatus = wvlsImported) and not(EnvironmentIsInitialized) then
       begin
+        doOnGetCustomSchemes(TempSchemeRegistrations);
+
         TempHandler := TCoreWebView2EnvironmentCompletedHandler.Create(self);
 
         TempOptions := TCoreWebView2EnvironmentOptions.Create(CustomCommandLineSwitches,
                                                               FLanguage,
                                                               FTargetCompatibleBrowserVersion,
                                                               FAllowSingleSignOnUsingOSPrimaryAccount,
-                                                              FExclusiveUserDataFolderAccess);
+                                                              FExclusiveUserDataFolderAccess,
+                                                              FCustomCrashReportingEnabled,
+                                                              TempSchemeRegistrations,
+                                                              FEnableTrackingPrevention);
 
         TempHResult := CreateCoreWebView2EnvironmentWithOptions(PWideChar(FBrowserExecPath),
                                                                 PWideChar(FUserDataFolder),
@@ -1159,6 +1226,16 @@ begin
   finally
     TempOptions := nil;
     TempHandler := nil;
+
+    if assigned(TempSchemeRegistrations) then
+      begin
+        i := pred(length(TempSchemeRegistrations));
+        while (i >= 0) do
+          begin
+            TempSchemeRegistrations[i] := nil;
+            dec(i);
+          end;
+      end;
   end;
 end;
 

@@ -78,6 +78,8 @@ type
       function GetParameterObjectAsJson : wvstring;
       function GetSessionId : wvstring;
 
+      procedure InitializeFields;
+
     public
       constructor Create(const aArgs: ICoreWebView2DevToolsProtocolEventReceivedEventArgs); reintroduce;
       destructor  Destroy; override;
@@ -118,6 +120,8 @@ type
       function GetWebErrorStatus : TWVWebErrorStatus;
       function GetNavigationID : uint64;
       function GetHttpStatusCode : integer;
+
+      procedure InitializeFields;
 
     public
       constructor Create(const aArgs: ICoreWebView2NavigationCompletedEventArgs); reintroduce;
@@ -182,6 +186,8 @@ type
       procedure SetNewWindow(const aValue : ICoreWebView2);
       procedure SetHandled(aValue : boolean);
 
+      procedure InitializeFields;
+
     public
       constructor Create(const aArgs: ICoreWebView2NewWindowRequestedEventArgs); reintroduce;
       destructor  Destroy; override;
@@ -201,6 +207,7 @@ type
     protected
       FBaseIntf  : ICoreWebView2PermissionRequestedEventArgs;
       FBaseIntf2 : ICoreWebView2PermissionRequestedEventArgs2;
+      FBaseIntf3 : ICoreWebView2PermissionRequestedEventArgs3;
 
       function  GetInitialized : boolean;
       function  GetURI : wvstring;
@@ -209,9 +216,13 @@ type
       function  GetState : TWVPermissionState;
       function  GetDeferral : ICoreWebView2Deferral;
       function  GetHandled : boolean;
+      function  GetSavesInProfile : boolean;
 
       procedure SetState(aValue : TWVPermissionState);
-      procedure SetHandled(avalue : boolean);
+      procedure SetHandled(aValue : boolean);
+      procedure SetSavesInProfile(aValue : boolean);
+
+      procedure InitializeFields;
 
     public
       constructor Create(const aArgs: ICoreWebView2PermissionRequestedEventArgs); reintroduce; overload;
@@ -226,6 +237,7 @@ type
       property IsUserInitiated  : boolean                                    read GetIsUserInitiated;
       property Deferral         : ICoreWebView2Deferral                      read GetDeferral;
       property Handled          : boolean                                    read GetHandled           write SetHandled;
+      property SavesInProfile   : boolean                                    read GetSavesInProfile    write SetSavesInProfile;
   end;
 
   TCoreWebView2ProcessFailedEventArgs = class
@@ -239,6 +251,8 @@ type
       function GetExtiCode : integer;
       function GetProcessDescription : wvstring;
       function GetFrameInfosForFailedProcess : ICoreWebView2FrameInfoCollection;
+
+      procedure InitializeFields;
 
     public
       constructor Create(const aArgs: ICoreWebView2ProcessFailedEventArgs); reintroduce;
@@ -300,12 +314,16 @@ type
 
   TCoreWebView2WebMessageReceivedEventArgs = class
     protected
-      FBaseIntf : ICoreWebView2WebMessageReceivedEventArgs;
+      FBaseIntf  : ICoreWebView2WebMessageReceivedEventArgs;
+      FBaseIntf2 : ICoreWebView2WebMessageReceivedEventArgs2;
 
       function GetInitialized : boolean;
       function GetSource : wvstring;
       function GetWebMessageAsJson : wvstring;
       function GetWebMessageAsString : wvstring;
+      function GetAdditionalObjects : ICoreWebView2ObjectCollectionView;
+
+      procedure InitializeFields;
 
     public
       constructor Create(const aArgs: ICoreWebView2WebMessageReceivedEventArgs); reintroduce;
@@ -316,6 +334,7 @@ type
       property Source             : wvstring                                  read GetSource;
       property WebMessageAsJson   : wvstring                                  read GetWebMessageAsJson;
       property WebMessageAsString : wvstring                                  read GetWebMessageAsString;
+      property AdditionalObjects  : ICoreWebView2ObjectCollectionView         read GetAdditionalObjects;
   end;
 
   TCoreWebView2WebResourceRequestedEventArgs = class
@@ -553,6 +572,32 @@ type
       property Deferral                      : ICoreWebView2Deferral                                read GetDeferral;
   end;
 
+  TCoreWebView2LaunchingExternalUriSchemeEventArgs = class
+    protected
+      FBaseIntf : ICoreWebView2LaunchingExternalUriSchemeEventArgs;
+
+      function  GetInitialized : boolean;
+      function  GetUri : wvstring;
+      function  GetInitiatingOrigin : wvstring;
+      function  GetIsUserInitiated : boolean;
+      function  GetCancel : boolean;
+      function  GetDeferral : ICoreWebView2Deferral;
+
+      procedure SetCancel(aValue : boolean);
+
+    public
+      constructor Create(const aArgs: ICoreWebView2LaunchingExternalUriSchemeEventArgs); reintroduce;
+      destructor  Destroy; override;
+
+      property Initialized                   : boolean                                           read GetInitialized;
+      property BaseIntf                      : ICoreWebView2LaunchingExternalUriSchemeEventArgs  read FBaseIntf;
+      property Uri                           : wvstring                                          read GetUri;
+      property InitiatingOrigin              : wvstring                                          read GetInitiatingOrigin;
+      property IsUserInitiated               : boolean                                           read GetIsUserInitiated;
+      property Cancel                        : boolean                                           read GetCancel             write SetCancel;
+      property Deferral                      : ICoreWebView2Deferral                             read GetDeferral;
+  end;
+
 
 implementation
 
@@ -729,6 +774,8 @@ constructor TCoreWebView2DevToolsProtocolEventReceivedEventArgs.Create(const aAr
 begin
   inherited Create;
 
+  InitializeFields;
+
   FBaseIntf := aArgs;
 
   if Initialized then
@@ -737,9 +784,15 @@ end;
 
 destructor TCoreWebView2DevToolsProtocolEventReceivedEventArgs.Destroy;
 begin
-  FBaseIntf := nil;
+  InitializeFields;
 
   inherited Destroy;
+end;
+
+procedure TCoreWebView2DevToolsProtocolEventReceivedEventArgs.InitializeFields;
+begin
+  FBaseIntf  := nil;
+  FBaseIntf2 := nil;
 end;
 
 function TCoreWebView2DevToolsProtocolEventReceivedEventArgs.GetInitialized : boolean;
@@ -830,8 +883,9 @@ constructor TCoreWebView2NavigationCompletedEventArgs.Create(const aArgs: ICoreW
 begin
   inherited Create;
 
-  FBaseIntf  := aArgs;
-  FBaseIntf2 := nil;
+  InitializeFields;
+
+  FBaseIntf := aArgs;
 
   if Initialized then
     LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2NavigationCompletedEventArgs2, FBaseIntf2);
@@ -839,9 +893,15 @@ end;
 
 destructor TCoreWebView2NavigationCompletedEventArgs.Destroy;
 begin
-  FBaseIntf := nil;
+  InitializeFields;
 
   inherited Destroy;
+end;
+
+procedure TCoreWebView2NavigationCompletedEventArgs.InitializeFields;
+begin
+  FBaseIntf  := nil;
+  FBaseIntf2 := nil;
 end;
 
 function TCoreWebView2NavigationCompletedEventArgs.GetInitialized : boolean;
@@ -1022,8 +1082,9 @@ constructor TCoreWebView2NewWindowRequestedEventArgs.Create(const aArgs: ICoreWe
 begin
   inherited Create;
 
-  FBaseIntf  := aArgs;
-  FBaseIntf2 := nil;
+  InitializeFields;
+
+  FBaseIntf := aArgs;
 
   if Initialized then
     LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2NewWindowRequestedEventArgs2, FBaseIntf2);
@@ -1031,10 +1092,15 @@ end;
 
 destructor TCoreWebView2NewWindowRequestedEventArgs.Destroy;
 begin
-  FBaseIntf  := nil;
-  FBaseIntf2 := nil;
+  InitializeFields;
 
   inherited Destroy;
+end;
+
+procedure TCoreWebView2NewWindowRequestedEventArgs.InitializeFields;
+begin
+  FBaseIntf  := nil;
+  FBaseIntf2 := nil;
 end;
 
 function TCoreWebView2NewWindowRequestedEventArgs.GetInitialized : boolean;
@@ -1150,26 +1216,40 @@ constructor TCoreWebView2PermissionRequestedEventArgs.Create(const aArgs: ICoreW
 begin
   inherited Create;
 
+  InitializeFields;
+
   FBaseIntf := aArgs;
 
-  if Initialized then
-    LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2PermissionRequestedEventArgs2, FBaseIntf2);
+  if assigned(aArgs) and
+     LoggedQueryInterface(aArgs, IID_ICoreWebView2PermissionRequestedEventArgs2, FBaseIntf2) then
+    LoggedQueryInterface(aArgs, IID_ICoreWebView2PermissionRequestedEventArgs3, FBaseIntf3);
 end;
 
 constructor TCoreWebView2PermissionRequestedEventArgs.Create(const aArgs: ICoreWebView2PermissionRequestedEventArgs2);
 begin
   inherited Create;
 
+  InitializeFields;
+
   FBaseIntf2 := aArgs;
 
-  LoggedQueryInterface(aArgs, IID_ICoreWebView2PermissionRequestedEventArgs, FBaseIntf);
+  if assigned(aArgs) and
+     LoggedQueryInterface(aArgs, IID_ICoreWebView2PermissionRequestedEventArgs, FBaseIntf) then
+    LoggedQueryInterface(aArgs, IID_ICoreWebView2PermissionRequestedEventArgs3, FBaseIntf3);
 end;
 
 destructor TCoreWebView2PermissionRequestedEventArgs.Destroy;
 begin
-  FBaseIntf := nil;
+  InitializeFields;
 
   inherited Destroy;
+end;
+
+procedure TCoreWebView2PermissionRequestedEventArgs.InitializeFields;
+begin
+  FBaseIntf  := nil;
+  FBaseIntf2 := nil;
+  FBaseIntf3 := nil;
 end;
 
 function TCoreWebView2PermissionRequestedEventArgs.GetInitialized : boolean;
@@ -1246,16 +1326,31 @@ begin
             (TempResult <> 0);
 end;
 
+function TCoreWebView2PermissionRequestedEventArgs.GetSavesInProfile : boolean;
+var
+  TempResult : integer;
+begin
+  Result := assigned(FBaseIntf3) and
+            succeeded(FBaseIntf3.Get_SavesInProfile(TempResult)) and
+            (TempResult <> 0);
+end;
+
 procedure TCoreWebView2PermissionRequestedEventArgs.SetState(aValue : TWVPermissionState);
 begin
   if Initialized then
     FBaseIntf.Set_State(aValue);
 end;
 
-procedure TCoreWebView2PermissionRequestedEventArgs.SetHandled(avalue : boolean);
+procedure TCoreWebView2PermissionRequestedEventArgs.SetHandled(aValue : boolean);
 begin
   if assigned(FBaseIntf2) then
     FBaseIntf2.Set_Handled(ord(aValue));
+end;
+
+procedure TCoreWebView2PermissionRequestedEventArgs.SetSavesInProfile(aValue : boolean);
+begin
+  if assigned(FBaseIntf3) then
+    FBaseIntf3.Set_SavesInProfile(ord(aValue));
 end;
 
 
@@ -1265,8 +1360,9 @@ constructor TCoreWebView2ProcessFailedEventArgs.Create(const aArgs: ICoreWebView
 begin
   inherited Create;
 
-  FBaseIntf  := aArgs;
-  FBaseIntf2 := nil;
+  InitializeFields;
+
+  FBaseIntf := aArgs;
 
   if Initialized then
     LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2ProcessFailedEventArgs2, FBaseIntf2);
@@ -1274,10 +1370,15 @@ end;
 
 destructor TCoreWebView2ProcessFailedEventArgs.Destroy;
 begin
-  FBaseIntf  := nil;
-  FBaseIntf2 := nil;
+  InitializeFields;
 
   inherited Destroy;
+end;
+
+procedure TCoreWebView2ProcessFailedEventArgs.InitializeFields;
+begin
+  FBaseIntf  := nil;
+  FBaseIntf2 := nil;
 end;
 
 function TCoreWebView2ProcessFailedEventArgs.GetInitialized : boolean;
@@ -1509,14 +1610,25 @@ constructor TCoreWebView2WebMessageReceivedEventArgs.Create(const aArgs: ICoreWe
 begin
   inherited Create;
 
+  InitializeFields;
+
   FBaseIntf := aArgs;
+
+  if Initialized then
+    LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2WebMessageReceivedEventArgs2, FBaseIntf2);
 end;
 
 destructor TCoreWebView2WebMessageReceivedEventArgs.Destroy;
 begin
-  FBaseIntf := nil;
+  InitializeFields;
 
   inherited Destroy;
+end;
+
+procedure TCoreWebView2WebMessageReceivedEventArgs.InitializeFields;
+begin
+  FBaseIntf  := nil;
+  FBaseIntf2 := nil;
 end;
 
 function TCoreWebView2WebMessageReceivedEventArgs.GetInitialized : boolean;
@@ -1567,6 +1679,19 @@ begin
       Result := TempString;
       CoTaskMemFree(TempString);
     end;
+end;
+
+function TCoreWebView2WebMessageReceivedEventArgs.GetAdditionalObjects : ICoreWebView2ObjectCollectionView;
+var
+  TempCollectionView : ICoreWebView2ObjectCollectionView;
+begin
+  Result             := nil;
+  TempCollectionView := nil;
+
+  if assigned(FBaseIntf2) and
+     succeeded(FBaseIntf2.Get_AdditionalObjects(TempCollectionView)) and
+     (TempCollectionView <> nil) then
+    Result := TempCollectionView;
 end;
 
 
@@ -2330,6 +2455,95 @@ procedure TCoreWebView2ServerCertificateErrorDetectedEventArgs.SetAction(aValue:
 begin
   if Initialized then
     FBaseIntf.Set_Action(aValue);
+end;
+
+
+// TCoreWebView2LaunchingExternalUriSchemeEventArgs
+
+constructor TCoreWebView2LaunchingExternalUriSchemeEventArgs.Create(const aArgs: ICoreWebView2LaunchingExternalUriSchemeEventArgs);
+begin
+  inherited Create;
+
+  FBaseIntf := aArgs;
+end;
+
+destructor TCoreWebView2LaunchingExternalUriSchemeEventArgs.Destroy;
+begin
+  FBaseIntf := nil;
+
+  inherited Destroy;
+end;
+
+function TCoreWebView2LaunchingExternalUriSchemeEventArgs.GetInitialized : boolean;
+begin
+  Result := assigned(FBaseIntf);
+end;
+
+function TCoreWebView2LaunchingExternalUriSchemeEventArgs.GetUri : wvstring;
+var
+  TempString : PWideChar;
+begin
+  Result     := '';
+  TempString := nil;
+
+  if Initialized and
+     succeeded(FBaseIntf.Get_Uri(TempString)) then
+    begin
+      Result := TempString;
+      CoTaskMemFree(TempString);
+    end;
+end;
+
+function TCoreWebView2LaunchingExternalUriSchemeEventArgs.GetInitiatingOrigin : wvstring;
+var
+  TempString : PWideChar;
+begin
+  Result     := '';
+  TempString := nil;
+
+  if Initialized and
+     succeeded(FBaseIntf.Get_InitiatingOrigin(TempString)) then
+    begin
+      Result := TempString;
+      CoTaskMemFree(TempString);
+    end;
+end;
+
+function TCoreWebView2LaunchingExternalUriSchemeEventArgs.GetIsUserInitiated: boolean;
+var
+  TempInt : integer;
+begin
+  Result := Initialized and
+            succeeded(FBaseIntf.Get_IsUserInitiated(TempInt)) and
+            (TempInt <> 0);
+end;
+
+function TCoreWebView2LaunchingExternalUriSchemeEventArgs.GetCancel: boolean;
+var
+  TempInt : integer;
+begin
+  Result := Initialized and
+            succeeded(FBaseIntf.Get_Cancel(TempInt)) and
+            (TempInt <> 0);
+end;
+
+function TCoreWebView2LaunchingExternalUriSchemeEventArgs.GetDeferral: ICoreWebView2Deferral;
+var
+  TempResult : ICoreWebView2Deferral;
+begin
+  Result     := nil;
+  TempResult := nil;
+
+  if Initialized and
+     succeeded(FBaseIntf.GetDeferral(TempResult)) and
+     (TempResult <> nil) then
+    Result := TempResult;
+end;
+
+procedure TCoreWebView2LaunchingExternalUriSchemeEventArgs.SetCancel(aValue: boolean);
+begin
+  if Initialized then
+    FBaseIntf.Set_Cancel(ord(aValue));
 end;
 
 end.

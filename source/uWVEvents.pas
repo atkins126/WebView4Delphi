@@ -20,6 +20,7 @@ type
   TLoaderBrowserProcessExitedEvent                         = {$IFDEF DELPHI12_UP}reference to{$ENDIF} procedure(Sender: TObject; const aEnvironment: ICoreWebView2Environment; const aArgs: ICoreWebView2BrowserProcessExitedEventArgs) {$IFNDEF DELPHI12_UP}{$IFNDEF FPC} of object{$ENDIF}{$ENDIF};
   TLoaderNewBrowserVersionAvailableEvent                   = {$IFDEF DELPHI12_UP}reference to{$ENDIF} procedure(Sender: TObject; const aEnvironment: ICoreWebView2Environment) {$IFNDEF DELPHI12_UP}{$IFNDEF FPC} of object{$ENDIF}{$ENDIF};
   TLoaderProcessInfosChangedEvent                          = {$IFDEF DELPHI12_UP}reference to{$ENDIF} procedure(Sender: TObject; const aEnvironment: ICoreWebView2Environment) {$IFNDEF DELPHI12_UP}{$IFNDEF FPC} of object{$ENDIF}{$ENDIF};
+  TLoaderGetCustomSchemesEvent                             = {$IFDEF DELPHI12_UP}reference to{$ENDIF} procedure(Sender: TObject; var aCustomSchemes: TWVCustomSchemeInfoArray) {$IFNDEF DELPHI12_UP}{$IFNDEF FPC} of object{$ENDIF}{$ENDIF};
 
   // Browser events
   TOnExecuteScriptCompletedEvent                           = procedure(Sender: TObject; aErrorCode: HRESULT; const aResultObjectAsJson: wvstring; aExecutionID: integer) of object;
@@ -55,7 +56,7 @@ type
   TOnFrameNameChangedEvent                                 = procedure(Sender: TObject; const aFrame: ICoreWebView2Frame; aFrameID: integer) of object;
   TOnFrameDestroyedEvent                                   = procedure(Sender: TObject; const aFrame: ICoreWebView2Frame; aFrameID: integer) of object;
   TOnInitializationErrorEvent                              = procedure(Sender: TObject; aErrorCode: HRESULT; const aErrorMessage: wvstring) of object;
-  TOnPrintCompletedEvent                                   = procedure(Sender: TObject; aErrorCode: HRESULT; const aResultObjectAsJson: wvstring) of object;
+  TOnPrintCompletedEvent                                   = procedure(Sender: TObject; aErrorCode: HRESULT; aPrintStatus: TWVPrintStatus) of object;
   TOnRefreshIgnoreCacheCompletedEvent                      = procedure(Sender: TObject; aErrorCode: HRESULT; const aResultObjectAsJson: wvstring) of object;
   TOnRetrieveHTMLCompletedEvent                            = procedure(Sender: TObject; aResult: boolean; const aHTML: wvstring) of object;
   TOnRetrieveTextCompletedEvent                            = procedure(Sender: TObject; aResult: boolean; const aText: wvstring) of object;
@@ -84,6 +85,11 @@ type
   TOnServerCertificateErrorDetectedEvent                   = procedure(Sender: TObject; const aWebView: ICoreWebView2; const aArgs: ICoreWebView2ServerCertificateErrorDetectedEventArgs) of object;
   TOnFaviconChangedEvent                                   = procedure(Sender: TObject; const aWebView: ICoreWebView2; const aArgs: IUnknown) of object;
   TOnGetFaviconCompletedEvent                              = procedure(Sender: TObject; aErrorCode: HRESULT; const aFaviconStream: IStream) of object;
+  TOnPrintToPdfStreamCompletedEvent                        = procedure(Sender: TObject; aErrorCode: HRESULT; const aPdfStream: IStream) of object;
+  TOnGetCustomSchemesEvent                                 = procedure(Sender: TObject; var aCustomSchemes: TWVCustomSchemeInfoArray) of object;
+  TOnGetNonDefaultPermissionSettingsCompletedEvent         = procedure(Sender: TObject; aErrorCode: HRESULT; const aCollectionView: ICoreWebView2PermissionSettingCollectionView) of object;
+  TOnSetPermissionStateCompletedEvent                      = procedure(Sender: TObject; aErrorCode: HRESULT) of object;
+  TOnLaunchingExternalUriSchemeEvent                       = procedure(Sender: TObject; const aWebView: ICoreWebView2; const aArgs: ICoreWebView2LaunchingExternalUriSchemeEventArgs) of object;
 
   // Custom events
   TOnCompMsgEvent                                          = procedure(Sender: TObject; var aMessage: TMessage; var aHandled: Boolean) of object;

@@ -14,6 +14,10 @@ type
     protected
       FBaseIntf  : ICoreWebView2Profile;
       FBaseIntf2 : ICoreWebView2Profile2;
+      FBaseIntf3 : ICoreWebView2Profile3;
+      FBaseIntf4 : ICoreWebView2Profile4;
+      FBaseIntf5 : ICoreWebView2Profile5;
+      FBaseIntf6 : ICoreWebView2Profile6;
 
       function GetInitialized : boolean;
       function GetProfileName : wvstring;
@@ -21,9 +25,18 @@ type
       function GetProfilePath : wvstring;
       function GetDefaultDownloadFolderPath : wvstring;
       function GetPreferredColorScheme : TWVPreferredColorScheme;
+      function GetPreferredTrackingPreventionLevel : TWVTrackingPreventionLevel;
+      function GetCookieManager : ICoreWebView2CookieManager;
+      function GetIsPasswordAutosaveEnabled : boolean;
+      function GetIsGeneralAutofillEnabled : boolean;
 
       procedure SetDefaultDownloadFolderPath(const aValue : wvstring);
       procedure SetPreferredColorScheme(aValue : TWVPreferredColorScheme);
+      procedure SetPreferredTrackingPreventionLevel(aValue : TWVTrackingPreventionLevel);
+      procedure SetIsPasswordAutosaveEnabled(aValue : boolean);
+      procedure SetIsGeneralAutofillEnabled(aValue : boolean);
+
+      procedure InitializeFields;
 
     public
       constructor Create(const aBaseIntf : ICoreWebView2Profile); reintroduce;
@@ -31,14 +44,20 @@ type
       function    ClearBrowsingData(dataKinds: TWVBrowsingDataKinds; const handler: ICoreWebView2ClearBrowsingDataCompletedHandler): boolean;
       function    ClearBrowsingDataInTimeRange(dataKinds: TWVBrowsingDataKinds; const startTime, endTime: TDateTime; const handler: ICoreWebView2ClearBrowsingDataCompletedHandler): boolean;
       function    ClearBrowsingDataAll(const handler: ICoreWebView2ClearBrowsingDataCompletedHandler): boolean;
+      function    SetPermissionState(PermissionKind: TWVPermissionKind; const origin: wvstring; State: TWVPermissionState; const completedHandler: ICoreWebView2SetPermissionStateCompletedHandler): boolean;
+      function    GetNonDefaultPermissionSettings(const completedHandler: ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandler): boolean;
 
-      property Initialized                : boolean                     read GetInitialized;
-      property BaseIntf                   : ICoreWebView2Profile        read FBaseIntf                     write FBaseIntf;
-      property ProfileName                : wvstring                    read GetProfileName;
-      property IsInPrivateModeEnabled     : boolean                     read GetIsInPrivateModeEnabled;
-      property ProfilePath                : wvstring                    read GetProfilePath;
-      property DefaultDownloadFolderPath  : wvstring                    read GetDefaultDownloadFolderPath  write SetDefaultDownloadFolderPath;
-      property PreferredColorScheme       : TWVPreferredColorScheme     read GetPreferredColorScheme       write SetPreferredColorScheme;
+      property Initialized                       : boolean                     read GetInitialized;
+      property BaseIntf                          : ICoreWebView2Profile        read FBaseIntf                            write FBaseIntf;
+      property ProfileName                       : wvstring                    read GetProfileName;
+      property IsInPrivateModeEnabled            : boolean                     read GetIsInPrivateModeEnabled;
+      property ProfilePath                       : wvstring                    read GetProfilePath;
+      property DefaultDownloadFolderPath         : wvstring                    read GetDefaultDownloadFolderPath         write SetDefaultDownloadFolderPath;
+      property PreferredColorScheme              : TWVPreferredColorScheme     read GetPreferredColorScheme              write SetPreferredColorScheme;
+      property PreferredTrackingPreventionLevel  : TWVTrackingPreventionLevel  read GetPreferredTrackingPreventionLevel  write SetPreferredTrackingPreventionLevel;
+      property CookieManager                     : ICoreWebView2CookieManager  read GetCookieManager;
+      property IsPasswordAutosaveEnabled         : boolean                     read GetIsPasswordAutosaveEnabled         write SetIsPasswordAutosaveEnabled;
+      property IsGeneralAutofillEnabled          : boolean                     read GetIsGeneralAutofillEnabled          write SetIsGeneralAutofillEnabled;
   end;
 
 implementation
@@ -55,18 +74,33 @@ constructor TCoreWebView2Profile.Create(const aBaseIntf: ICoreWebView2Profile);
 begin
   inherited Create;
 
-  FBaseIntf  := aBaseIntf;
-  FBaseIntf2 := nil;
+  InitializeFields;
 
-  if Initialized then
-    LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2Profile2, FBaseIntf2);
+  FBaseIntf  := aBaseIntf;
+
+  if Initialized and
+     LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2Profile2, FBaseIntf2) and
+     LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2Profile3, FBaseIntf3) and
+     LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2Profile4, FBaseIntf4) and
+     LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2Profile5, FBaseIntf5) then
+    LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2Profile6, FBaseIntf6);
 end;
 
 destructor TCoreWebView2Profile.Destroy;
 begin
-  FBaseIntf := nil;
+  InitializeFields;
 
   inherited Destroy;
+end;
+
+procedure TCoreWebView2Profile.InitializeFields;
+begin
+  FBaseIntf  := nil;
+  FBaseIntf2 := nil;
+  FBaseIntf3 := nil;
+  FBaseIntf4 := nil;
+  FBaseIntf5 := nil;
+  FBaseIntf6 := nil;
 end;
 
 function TCoreWebView2Profile.GetInitialized : boolean;
@@ -143,6 +177,48 @@ begin
     Result := TempResult;
 end;
 
+function TCoreWebView2Profile.GetPreferredTrackingPreventionLevel : TWVTrackingPreventionLevel;
+var
+  TempResult : COREWEBVIEW2_TRACKING_PREVENTION_LEVEL;
+begin
+  Result := COREWEBVIEW2_TRACKING_PREVENTION_LEVEL_BALANCED;
+
+  if assigned(FBaseIntf3) and
+     succeeded(FBaseIntf3.Get_PreferredTrackingPreventionLevel(TempResult)) then
+    Result := TempResult;
+end;
+
+function TCoreWebView2Profile.GetCookieManager : ICoreWebView2CookieManager;
+var
+  TempResult : ICoreWebView2CookieManager;
+begin
+  Result     := nil;
+  TempResult := nil;
+
+  if assigned(FBaseIntf5) and
+     succeeded(FBaseIntf5.Get_CookieManager(TempResult)) and
+     assigned(TempResult) then
+    Result := TempResult;
+end;
+
+function TCoreWebView2Profile.GetIsPasswordAutosaveEnabled : boolean;
+var
+  TempResult : integer;
+begin
+  Result := assigned(FBaseIntf6) and
+            succeeded(FBaseIntf6.Get_IsPasswordAutosaveEnabled(TempResult)) and
+            (TempResult <> 0);
+end;
+
+function TCoreWebView2Profile.GetIsGeneralAutofillEnabled : boolean;
+var
+  TempResult : integer;
+begin
+  Result := assigned(FBaseIntf6) and
+            succeeded(FBaseIntf6.Get_IsGeneralAutofillEnabled(TempResult)) and
+            (TempResult <> 0);
+end;
+
 procedure TCoreWebView2Profile.SetDefaultDownloadFolderPath(const aValue : wvstring);
 begin
   if Initialized then
@@ -153,6 +229,24 @@ procedure TCoreWebView2Profile.SetPreferredColorScheme(aValue : TWVPreferredColo
 begin
   if Initialized then
     FBaseIntf.Set_PreferredColorScheme(aValue);
+end;
+
+procedure TCoreWebView2Profile.SetPreferredTrackingPreventionLevel(aValue : TWVTrackingPreventionLevel);
+begin
+  if assigned(FBaseIntf3) then
+    FBaseIntf3.Set_PreferredTrackingPreventionLevel(aValue);
+end;
+
+procedure TCoreWebView2Profile.SetIsPasswordAutosaveEnabled(aValue: boolean);
+begin
+  if assigned(FBaseIntf6) then
+    FBaseIntf6.Set_IsPasswordAutosaveEnabled(ord(aValue));
+end;
+
+procedure TCoreWebView2Profile.SetIsGeneralAutofillEnabled(aValue: boolean);
+begin
+  if assigned(FBaseIntf6) then
+    FBaseIntf6.Set_IsGeneralAutofillEnabled(ord(aValue));
 end;
 
 function TCoreWebView2Profile.ClearBrowsingData(      dataKinds : TWVBrowsingDataKinds;
@@ -186,6 +280,23 @@ begin
   Result := assigned(FBaseIntf2) and
             assigned(handler)    and
             succeeded(FBaseIntf2.ClearBrowsingDataAll(handler));
+end;
+
+function TCoreWebView2Profile.SetPermissionState(      PermissionKind   : TWVPermissionKind;
+                                                 const origin           : wvstring;
+                                                       State            : TWVPermissionState;
+                                                 const completedHandler : ICoreWebView2SetPermissionStateCompletedHandler): boolean;
+begin
+  Result := assigned(FBaseIntf4)       and
+            assigned(completedHandler) and
+            succeeded(FBaseIntf4.SetPermissionState(PermissionKind, PWideChar(origin), State, completedHandler));
+end;
+
+function TCoreWebView2Profile.GetNonDefaultPermissionSettings(const completedHandler: ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandler): boolean;
+begin
+  Result := assigned(FBaseIntf4)       and
+            assigned(completedHandler) and
+            succeeded(FBaseIntf4.GetNonDefaultPermissionSettings(completedHandler));
 end;
 
 end.

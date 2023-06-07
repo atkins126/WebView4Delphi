@@ -56,6 +56,15 @@ type
   TWVBrowsingDataKinds                    = type COREWEBVIEW2_BROWSING_DATA_KINDS;
   TWVServerCertificateErrorAction         = type COREWEBVIEW2_SERVER_CERTIFICATE_ERROR_ACTION;
   TWVFaviconImageFormat                   = type COREWEBVIEW2_FAVICON_IMAGE_FORMAT;
+  TWVPrintCollation                       = type COREWEBVIEW2_PRINT_COLLATION;
+  TWVPrintColorMode                       = type COREWEBVIEW2_PRINT_COLOR_MODE;
+  TWVPrintDuplex                          = type COREWEBVIEW2_PRINT_DUPLEX;
+  TWVPrintMediaSize                       = type COREWEBVIEW2_PRINT_MEDIA_SIZE;
+  TWVPrintStatus                          = type COREWEBVIEW2_PRINT_STATUS;
+  TWVPrintDialogKind                      = type COREWEBVIEW2_PRINT_DIALOG_KIND;
+  TWVSharedBufferAccess                   = type COREWEBVIEW2_SHARED_BUFFER_ACCESS;
+  TWVTrackingPreventionLevel              = type COREWEBVIEW2_TRACKING_PREVENTION_LEVEL;
+  TWVMemoryUsageTargetLevel               = type COREWEBVIEW2_MEMORY_USAGE_TARGET_LEVEL;
 
   TWV2LoaderStatus = (wvlsCreated,
                       wvlsLoading,
@@ -263,6 +272,16 @@ type
                        appDocumentUserActivationRequired,
                        appNoUserGestureRequired,
                        appUserGestureRequired);
+
+  TWVCustomSchemeInfo = record
+    SchemeName            : wvstring;  // The name of the custom scheme to register.
+    TreatAsSecure         : boolean;   // Whether the sites with this scheme will be treated as a Secure Context like an HTTPS site.
+    AllowedDomains        : wvstring;  // Comma separated list of origins that are allowed to issue requests with the custom scheme, such as XHRs and subresource requests that have an Origin header.
+    HasAuthorityComponent : boolean;   // Set this property to true if the URIs with this custom scheme will have an authority component (a host for custom schemes).
+  end;
+  TWVCustomSchemeInfoArray = array of TWVCustomSchemeInfo;
+
+  TWVCustomSchemeRegistrationArray = array of ICoreWebView2CustomSchemeRegistration;
 
 implementation
 

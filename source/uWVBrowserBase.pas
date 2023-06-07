@@ -24,31 +24,37 @@ uses
 type
   TWVBrowserBase = class(TComponent, IWVBrowserEvents)
     protected
-      FCoreWebView2PrintSettings                      : TCoreWebView2PrintSettings;
-      FCoreWebView2Settings                           : TCoreWebView2Settings;
-      FCoreWebView2Environment                        : TCoreWebView2Environment;
-      FCoreWebView2Controller                         : TCoreWebView2Controller;
-      FCoreWebView2CompositionController              : TCoreWebView2CompositionController;
-      FCoreWebView2                                   : TCoreWebView2;
-      FWindowParentHandle                             : THandle;
-      FUseDefaultEnvironment                          : boolean;
-      FUseCompositionController                       : boolean;
-      FDefaultURL                                     : wvstring;
-      FBrowserExecPath                                : wvstring;
-      FUserDataFolder                                 : wvstring;
-      FAdditionalBrowserArguments                     : wvstring;
-      FLanguage                                       : wvstring;
-      FTargetCompatibleBrowserVersion                 : wvstring;
-      FAllowSingleSignOnUsingOSPrimaryAccount         : boolean;
-      FExclusiveUserDataFolderAccess                  : boolean;
-      FIgnoreCertificateErrors                        : boolean;
-      FZoomStep                                       : byte;
-      FOffline                                        : boolean;
-      FIsNavigating                                   : boolean;
-      FProfileName                                    : wvstring;
-      FIsInPrivateModeEnabled                         : boolean;
-      FMenuItemHandler                                : ICoreWebView2CustomItemSelectedEventHandler;
-      FClearBrowsingDataCompletedHandler              : ICoreWebView2ClearBrowsingDataCompletedHandler;
+      FCoreWebView2PrintSettings                       : TCoreWebView2PrintSettings;
+      FCoreWebView2Settings                            : TCoreWebView2Settings;
+      FCoreWebView2Environment                         : TCoreWebView2Environment;
+      FCoreWebView2Controller                          : TCoreWebView2Controller;
+      FCoreWebView2CompositionController               : TCoreWebView2CompositionController;
+      FCoreWebView2                                    : TCoreWebView2;
+      FWindowParentHandle                              : THandle;
+      FUseDefaultEnvironment                           : boolean;
+      FUseCompositionController                        : boolean;
+      FDefaultURL                                      : wvstring;
+      FBrowserExecPath                                 : wvstring;
+      FUserDataFolder                                  : wvstring;
+      FAdditionalBrowserArguments                      : wvstring;
+      FLanguage                                        : wvstring;
+      FTargetCompatibleBrowserVersion                  : wvstring;
+      FAllowSingleSignOnUsingOSPrimaryAccount          : boolean;
+      FExclusiveUserDataFolderAccess                   : boolean;
+      FCustomCrashReportingEnabled                     : boolean;
+      FIgnoreCertificateErrors                         : boolean;
+      FZoomStep                                        : byte;
+      FOffline                                         : boolean;
+      FIsNavigating                                    : boolean;
+      FProfileName                                     : wvstring;
+      FIsInPrivateModeEnabled                          : boolean;
+      FMenuItemHandler                                 : ICoreWebView2CustomItemSelectedEventHandler;
+      FClearBrowsingDataCompletedHandler               : ICoreWebView2ClearBrowsingDataCompletedHandler;
+      FSetPermissionStateCompletedHandler              : ICoreWebView2SetPermissionStateCompletedHandler;
+      FGetNonDefaultPermissionSettingsCompletedHandler : ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandler;
+      FEnableTrackingPrevention                        : boolean;
+      FPreferredTrackingPreventionLevel                : TWVTrackingPreventionLevel;
+      FScriptLocale                                    : wvstring;
 
       FOldWidget0CompWndPrc                           : TFNWndProc;
       FOldWidget1CompWndPrc                           : TFNWndProc;
@@ -144,6 +150,11 @@ type
       FOnServerCertificateErrorDetected               : TOnServerCertificateErrorDetectedEvent;
       FOnFaviconChanged                               : TOnFaviconChangedEvent;
       FOnGetFaviconCompleted                          : TOnGetFaviconCompletedEvent;
+      FOnPrintToPdfStreamCompleted                    : TOnPrintToPdfStreamCompletedEvent;
+      FOnGetCustomSchemes                             : TOnGetCustomSchemesEvent;
+      FOnGetNonDefaultPermissionSettingsCompleted     : TOnGetNonDefaultPermissionSettingsCompletedEvent;
+      FOnSetPermissionStateCompleted                  : TOnSetPermissionStateCompletedEvent;
+      FOnLaunchingExternalUriScheme                   : TOnLaunchingExternalUriSchemeEvent;
 
       function  GetBrowserProcessID : cardinal;
       function  GetBrowserVersionInfo : wvstring;
@@ -193,8 +204,20 @@ type
       function  GetStatusBarText : wvstring;
       function  GetAllowExternalDrop : boolean;
       function  GetHiddenPdfToolbarItems : TWVPDFToolbarItems;
+      function  GetIsReputationCheckingRequired : boolean;
       function  GetCustomItemSelectedEventHandler : ICoreWebView2CustomItemSelectedEventHandler;
       function  GetFaviconURI : wvstring;
+      function  GetScreenScale : single; virtual;
+      function  GetProfileName : wvstring;
+      function  GetIsInPrivateModeEnabled : boolean;
+      function  GetProfilePath : wvstring;
+      function  GetDefaultDownloadFolderPath : wvstring;
+      function  GetPreferredColorScheme : TWVPreferredColorScheme;
+      function  GetPreferredTrackingPreventionLevel : TWVTrackingPreventionLevel;
+      function  GetProfileCookieManager : ICoreWebView2CookieManager;
+      function  GetProfileIsPasswordAutosaveEnabled : boolean;
+      function  GetProfileIsGeneralAutofillEnabled : boolean;
+      function  GetMemoryUsageTargetLevel : TWVMemoryUsageTargetLevel;
 
       procedure SetBuiltInErrorPageEnabled(aValue: boolean);
       procedure SetDefaultContextMenusEnabled(aValue: boolean);
@@ -229,7 +252,14 @@ type
       procedure SetDefaultDownloadDialogMargin(aValue : TPoint);
       procedure SetAllowExternalDrop(aValue : boolean);
       procedure SetHiddenPdfToolbarItems(aValue : TWVPDFToolbarItems);
+      procedure SetIsReputationCheckingRequired(aValue : boolean);
       procedure SetProfileName(const aValue : wvstring);
+      procedure SetDefaultDownloadFolderPath(const aValue : wvstring);
+      procedure SetPreferredColorScheme(const aValue : TWVPreferredColorScheme);
+      procedure SetPreferredTrackingPreventionLevel(const aValue : TWVTrackingPreventionLevel);
+      procedure SetProfileIsPasswordAutosaveEnabled(aValue : boolean);
+      procedure SetProfileIsGeneralAutofillEnabled(aValue : boolean);
+      procedure SetMemoryUsageTargetLevel(aValue : TWVMemoryUsageTargetLevel);
 
       function  CreateEnvironment : boolean;
       function  CreateCompositionController: boolean;
@@ -326,6 +356,11 @@ type
       function ServerCertificateErrorDetectedEventHandler_Invoke(const sender: ICoreWebView2; const args: ICoreWebView2ServerCertificateErrorDetectedEventArgs): HRESULT;
       function FaviconChangedEventHandler_Invoke(const sender: ICoreWebView2; const args: IUnknown): HRESULT;
       function GetFaviconCompletedHandler_Invoke(errorCode: HResult; const faviconStream: IStream): HRESULT;
+      function PrintCompletedHandler_Invoke(errorCode: HResult; printStatus: COREWEBVIEW2_PRINT_STATUS): HRESULT;
+      function PrintToPdfStreamCompletedHandler_Invoke(errorCode: HResult; const pdfStream: IStream): HRESULT;
+      function GetNonDefaultPermissionSettingsCompletedHandler_Invoke(errorCode: HResult; const collectionView: ICoreWebView2PermissionSettingCollectionView): HRESULT;
+      function SetPermissionStateCompletedHandler_Invoke(errorCode: HResult): HRESULT;
+      function LaunchingExternalUriSchemeEventHandler_Invoke(const sender: ICoreWebView2; const args: ICoreWebView2LaunchingExternalUriSchemeEventArgs): HRESULT;
 
       procedure doOnInitializationError(aErrorCode: HRESULT; const aErrorMessage: wvstring); virtual;
       procedure doOnEnvironmentCompleted; virtual;
@@ -375,7 +410,6 @@ type
       procedure doOnFrameDestroyedEvent(const sender: ICoreWebView2Frame; const args: IUnknown; aFrameID : integer); virtual;
       procedure doOnCallDevToolsProtocolMethodCompletedEvent(aErrorCode: HRESULT; const aReturnObjectAsJson: wvstring; aExecutionID : integer); virtual;
       procedure doOnAddScriptToExecuteOnDocumentCreatedCompletedEvent(aErrorCode: HRESULT; const aID : wvstring); virtual;
-      procedure doOnPrintCompleted(aErrorCode: HRESULT; const aResultObjectAsJson: wvstring); virtual;
       procedure doOnRetrieveHTMLCompleted(aErrorCode: HRESULT; const aResultObjectAsJson: wvstring); virtual;
       procedure doOnRetrieveTextCompleted(aErrorCode: HRESULT; const aResultObjectAsJson: wvstring); virtual;
       procedure doOnRetrieveMHTMLCompleted(aErrorCode: HRESULT; const aReturnObjectAsJson: wvstring); virtual;
@@ -404,6 +438,12 @@ type
       procedure doOnServerCertificateErrorDetectedEvent(const sender: ICoreWebView2; const args: ICoreWebView2ServerCertificateErrorDetectedEventArgs); virtual;
       procedure doOnFaviconChangedEvent(const sender: ICoreWebView2; const args: IUnknown); virtual;
       procedure doOnGetFaviconCompletedEvent(errorCode: HResult; const faviconStream: IStream); virtual;
+      procedure doOnPrintCompletedEvent(errorCode: HResult; printStatus: COREWEBVIEW2_PRINT_STATUS); virtual;
+      procedure doOnPrintToPdfStreamCompletedEvent(errorCode: HResult; const pdfStream: IStream); virtual;
+      procedure doOnGetCustomSchemes(var aSchemeRegistrations : TWVCustomSchemeRegistrationArray); virtual;
+      procedure doOnGetNonDefaultPermissionSettingsCompleted(errorCode: HResult; const collectionView: ICoreWebView2PermissionSettingCollectionView); virtual;
+      procedure doOnSetPermissionStateCompleted(errorCode: HResult); virtual;
+      procedure doOnLaunchingExternalUriSchemeEvent(const sender: ICoreWebView2; const args: ICoreWebView2LaunchingExternalUriSchemeEventArgs); virtual;
 
     public
       constructor Create(AOwner: TComponent); override;
@@ -438,6 +478,9 @@ type
       function    CapturePreview(aImageFormat: TWVCapturePreviewImageFormat; const aImageStream: IStream) : boolean;
       function    NotifyParentWindowPositionChanged : boolean;
 
+      function    SetPermissionState(aPermissionKind: TWVPermissionKind; const aOrigin: wvstring; aState: TWVPermissionState) : boolean;
+      function    GetNonDefaultPermissionSettings: boolean;
+
       function    TrySuspend : boolean;
       function    Resume : boolean;
 
@@ -449,7 +492,9 @@ type
       function    RetrieveMHTML : boolean;
 
       function    Print : boolean;
+      function    ShowPrintUI(aUseSystemPrintDialog : boolean = False): boolean;
       function    PrintToPdf(const aResultFilePath : wvstring) : boolean;
+      function    PrintToPdfStream : boolean;
 
       function    OpenDevToolsWindow : boolean;
       function    OpenTaskManagerWindow : boolean;
@@ -513,130 +558,158 @@ type
       function    ClearServerCertificateErrorActions : boolean;
       function    GetFavicon(aFormat: TWVFaviconImageFormat = COREWEBVIEW2_FAVICON_IMAGE_FORMAT_PNG) : boolean;
 
+      function    CreateSharedBuffer(aSize : Largeuint; var aSharedBuffer : ICoreWebView2SharedBuffer) : boolean;
+      function    PostSharedBufferToScript(const aSharedBuffer: ICoreWebView2SharedBuffer; aAccess: TWVSharedBufferAccess; const aAdditionalDataAsJson: wvstring): boolean;
+
       // Custom properties
-      property Initialized                            : boolean                                     read GetInitialized;
-      property CoreWebView2PrintSettings              : TCoreWebView2PrintSettings                  read FCoreWebView2PrintSettings;
-      property CoreWebView2Settings                   : TCoreWebView2Settings                       read FCoreWebView2Settings;
-      property CoreWebView2Environment                : TCoreWebView2Environment                    read FCoreWebView2Environment;
-      property CoreWebView2Controller                 : TCoreWebView2Controller                     read FCoreWebView2Controller;
-      property CoreWebView2CompositionController      : TCoreWebView2CompositionController          read FCoreWebView2CompositionController;
-      property CoreWebView2                           : TCoreWebView2                               read FCoreWebView2;
-      property DefaultURL                             : wvstring                                    read FDefaultURL                              write FDefaultURL;
-      property IsNavigating                           : boolean                                     read FIsNavigating;
-      property ZoomPct                                : double                                      read GetZoomPct                               write SetZoomPct;                                 // ICoreWebView2Controller.get_ZoomFactor
-      property ZoomStep                               : byte                                        read FZoomStep                                write SetZoomStep;                                // ICoreWebView2Controller.get_ZoomFactor
-      property Widget0CompHWND                        : THandle                                     read FWidget0CompHWND;
-      property Widget1CompHWND                        : THandle                                     read FWidget1CompHWND;
-      property RenderCompHWND                         : THandle                                     read FRenderCompHWND;
-      property D3DWindowCompHWND                      : THandle                                     read FD3DWindowCompHWND;
-      property CustomItemSelectedEventHandler         : ICoreWebView2CustomItemSelectedEventHandler read GetCustomItemSelectedEventHandler;
+      property Initialized                                     : boolean                                               read GetInitialized;
+      property CoreWebView2PrintSettings                       : TCoreWebView2PrintSettings                            read FCoreWebView2PrintSettings;
+      property CoreWebView2Settings                            : TCoreWebView2Settings                                 read FCoreWebView2Settings;
+      property CoreWebView2Environment                         : TCoreWebView2Environment                              read FCoreWebView2Environment;
+      property CoreWebView2Controller                          : TCoreWebView2Controller                               read FCoreWebView2Controller;
+      property CoreWebView2CompositionController               : TCoreWebView2CompositionController                    read FCoreWebView2CompositionController;
+      property CoreWebView2                                    : TCoreWebView2                                         read FCoreWebView2;
+      property DefaultURL                                      : wvstring                                              read FDefaultURL                                      write FDefaultURL;
+      property IsNavigating                                    : boolean                                               read FIsNavigating;
+      property ZoomPct                                         : double                                                read GetZoomPct                                       write SetZoomPct;                                 // ICoreWebView2Controller.get_ZoomFactor
+      property ZoomStep                                        : byte                                                  read FZoomStep                                        write SetZoomStep;                                // ICoreWebView2Controller.get_ZoomFactor
+      property Widget0CompHWND                                 : THandle                                               read FWidget0CompHWND;
+      property Widget1CompHWND                                 : THandle                                               read FWidget1CompHWND;
+      property RenderCompHWND                                  : THandle                                               read FRenderCompHWND;
+      property D3DWindowCompHWND                               : THandle                                               read FD3DWindowCompHWND;
+      property CustomItemSelectedEventHandler                  : ICoreWebView2CustomItemSelectedEventHandler           read GetCustomItemSelectedEventHandler;
+      property ScreenScale                                     : single                                                read GetScreenScale;
 
       // Custom properties created using DevTool methods
-      property Offline                                : boolean                                 read FOffline                                 write SetOffline;
-      property IgnoreCertificateErrors                : boolean                                 read FIgnoreCertificateErrors                 write SetIgnoreCertificateErrors;
+      property Offline                                         : boolean                                               read FOffline                                         write SetOffline;
+      property IgnoreCertificateErrors                         : boolean                                               read FIgnoreCertificateErrors                         write SetIgnoreCertificateErrors;
 
       // Properties used in the ICoreWebView2Environment creation
-      property BrowserExecPath                        : wvstring                                read FBrowserExecPath                         write FBrowserExecPath;                           // CreateCoreWebView2EnvironmentWithOptions "browserExecutableFolder" parameter
-      property UserDataFolder                         : wvstring                                read GetUserDataFolder                        write FUserDataFolder;                            // CreateCoreWebView2EnvironmentWithOptions "userDataFolder" parameter
-      property AdditionalBrowserArguments             : wvstring                                read FAdditionalBrowserArguments              write FAdditionalBrowserArguments;                // ICoreWebView2EnvironmentOptions.get_AdditionalBrowserArguments
-      property Language                               : wvstring                                read FLanguage                                write FLanguage;                                  // ICoreWebView2EnvironmentOptions.get_Language
-      property TargetCompatibleBrowserVersion         : wvstring                                read FTargetCompatibleBrowserVersion          write FTargetCompatibleBrowserVersion;            // ICoreWebView2EnvironmentOptions.get_TargetCompatibleBrowserVersion
-      property AllowSingleSignOnUsingOSPrimaryAccount : boolean                                 read FAllowSingleSignOnUsingOSPrimaryAccount  write FAllowSingleSignOnUsingOSPrimaryAccount;    // ICoreWebView2EnvironmentOptions.get_AllowSingleSignOnUsingOSPrimaryAccount
-      property ExclusiveUserDataFolderAccess          : boolean                                 read FExclusiveUserDataFolderAccess           write FExclusiveUserDataFolderAccess;             // ICoreWebView2EnvironmentOptions2.Get_ExclusiveUserDataFolderAccess
+      property BrowserExecPath                                 : wvstring                                              read FBrowserExecPath                                 write FBrowserExecPath;                           // CreateCoreWebView2EnvironmentWithOptions "browserExecutableFolder" parameter
+      property UserDataFolder                                  : wvstring                                              read GetUserDataFolder                                write FUserDataFolder;                            // CreateCoreWebView2EnvironmentWithOptions "userDataFolder" parameter
+      property AdditionalBrowserArguments                      : wvstring                                              read FAdditionalBrowserArguments                      write FAdditionalBrowserArguments;                // ICoreWebView2EnvironmentOptions.get_AdditionalBrowserArguments
+      property Language                                        : wvstring                                              read FLanguage                                        write FLanguage;                                  // ICoreWebView2EnvironmentOptions.get_Language
+      property TargetCompatibleBrowserVersion                  : wvstring                                              read FTargetCompatibleBrowserVersion                  write FTargetCompatibleBrowserVersion;            // ICoreWebView2EnvironmentOptions.get_TargetCompatibleBrowserVersion
+      property AllowSingleSignOnUsingOSPrimaryAccount          : boolean                                               read FAllowSingleSignOnUsingOSPrimaryAccount          write FAllowSingleSignOnUsingOSPrimaryAccount;    // ICoreWebView2EnvironmentOptions.get_AllowSingleSignOnUsingOSPrimaryAccount
+      property ExclusiveUserDataFolderAccess                   : boolean                                               read FExclusiveUserDataFolderAccess                   write FExclusiveUserDataFolderAccess;             // ICoreWebView2EnvironmentOptions2.Get_ExclusiveUserDataFolderAccess
+      property CustomCrashReportingEnabled                     : boolean                                               read FCustomCrashReportingEnabled                     write FCustomCrashReportingEnabled;               // ICoreWebView2EnvironmentOptions3.Get_IsCustomCrashReportingEnabled
+      property EnableTrackingPrevention                        : boolean                                               read FEnableTrackingPrevention                        write FEnableTrackingPrevention;                  // ICoreWebView2EnvironmentOptions5.Get_EnableTrackingPrevention
 
       // ICoreWebView2Environment properties
-      property BrowserVersionInfo                     : wvstring                                read GetBrowserVersionInfo;                                                                     // ICoreWebView2Environment.get_BrowserVersionString
+      property BrowserVersionInfo                              : wvstring                                              read GetBrowserVersionInfo;                                                                             // ICoreWebView2Environment.get_BrowserVersionString
 
       // ICoreWebView2 properties
-      property BrowserProcessID                       : cardinal                                read GetBrowserProcessID;                                                                       // ICoreWebView2.get_BrowserProcessId
-      property CanGoBack                              : boolean                                 read GetCanGoBack;                                                                              // ICoreWebView2.get_CanGoBack
-      property CanGoForward                           : boolean                                 read GetCanGoForward;                                                                           // ICoreWebView2.get_CanGoForward
-      property ContainsFullScreenElement              : boolean                                 read GetContainsFullScreenElement;                                                              // ICoreWebView2.get_ContainsFullScreenElement
-      property DocumentTitle                          : wvstring                                read GetDocumentTitle;                                                                          // ICoreWebView2.get_DocumentTitle
-      property Source                                 : wvstring                                read GetSource;                                                                                 // ICoreWebView2.get_Source
+      property BrowserProcessID                                : cardinal                                              read GetBrowserProcessID;                                                                               // ICoreWebView2.get_BrowserProcessId
+      property CanGoBack                                       : boolean                                               read GetCanGoBack;                                                                                      // ICoreWebView2.get_CanGoBack
+      property CanGoForward                                    : boolean                                               read GetCanGoForward;                                                                                   // ICoreWebView2.get_CanGoForward
+      property ContainsFullScreenElement                       : boolean                                               read GetContainsFullScreenElement;                                                                      // ICoreWebView2.get_ContainsFullScreenElement
+      property DocumentTitle                                   : wvstring                                              read GetDocumentTitle;                                                                                  // ICoreWebView2.get_DocumentTitle
+      property Source                                          : wvstring                                              read GetSource;                                                                                         // ICoreWebView2.get_Source
 
       // ICoreWebView2_2 properties
-      property CookieManager                          : ICoreWebView2CookieManager              read GetCookieManager;                                                                          // ICoreWebView2_2.get_CookieManager
+      property CookieManager                                   : ICoreWebView2CookieManager                            read GetCookieManager;                                                                                  // ICoreWebView2_2.get_CookieManager
 
       // ICoreWebView2_3 properties
-      property IsSuspended                            : boolean                                 read GetIsSuspended;                                                                            // ICoreWebView2_3.get_IsSuspended
+      property IsSuspended                                     : boolean                                               read GetIsSuspended;                                                                                    // ICoreWebView2_3.get_IsSuspended
 
       // ICoreWebView2_8 properties
-      property IsDocumentPlayingAudio                 : boolean                                 read GetIsDocumentPlayingAudio;                                                                 // ICoreWebView2_8.get_IsDocumentPlayingAudio
-      property IsMuted                                : boolean                                 read GetIsMuted                               write SetIsMuted;                                 // ICoreWebView2_8.get_IsMuted
+      property IsDocumentPlayingAudio                          : boolean                                               read GetIsDocumentPlayingAudio;                                                                         // ICoreWebView2_8.get_IsDocumentPlayingAudio
+      property IsMuted                                         : boolean                                               read GetIsMuted                                       write SetIsMuted;                                 // ICoreWebView2_8.get_IsMuted
 
       // ICoreWebView2_9 properties
-      property DefaultDownloadDialogCornerAlignment   : TWVDefaultDownloadDialogCornerAlignment read GetDefaultDownloadDialogCornerAlignment  write SetDefaultDownloadDialogCornerAlignment;    // ICoreWebView2_9.get_DefaultDownloadDialogCornerAlignment
-      property DefaultDownloadDialogMargin            : TPoint                                  read GetDefaultDownloadDialogMargin           write SetDefaultDownloadDialogMargin;             // ICoreWebView2_9.get_DefaultDownloadDialogMargin
-      property IsDefaultDownloadDialogOpen            : boolean                                 read GetIsDefaultDownloadDialogOpen;                                                            // ICoreWebView2_9.get_IsDefaultDownloadDialogOpen
+      property DefaultDownloadDialogCornerAlignment            : TWVDefaultDownloadDialogCornerAlignment               read GetDefaultDownloadDialogCornerAlignment          write SetDefaultDownloadDialogCornerAlignment;    // ICoreWebView2_9.get_DefaultDownloadDialogCornerAlignment
+      property DefaultDownloadDialogMargin                     : TPoint                                                read GetDefaultDownloadDialogMargin                   write SetDefaultDownloadDialogMargin;             // ICoreWebView2_9.get_DefaultDownloadDialogMargin
+      property IsDefaultDownloadDialogOpen                     : boolean                                               read GetIsDefaultDownloadDialogOpen;                                                                    // ICoreWebView2_9.get_IsDefaultDownloadDialogOpen
 
       // ICoreWebView2_12
-      property StatusBarText                          : wvstring                                read GetStatusBarText;
+      property StatusBarText                                   : wvstring                                              read GetStatusBarText;
 
       // ICoreWebView2_15
-      property FaviconURI                             : wvstring                                read GetFaviconURI;
+      property FaviconURI                                      : wvstring                                              read GetFaviconURI;
+
+      // ICoreWebView2_19
+      property MemoryUsageTargetLevel                          : TWVMemoryUsageTargetLevel                             read GetMemoryUsageTargetLevel                        write SetMemoryUsageTargetLevel;                  // ICoreWebView2_19.Get_MemoryUsageTargetLevel
 
       // ICoreWebView2Controller properties
-      property Bounds                                 : TRect                                   read GetBounds                                write SetBounds;                                  // ICoreWebView2Controller.get_Bounds
-      property IsVisible                              : boolean                                 read GetIsVisible                             write SetIsVisible;                               // ICoreWebView2Controller.get_IsVisible
-      property ParentWindow                           : THandle                                 read GetParentWindow                          write SetParentWindow;                            // ICoreWebView2Controller.get_ParentWindow
-      property ZoomFactor                             : double                                  read GetZoomFactor                            write SetZoomFactor;                              // ICoreWebView2Controller.get_ZoomFactor
+      property Bounds                                          : TRect                                                 read GetBounds                                        write SetBounds;                                  // ICoreWebView2Controller.get_Bounds
+      property IsVisible                                       : boolean                                               read GetIsVisible                                     write SetIsVisible;                               // ICoreWebView2Controller.get_IsVisible
+      property ParentWindow                                    : THandle                                               read GetParentWindow                                  write SetParentWindow;                            // ICoreWebView2Controller.get_ParentWindow
+      property ZoomFactor                                      : double                                                read GetZoomFactor                                    write SetZoomFactor;                              // ICoreWebView2Controller.get_ZoomFactor
 
       // ICoreWebView2Controller2 properties
-      property DefaultBackgroundColor                 : TColor                                  read GetDefaultBackgroundColor                write SetDefaultBackgroundColor;                  // ICoreWebView2Controller2.get_DefaultBackgroundColor
+      property DefaultBackgroundColor                          : TColor                                                read GetDefaultBackgroundColor                        write SetDefaultBackgroundColor;                  // ICoreWebView2Controller2.get_DefaultBackgroundColor
 
       // ICoreWebView2Controller3 properties
-      property BoundsMode                             : TWVBoundsMode                           read GetBoundsMode                            write SetBoundsMode;                              // ICoreWebView2Controller3.get_BoundsMode
-      property RasterizationScale                     : double                                  read GetRasterizationScale                    write SetRasterizationScale;                      // ICoreWebView2Controller3.get_RasterizationScale
-      property ShouldDetectMonitorScaleChanges        : boolean                                 read GetShouldDetectMonitorScaleChanges       write SetShouldDetectMonitorScaleChanges;         // ICoreWebView2Controller3.get_ShouldDetectMonitorScaleChanges
+      property BoundsMode                                      : TWVBoundsMode                                         read GetBoundsMode                                    write SetBoundsMode;                              // ICoreWebView2Controller3.get_BoundsMode
+      property RasterizationScale                              : double                                                read GetRasterizationScale                            write SetRasterizationScale;                      // ICoreWebView2Controller3.get_RasterizationScale
+      property ShouldDetectMonitorScaleChanges                 : boolean                                               read GetShouldDetectMonitorScaleChanges               write SetShouldDetectMonitorScaleChanges;         // ICoreWebView2Controller3.get_ShouldDetectMonitorScaleChanges
 
       // ICoreWebView2Controller4 properties
-      property AllowExternalDrop                      : boolean                                 read GetAllowExternalDrop                     write SetAllowExternalDrop;
+      property AllowExternalDrop                               : boolean                                               read GetAllowExternalDrop                             write SetAllowExternalDrop;
 
       // ICoreWebView2Settings properties
-      property DefaultContextMenusEnabled             : boolean                                 read GetDefaultContextMenusEnabled            write SetDefaultContextMenusEnabled;              // ICoreWebView2Settings.get_AreDefaultContextMenusEnabled
-      property DefaultScriptDialogsEnabled            : boolean                                 read GetDefaultScriptDialogsEnabled           write SetDefaultScriptDialogsEnabled;             // ICoreWebView2Settings.get_AreDefaultScriptDialogsEnabled
-      property DevToolsEnabled                        : boolean                                 read GetDevToolsEnabled                       write SetDevToolsEnabled;                         // ICoreWebView2Settings.get_AreDevToolsEnabled
-      property AreHostObjectsAllowed                  : boolean                                 read GetAreHostObjectsAllowed                 write SetAreHostObjectsAllowed;                   // ICoreWebView2Settings.get_AreHostObjectsAllowed
-      property BuiltInErrorPageEnabled                : boolean                                 read GetBuiltInErrorPageEnabled               write SetBuiltInErrorPageEnabled;                 // ICoreWebView2Settings.get_IsBuiltInErrorPageEnabled
-      property ScriptEnabled                          : boolean                                 read GetScriptEnabled                         write SetScriptEnabled;                           // ICoreWebView2Settings.get_IsScriptEnabled
-      property StatusBarEnabled                       : boolean                                 read GetStatusBarEnabled                      write SetStatusBarEnabled;                        // ICoreWebView2Settings.get_IsStatusBarEnabled
-      property WebMessageEnabled                      : boolean                                 read GetWebMessageEnabled                     write SetWebMessageEnabled;                       // ICoreWebView2Settings.get_IsWebMessageEnabled
-      property ZoomControlEnabled                     : boolean                                 read GetZoomControlEnabled                    write SetZoomControlEnabled;                      // ICoreWebView2Settings.get_IsZoomControlEnabled
+      property DefaultContextMenusEnabled                      : boolean                                               read GetDefaultContextMenusEnabled                    write SetDefaultContextMenusEnabled;              // ICoreWebView2Settings.get_AreDefaultContextMenusEnabled
+      property DefaultScriptDialogsEnabled                     : boolean                                               read GetDefaultScriptDialogsEnabled                   write SetDefaultScriptDialogsEnabled;             // ICoreWebView2Settings.get_AreDefaultScriptDialogsEnabled
+      property DevToolsEnabled                                 : boolean                                               read GetDevToolsEnabled                               write SetDevToolsEnabled;                         // ICoreWebView2Settings.get_AreDevToolsEnabled
+      property AreHostObjectsAllowed                           : boolean                                               read GetAreHostObjectsAllowed                         write SetAreHostObjectsAllowed;                   // ICoreWebView2Settings.get_AreHostObjectsAllowed
+      property BuiltInErrorPageEnabled                         : boolean                                               read GetBuiltInErrorPageEnabled                       write SetBuiltInErrorPageEnabled;                 // ICoreWebView2Settings.get_IsBuiltInErrorPageEnabled
+      property ScriptEnabled                                   : boolean                                               read GetScriptEnabled                                 write SetScriptEnabled;                           // ICoreWebView2Settings.get_IsScriptEnabled
+      property StatusBarEnabled                                : boolean                                               read GetStatusBarEnabled                              write SetStatusBarEnabled;                        // ICoreWebView2Settings.get_IsStatusBarEnabled
+      property WebMessageEnabled                               : boolean                                               read GetWebMessageEnabled                             write SetWebMessageEnabled;                       // ICoreWebView2Settings.get_IsWebMessageEnabled
+      property ZoomControlEnabled                              : boolean                                               read GetZoomControlEnabled                            write SetZoomControlEnabled;                      // ICoreWebView2Settings.get_IsZoomControlEnabled
 
       // ICoreWebView2Settings2 properties
-      property UserAgent                              : wvstring                                read GetUserAgent                             write SetUserAgent;                               // ICoreWebView2Settings2.get_UserAgent
+      property UserAgent                                       : wvstring                                              read GetUserAgent                                     write SetUserAgent;                               // ICoreWebView2Settings2.get_UserAgent
 
       // ICoreWebView2Settings3 properties
-      property AreBrowserAcceleratorKeysEnabled       : boolean                                 read GetAreBrowserAcceleratorKeysEnabled      write SetAreBrowserAcceleratorKeysEnabled;        // ICoreWebView2Settings3.get_AreBrowserAcceleratorKeysEnabled
+      property AreBrowserAcceleratorKeysEnabled                : boolean                                               read GetAreBrowserAcceleratorKeysEnabled              write SetAreBrowserAcceleratorKeysEnabled;        // ICoreWebView2Settings3.get_AreBrowserAcceleratorKeysEnabled
 
       // ICoreWebView2Settings4 properties
-      property IsGeneralAutofillEnabled               : boolean                                 read GetIsGeneralAutofillEnabled              write SetIsGeneralAutofillEnabled;                // ICoreWebView2Settings4.get_IsGeneralAutofillEnabled
-      property IsPasswordAutosaveEnabled              : boolean                                 read GetIsPasswordAutosaveEnabled             write SetIsPasswordAutosaveEnabled;               // ICoreWebView2Settings4.get_IsPasswordAutosaveEnabled
+      property IsGeneralAutofillEnabled                        : boolean                                               read GetIsGeneralAutofillEnabled                      write SetIsGeneralAutofillEnabled;                // ICoreWebView2Settings4.get_IsGeneralAutofillEnabled
+      property IsPasswordAutosaveEnabled                       : boolean                                               read GetIsPasswordAutosaveEnabled                     write SetIsPasswordAutosaveEnabled;               // ICoreWebView2Settings4.get_IsPasswordAutosaveEnabled
 
       // ICoreWebView2Settings5 properties
-      property IsPinchZoomEnabled                     : boolean                                 read GetIsPinchZoomEnabled                    write SetIsPinchZoomEnabled;                      // ICoreWebView2Settings5.get_IsPinchZoomEnabled
+      property IsPinchZoomEnabled                              : boolean                                               read GetIsPinchZoomEnabled                            write SetIsPinchZoomEnabled;                      // ICoreWebView2Settings5.get_IsPinchZoomEnabled
 
       // ICoreWebView2Settings6 properties
-      property IsSwipeNavigationEnabled               : boolean                                 read GetIsSwipeNavigationEnabled              write SetIsSwipeNavigationEnabled;                // ICoreWebView2Settings6.get_IsSwipeNavigationEnabled
+      property IsSwipeNavigationEnabled                        : boolean                                               read GetIsSwipeNavigationEnabled                      write SetIsSwipeNavigationEnabled;                // ICoreWebView2Settings6.get_IsSwipeNavigationEnabled
 
       // ICoreWebView2Settings7 properties
-      property HiddenPdfToolbarItems                  : TWVPDFToolbarItems                      read GetHiddenPdfToolbarItems                 write SetHiddenPdfToolbarItems;                   // ICoreWebView2Settings7.HiddenPdfToolbarItems
+      property HiddenPdfToolbarItems                           : TWVPDFToolbarItems                                    read GetHiddenPdfToolbarItems                         write SetHiddenPdfToolbarItems;                   // ICoreWebView2Settings7.Get_HiddenPdfToolbarItems
+
+      // ICoreWebView2Settings8 properties
+      property IsReputationCheckingRequired                    : boolean                                               read GetIsReputationCheckingRequired                  write SetIsReputationCheckingRequired;            // ICoreWebView2Settings8.Get_IsReputationCheckingRequired
 
       // ICoreWebView2CompositionController properties
-      property Cursor                                 : HCURSOR                                 read GetCursor;                                                                                 // ICoreWebView2CompositionController.get_Cursor
-      property RootVisualTarget                       : IUnknown                                read GetRootVisualTarget                      write SetRootVisualTarget;                        // ICoreWebView2CompositionController.get_RootVisualTarget
-      property SystemCursorID                         : cardinal                                read GetSystemCursorID;                                                                         // ICoreWebView2CompositionController.get_SystemCursorId
+      property Cursor                                          : HCURSOR                                               read GetCursor;                                                                                         // ICoreWebView2CompositionController.get_Cursor
+      property RootVisualTarget                                : IUnknown                                              read GetRootVisualTarget                              write SetRootVisualTarget;                        // ICoreWebView2CompositionController.get_RootVisualTarget
+      property SystemCursorID                                  : cardinal                                              read GetSystemCursorID;                                                                                 // ICoreWebView2CompositionController.get_SystemCursorId
 
       // ICoreWebView2CompositionController2 properties
-      property AutomationProvider                     : IUnknown                                read GetAutomationProvider;                                                                     // ICoreWebView2CompositionController2.get_UIAProvider
+      property AutomationProvider                              : IUnknown                                              read GetAutomationProvider;                                                                             // ICoreWebView2CompositionController2.get_UIAProvider
 
       // ICoreWebView2Environment8 properties
-      property ProcessInfos                           : ICoreWebView2ProcessInfoCollection      read GetProcessInfos;                                                                           // ICoreWebView2Environment8.GetProcessInfos
+      property ProcessInfos                                    : ICoreWebView2ProcessInfoCollection                    read GetProcessInfos;                                                                                   // ICoreWebView2Environment8.GetProcessInfos
 
-      // ICoreWebView2ControllerOptions properties
-      property ProfileName                            : wvstring                                read FProfileName                             write SetProfileName;                             // ICoreWebView2ControllerOptions.Get_ProfileName
-      property IsInPrivateModeEnabled                 : boolean                                 read FIsInPrivateModeEnabled                  write FIsInPrivateModeEnabled;                    // ICoreWebView2ControllerOptions.Get_IsInPrivateModeEnabled
+      // ICoreWebView2ControllerOptions and ICoreWebView2Profile properties
+      property ProfileName                                     : wvstring                                              read GetProfileName                                   write SetProfileName;                             // ICoreWebView2ControllerOptions.Get_ProfileName and ICoreWebView2Profile.Get_ProfileName
+      property IsInPrivateModeEnabled                          : boolean                                               read GetIsInPrivateModeEnabled                        write FIsInPrivateModeEnabled;                    // ICoreWebView2ControllerOptions.Get_IsInPrivateModeEnabled and ICoreWebView2Profile.Get_IsInPrivateModeEnabled
+      property ScriptLocale                                    : wvstring                                              read FScriptLocale                                    write FScriptLocale;                              // ICoreWebView2ControllerOptions2.Get_ScriptLocale
+
+      // ICoreWebView2Profile properties
+      property ProfilePath                                     : wvstring                                              read GetProfilePath;                                                                                    // ICoreWebView2Profile.Get_ProfilePath
+      property DefaultDownloadFolderPath                       : wvstring                                              read GetDefaultDownloadFolderPath                     write SetDefaultDownloadFolderPath;               // ICoreWebView2Profile.Get_DefaultDownloadFolderPath
+      property PreferredColorScheme                            : TWVPreferredColorScheme                               read GetPreferredColorScheme                          write SetPreferredColorScheme;                    // ICoreWebView2Profile.Get_PreferredColorScheme
+
+      // ICoreWebView2Profile3 properties
+      property PreferredTrackingPreventionLevel                : TWVTrackingPreventionLevel                            read GetPreferredTrackingPreventionLevel              write SetPreferredTrackingPreventionLevel;        // ICoreWebView2Profile3.Get_PreferredTrackingPreventionLevel
+
+      // ICoreWebView2Profile5 properties
+      property ProfileCookieManager                            : ICoreWebView2CookieManager                            read GetProfileCookieManager;                                                                           // ICoreWebView2Profile5.get_CookieManager
+
+      // ICoreWebView2Profile6 properties
+      property ProfileIsPasswordAutosaveEnabled                : boolean                                               read GetProfileIsPasswordAutosaveEnabled              write SetProfileIsPasswordAutosaveEnabled;        // ICoreWebView2Profile6.Get_IsPasswordAutosaveEnabled
+      property ProfileIsGeneralAutofillEnabled                 : boolean                                               read GetProfileIsGeneralAutofillEnabled               write SetProfileIsGeneralAutofillEnabled;         // ICoreWebView2Profile6.Get_IsGeneralAutofillEnabled
 
       // ICoreWebView2Environment5 events
       property OnBrowserProcessExited                          : TOnBrowserProcessExitedEvent                          read FOnBrowserProcessExited                          write FOnBrowserProcessExited;
@@ -697,6 +770,10 @@ type
       property OnFaviconChanged                                : TOnFaviconChangedEvent                                read FOnFaviconChanged                                write FOnFaviconChanged;
       property OnGetFaviconCompleted                           : TOnGetFaviconCompletedEvent                           read FOnGetFaviconCompleted                           write FOnGetFaviconCompleted;
 
+      // ICoreWebView2_16 events
+      property OnPrintCompleted                                : TOnPrintCompletedEvent                                read FOnPrintCompleted                                write FOnPrintCompleted;
+      property OnPrintToPdfStreamCompleted                     : TOnPrintToPdfStreamCompletedEvent                     read FOnPrintToPdfStreamCompleted                     write FOnPrintToPdfStreamCompleted;
+
       // ICoreWebView2Controller events
       property OnAcceleratorKeyPressed                         : TOnAcceleratorKeyPressedEvent                         read FOnAcceleratorKeyPressed                         write FOnAcceleratorKeyPressed;
       property OnGotFocus                                      : TNotifyEvent                                          read FOnGotFocus                                      write FOnGotFocus;
@@ -756,7 +833,6 @@ type
       property OnWidget1CompMsg                                : TOnCompMsgEvent                                       read FOnWidget1CompMsg                                write FOnWidget1CompMsg;
       property OnRenderCompMsg                                 : TOnCompMsgEvent                                       read FOnRenderCompMsg                                 write FOnRenderCompMsg;
       property OnD3DWindowCompMsg                              : TOnCompMsgEvent                                       read FOnD3DWindowCompMsg                              write FOnD3DWindowCompMsg;
-      property OnPrintCompleted                                : TOnPrintCompletedEvent                                read FOnPrintCompleted                                write FOnPrintCompleted;
       property OnRetrieveHTMLCompleted                         : TOnRetrieveHTMLCompletedEvent                         read FOnRetrieveHTMLCompleted                         write FOnRetrieveHTMLCompleted;
       property OnRetrieveTextCompleted                         : TOnRetrieveTextCompletedEvent                         read FOnRetrieveTextCompleted                         write FOnRetrieveTextCompleted;
       property OnRetrieveMHTMLCompleted                        : TOnRetrieveMHTMLCompletedEvent                        read FOnRetrieveMHTMLCompleted                        write FOnRetrieveMHTMLCompleted;
@@ -766,13 +842,17 @@ type
       property OnIgnoreCertificateErrorsCompleted              : TOnIgnoreCertificateErrorsCompletedEvent              read FOnIgnoreCertificateErrorsCompleted              write FOnIgnoreCertificateErrorsCompleted;
       property OnRefreshIgnoreCacheCompleted                   : TOnRefreshIgnoreCacheCompletedEvent                   read FOnRefreshIgnoreCacheCompleted                   write FOnRefreshIgnoreCacheCompleted;
       property OnSimulateKeyEventCompleted                     : TOnSimulateKeyEventCompletedEvent                     read FOnSimulateKeyEventCompleted                     write FOnSimulateKeyEventCompleted;
+      property OnGetCustomSchemes                              : TOnGetCustomSchemesEvent                              read FOnGetCustomSchemes                              write FOnGetCustomSchemes;
+      property OnGetNonDefaultPermissionSettingsCompleted      : TOnGetNonDefaultPermissionSettingsCompletedEvent      read FOnGetNonDefaultPermissionSettingsCompleted      write FOnGetNonDefaultPermissionSettingsCompleted;
+      property OnSetPermissionStateCompleted                   : TOnSetPermissionStateCompletedEvent                   read FOnSetPermissionStateCompleted                   write FOnSetPermissionStateCompleted;
+      property OnLaunchingExternalUriScheme                    : TOnLaunchingExternalUriSchemeEvent                    read FOnLaunchingExternalUriScheme                    write FOnLaunchingExternalUriScheme;
   end;
 
 implementation
 
 uses
   uWVMiscFunctions, uWVCoreWebView2EnvironmentOptions, uWVCoreWebView2ControllerOptions,
-  uWVCoreWebView2Profile;
+  uWVCoreWebView2Profile, uWVCoreWebView2CustomSchemeRegistration;
 
 constructor TWVBrowserBase.Create(AOwner: TComponent);
 begin
@@ -792,13 +872,18 @@ begin
   FTargetCompatibleBrowserVersion                  := LowestChromiumVersion;
   FAllowSingleSignOnUsingOSPrimaryAccount          := False;
   FExclusiveUserDataFolderAccess                   := False;
+  FCustomCrashReportingEnabled                     := False;
+  FEnableTrackingPrevention                        := True;
   FZoomStep                                        := ZOOM_STEP_DEF;
   FOffline                                         := False;
   FIsNavigating                                    := False;
   FProfileName                                     := '';
   FIsInPrivateModeEnabled                          := False;
+  FScriptLocale                                    := '';
   FMenuItemHandler                                 := nil;
   FClearBrowsingDataCompletedHandler               := nil;
+  FSetPermissionStateCompletedHandler              := nil;
+  FGetNonDefaultPermissionSettingsCompletedHandler := nil;
 
   FOldWidget0CompWndPrc                            := nil;
   FOldWidget1CompWndPrc                            := nil;
@@ -892,6 +977,13 @@ begin
   FOnClearBrowsingDataCompleted                    := nil;
   FOnServerCertificateErrorActionsCompleted        := nil;
   FOnServerCertificateErrorDetected                := nil;
+  FOnFaviconChanged                                := nil;
+  FOnGetFaviconCompleted                           := nil;
+  FOnPrintToPdfStreamCompleted                     := nil;
+  FOnGetCustomSchemes                              := nil;
+  FOnGetNonDefaultPermissionSettingsCompleted      := nil;
+  FOnSetPermissionStateCompleted                   := nil;
+  FOnLaunchingExternalUriScheme                    := nil;
 end;
 
 destructor TWVBrowserBase.Destroy;
@@ -905,7 +997,9 @@ begin
     DestroyController;
     DestroyCompositionController;
     DestroyMenuItemHandler;
-    FClearBrowsingDataCompletedHandler := nil;
+    FClearBrowsingDataCompletedHandler               := nil;
+    FSetPermissionStateCompletedHandler              := nil;
+    FGetNonDefaultPermissionSettingsCompletedHandler := nil;
   finally
     inherited Destroy;
   end;
@@ -968,7 +1062,9 @@ procedure TWVBrowserBase.AfterConstruction;
 begin
   inherited AfterConstruction;
 
-  FClearBrowsingDataCompletedHandler := TCoreWebView2ClearBrowsingDataCompletedHandler.Create(self);
+  FClearBrowsingDataCompletedHandler               := TCoreWebView2ClearBrowsingDataCompletedHandler.Create(self);
+  FSetPermissionStateCompletedHandler              := TCoreWebView2SetPermissionStateCompletedHandler.Create(self);
+  FGetNonDefaultPermissionSettingsCompletedHandler := TCoreWebView2GetNonDefaultPermissionSettingsCompletedHandler.Create(self);
 end;
 
 {$IFNDEF FPC}
@@ -1872,6 +1968,60 @@ begin
     FOnGetFaviconCompleted(self, errorCode, faviconStream);
 end;
 
+procedure TWVBrowserBase.doOnPrintCompletedEvent(errorCode: HResult; printStatus: COREWEBVIEW2_PRINT_STATUS);
+begin
+  if assigned(FOnPrintCompleted) then
+    FOnPrintCompleted(self, errorCode, printStatus);
+end;
+
+procedure TWVBrowserBase.doOnPrintToPdfStreamCompletedEvent(errorCode: HResult; const pdfStream: IStream);
+begin
+  if assigned(FOnPrintToPdfStreamCompleted) then
+    FOnPrintToPdfStreamCompleted(self, errorCode, pdfStream);
+end;
+
+procedure TWVBrowserBase.doOnGetCustomSchemes(var aSchemeRegistrations : TWVCustomSchemeRegistrationArray);
+var
+  TempArray : TWVCustomSchemeInfoArray;
+  i, TempLen : integer;
+begin
+  if not(assigned(FOnGetCustomSchemes)) then exit;
+
+  TempArray := nil;
+  FOnGetCustomSchemes(self, TempArray);
+  TempLen := length(TempArray);
+
+  if (TempLen = 0) then exit;
+
+  SetLength(aSchemeRegistrations,  TempLen);
+  ZeroMemory(aSchemeRegistrations, TempLen * SizeOf(ICoreWebView2CustomSchemeRegistration));
+
+  i := 0;
+  while (i < TempLen) do
+    begin
+      aSchemeRegistrations[i] := TCoreWebView2CustomSchemeRegistration.Create(TempArray[i]);
+      inc(i);
+    end;
+end;
+
+procedure TWVBrowserBase.doOnGetNonDefaultPermissionSettingsCompleted(errorCode: HResult; const collectionView: ICoreWebView2PermissionSettingCollectionView);
+begin
+  if assigned(FOnGetNonDefaultPermissionSettingsCompleted) then
+    FOnGetNonDefaultPermissionSettingsCompleted(self, errorCode, collectionView);
+end;
+
+procedure TWVBrowserBase.doOnSetPermissionStateCompleted(errorCode: HResult);
+begin
+  if assigned(FOnSetPermissionStateCompleted) then
+    FOnSetPermissionStateCompleted(self, errorCode);
+end;
+
+procedure TWVBrowserBase.doOnLaunchingExternalUriSchemeEvent(const sender: ICoreWebView2; const args: ICoreWebView2LaunchingExternalUriSchemeEventArgs);
+begin
+  if assigned(FOnLaunchingExternalUriScheme) then
+    FOnLaunchingExternalUriScheme(self, sender, args);
+end;
+
 procedure TWVBrowserBase.doOnRetrieveMHTMLCompleted(      aErrorCode          : HRESULT;
                                                     const aReturnObjectAsJson : wvstring);
 var
@@ -2142,14 +2292,41 @@ begin
   doOnGetFaviconCompletedEvent(errorCode, faviconStream);
 end;
 
+function TWVBrowserBase.PrintCompletedHandler_Invoke(errorCode: HResult; printStatus: COREWEBVIEW2_PRINT_STATUS): HRESULT;
+begin
+  Result := S_OK;
+  doOnPrintCompletedEvent(errorCode, printStatus);
+end;
+
+function TWVBrowserBase.PrintToPdfStreamCompletedHandler_Invoke(errorCode: HResult; const pdfStream: IStream): HRESULT;
+begin
+  Result := S_OK;
+  doOnPrintToPdfStreamCompletedEvent(errorCode, pdfStream);
+end;
+
+function TWVBrowserBase.GetNonDefaultPermissionSettingsCompletedHandler_Invoke(errorCode: HResult; const collectionView: ICoreWebView2PermissionSettingCollectionView): HRESULT;
+begin
+  Result := S_OK;
+  doOnGetNonDefaultPermissionSettingsCompleted(errorCode, collectionView);
+end;
+
+function TWVBrowserBase.SetPermissionStateCompletedHandler_Invoke(errorCode: HResult): HRESULT;
+begin
+  Result := S_OK;
+  doOnSetPermissionStateCompleted(errorCode);
+end;
+
+function TWVBrowserBase.LaunchingExternalUriSchemeEventHandler_Invoke(const sender: ICoreWebView2; const args: ICoreWebView2LaunchingExternalUriSchemeEventArgs): HRESULT;
+begin
+  Result := S_OK;
+  doOnLaunchingExternalUriSchemeEvent(sender, args);
+end;
+
 function TWVBrowserBase.ExecuteScriptCompletedHandler_Invoke(errorCode: HRESULT; resultObjectAsJson: PWideChar; aExecutionID : integer): HRESULT;
 begin
   Result := S_OK;
 
   case aExecutionID of
-    WEBVIEW4DELPHI_JS_PRINTJOB_ID :
-      doOnPrintCompleted(errorCode, wvstring(resultObjectAsJson));
-
     WEBVIEW4DELPHI_JS_RETRIEVEHTMLJOB_ID :
       doOnRetrieveHTMLCompleted(errorCode, wvstring(resultObjectAsJson));
 
@@ -2241,6 +2418,7 @@ begin
         TempOptions                        := TCoreWebView2ControllerOptions.Create(TempOptionsIntf);
         TempOptions.ProfileName            := FProfileName;
         TempOptions.IsInPrivateModeEnabled := FIsInPrivateModeEnabled;
+        TempOptions.ScriptLocale           := FScriptLocale;
 
         Result := FCoreWebView2Environment.CreateCoreWebView2CompositionControllerWithOptions(FWindowParentHandle,
                                                                                               TempOptions.BaseIntf,
@@ -2291,6 +2469,7 @@ begin
       TempOptions                        := TCoreWebView2ControllerOptions.Create(TempOptionsIntf);
       TempOptions.ProfileName            := FProfileName;
       TempOptions.IsInPrivateModeEnabled := FIsInPrivateModeEnabled;
+      TempOptions.ScriptLocale           := FScriptLocale;
 
       Result := FCoreWebView2Environment.CreateCoreWebView2ControllerWithOptions(FWindowParentHandle,
                                                                                  TempOptions.BaseIntf,
@@ -2686,6 +2865,14 @@ begin
     Result := 0;
 end;
 
+function TWVBrowserBase.GetIsReputationCheckingRequired : boolean;
+begin
+  if Initialized then
+    Result := FCoreWebView2Settings.IsReputationCheckingRequired
+   else
+    Result := True;
+end;
+
 function TWVBrowserBase.GetCustomItemSelectedEventHandler : ICoreWebView2CustomItemSelectedEventHandler;
 begin
   if not(assigned(FMenuItemHandler)) then
@@ -2700,6 +2887,22 @@ begin
     Result := FCoreWebView2.FaviconURI
    else
     Result := '';
+end;
+
+function TWVBrowserBase.GetMemoryUsageTargetLevel : TWVMemoryUsageTargetLevel;
+begin
+  if Initialized then
+    Result := FCoreWebView2.MemoryUsageTargetLevel
+   else
+    Result := COREWEBVIEW2_MEMORY_USAGE_TARGET_LEVEL_NORMAL;
+end;
+
+function TWVBrowserBase.GetScreenScale : single;
+begin
+  if (GlobalWebView2Loader <> nil) then
+    Result := GlobalWebView2Loader.DeviceScaleFactor
+   else
+    Result := 1;
 end;
 
 function TWVBrowserBase.GetZoomFactor: Double;
@@ -2733,17 +2936,25 @@ var
   TempHandler : ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler;
   TempError   : wvstring;
   TempHResult : HRESULT;
+  TempSchemeRegistrations : TWVCustomSchemeRegistrationArray;
+  i : integer;
 begin
-  Result := False;
+  Result                  := False;
+  TempSchemeRegistrations := nil;
 
   try
+    doOnGetCustomSchemes(TempSchemeRegistrations);
+
     TempHandler := TCoreWebView2EnvironmentCompletedHandler.Create(self);
 
     TempOptions := TCoreWebView2EnvironmentOptions.Create(FAdditionalBrowserArguments,
                                                           FLanguage,
                                                           FTargetCompatibleBrowserVersion,
                                                           FAllowSingleSignOnUsingOSPrimaryAccount,
-                                                          FExclusiveUserDataFolderAccess);
+                                                          FExclusiveUserDataFolderAccess,
+                                                          FCustomCrashReportingEnabled,
+                                                          TempSchemeRegistrations,
+                                                          FEnableTrackingPrevention);
 
     TempHResult := CreateCoreWebView2EnvironmentWithOptions(PWideChar(FBrowserExecPath),
                                                             PWideChar(FUserDataFolder),
@@ -2768,6 +2979,16 @@ begin
   finally
     TempOptions := nil;
     TempHandler := nil;
+
+    if assigned(TempSchemeRegistrations) then
+      begin
+        i := pred(length(TempSchemeRegistrations));
+        while (i >= 0) do
+          begin
+            TempSchemeRegistrations[i] := nil;
+            dec(i);
+          end;
+      end;
   end;
 end;
 
@@ -2889,6 +3110,12 @@ procedure TWVBrowserBase.SetHiddenPdfToolbarItems(aValue : TWVPDFToolbarItems);
 begin
   if Initialized then
     FCoreWebView2Settings.HiddenPdfToolbarItems := aValue;
+end;
+
+procedure TWVBrowserBase.SetIsReputationCheckingRequired(aValue : boolean);
+begin
+  if Initialized then
+    FCoreWebView2Settings.IsReputationCheckingRequired := aValue;
 end;
 
 procedure TWVBrowserBase.SetProfileName(const aValue : wvstring);
@@ -3013,6 +3240,14 @@ begin
             FCoreWebView2.GetFavicon(aFormat, self);
 end;
 
+function TWVBrowserBase.PostSharedBufferToScript(const aSharedBuffer         : ICoreWebView2SharedBuffer;
+                                                       aAccess               : TWVSharedBufferAccess;
+                                                 const aAdditionalDataAsJson : wvstring): boolean;
+begin
+  Result := Initialized and
+            FCoreWebView2.PostSharedBufferToScript(aSharedBuffer, aAccess, aAdditionalDataAsJson);
+end;
+
 // This function is asynchronous and it triggers the TWVBrowserBase.OnTrySuspendCompleted event when it finishes
 function TWVBrowserBase.TrySuspend : boolean;
 var
@@ -3074,8 +3309,33 @@ end;
 
 // This function is asynchronous and it triggers the TWVBrowserBase.OnPrintCompleted event when it finishes
 function TWVBrowserBase.Print : boolean;
+var
+  TempHandler : ICoreWebView2PrintCompletedHandler;
 begin
-  Result := ExecuteScript('window.print();', WEBVIEW4DELPHI_JS_PRINTJOB_ID);
+  Result := False;
+
+  if Initialized and
+     assigned(FCoreWebView2PrintSettings) and
+     FCoreWebView2PrintSettings.Initialized then
+    try
+      TempHandler := TCoreWebView2PrintCompletedHandler.Create(self);
+      Result      := FCoreWebView2.Print(FCoreWebView2PrintSettings.BaseIntf, TempHandler);
+    finally
+      TempHandler := nil;
+    end;
+end;
+
+function TWVBrowserBase.ShowPrintUI(aUseSystemPrintDialog : boolean): boolean;
+begin
+  if Initialized then
+    begin
+      if aUseSystemPrintDialog then
+        Result := FCoreWebView2.ShowPrintUI(COREWEBVIEW2_PRINT_DIALOG_KIND_SYSTEM)
+       else
+        Result := FCoreWebView2.ShowPrintUI(COREWEBVIEW2_PRINT_DIALOG_KIND_BROWSER);
+    end
+   else
+    Result := False;
 end;
 
 // This function is asynchronous and it triggers the TWVBrowserBase.OnPrintToPdfCompleted event when it finishes
@@ -3091,6 +3351,24 @@ begin
     try
       TempHandler := TCoreWebView2PrintToPdfCompletedHandler.Create(self);
       Result      := FCoreWebView2.PrintToPdf(aResultFilePath, FCoreWebView2PrintSettings.BaseIntf, TempHandler);
+    finally
+      TempHandler := nil;
+    end;
+end;
+
+// This function is asynchronous and it triggers the TWVBrowserBase.OnPrintToPdfStream event
+function TWVBrowserBase.PrintToPdfStream : boolean;
+var
+  TempHandler : ICoreWebView2PrintToPdfStreamCompletedHandler;
+begin
+  Result := False;
+
+  if Initialized and
+     assigned(FCoreWebView2PrintSettings) and
+     FCoreWebView2PrintSettings.Initialized then
+    try
+      TempHandler := TCoreWebView2PrintToPdfStreamCompletedHandler.Create(self);
+      Result      := FCoreWebView2.PrintToPdfStream(FCoreWebView2PrintSettings.BaseIntf, TempHandler);
     finally
       TempHandler := nil;
     end;
@@ -3490,12 +3768,6 @@ procedure TWVBrowserBase.doOnExecuteScriptCompleted(aErrorCode: HRESULT; const a
 begin
   if assigned(FOnExecuteScriptCompleted) then
     FOnExecuteScriptCompleted(self, aErrorCode, aResultObjectAsJson, aExecutionID);
-end;
-
-procedure TWVBrowserBase.doOnPrintCompleted(aErrorCode: HRESULT; const aResultObjectAsJson: wvstring);
-begin
-  if assigned(FOnPrintCompleted) then
-    FOnPrintCompleted(self, aErrorCode, aResultObjectAsJson);
 end;
 
 procedure TWVBrowserBase.doOnRefreshIgnoreCacheCompleted(aErrorCode: HRESULT; const aResultObjectAsJson: wvstring);
@@ -4076,6 +4348,285 @@ begin
       if assigned(TempProfile) then
         FreeAndNil(TempProfile);
     end;
+end;
+
+function TWVBrowserBase.SetPermissionState(aPermissionKind: TWVPermissionKind; const aOrigin: wvstring; aState: TWVPermissionState) : boolean;
+var
+  TempProfile : TCoreWebView2Profile;
+begin
+  Result      := False;
+  TempProfile := nil;
+
+  if Initialized then
+    try
+      TempProfile := TCoreWebView2Profile.Create(FCoreWebView2.Profile);
+      Result      := TempProfile.SetPermissionState(aPermissionKind, aOrigin, aState, FSetPermissionStateCompletedHandler);
+    finally
+      if assigned(TempProfile) then
+        FreeAndNil(TempProfile);
+    end;
+end;
+
+function TWVBrowserBase.GetNonDefaultPermissionSettings: boolean;
+var
+  TempProfile : TCoreWebView2Profile;
+begin
+  Result      := False;
+  TempProfile := nil;
+
+  if Initialized then
+    try
+      TempProfile := TCoreWebView2Profile.Create(FCoreWebView2.Profile);
+      Result      := TempProfile.GetNonDefaultPermissionSettings(FGetNonDefaultPermissionSettingsCompletedHandler);
+    finally
+      if assigned(TempProfile) then
+        FreeAndNil(TempProfile);
+    end;
+end;
+
+function TWVBrowserBase.GetProfileName : wvstring;
+var
+  TempProfile : TCoreWebView2Profile;
+begin
+  Result      := FProfileName;
+  TempProfile := nil;
+
+  if Initialized then
+    try
+      TempProfile := TCoreWebView2Profile.Create(FCoreWebView2.Profile);
+      Result      := TempProfile.ProfileName;
+    finally
+      if assigned(TempProfile) then
+        FreeAndNil(TempProfile);
+    end;
+end;
+
+function TWVBrowserBase.GetIsInPrivateModeEnabled : boolean;
+var
+  TempProfile : TCoreWebView2Profile;
+begin
+  Result      := FIsInPrivateModeEnabled;
+  TempProfile := nil;
+
+  if Initialized then
+    try
+      TempProfile := TCoreWebView2Profile.Create(FCoreWebView2.Profile);
+      Result      := TempProfile.IsInPrivateModeEnabled;
+    finally
+      if assigned(TempProfile) then
+        FreeAndNil(TempProfile);
+    end;
+end;
+
+function TWVBrowserBase.GetProfilePath : wvstring;
+var
+  TempProfile : TCoreWebView2Profile;
+begin
+  Result      := '';
+  TempProfile := nil;
+
+  if Initialized then
+    try
+      TempProfile := TCoreWebView2Profile.Create(FCoreWebView2.Profile);
+      Result      := TempProfile.ProfilePath;
+    finally
+      if assigned(TempProfile) then
+        FreeAndNil(TempProfile);
+    end;
+end;
+
+function TWVBrowserBase.GetDefaultDownloadFolderPath : wvstring;
+var
+  TempProfile : TCoreWebView2Profile;
+begin
+  Result      := '';
+  TempProfile := nil;
+
+  if Initialized then
+    try
+      TempProfile := TCoreWebView2Profile.Create(FCoreWebView2.Profile);
+      Result      := TempProfile.DefaultDownloadFolderPath;
+    finally
+      if assigned(TempProfile) then
+        FreeAndNil(TempProfile);
+    end;
+end;
+
+procedure TWVBrowserBase.SetDefaultDownloadFolderPath(const aValue : wvstring);
+var
+  TempProfile : TCoreWebView2Profile;
+begin
+  TempProfile := nil;
+
+  if Initialized then
+    try
+      TempProfile := TCoreWebView2Profile.Create(FCoreWebView2.Profile);
+      TempProfile.DefaultDownloadFolderPath := aValue;
+    finally
+      if assigned(TempProfile) then
+        FreeAndNil(TempProfile);
+    end;
+end;
+
+function TWVBrowserBase.GetPreferredColorScheme : TWVPreferredColorScheme;
+var
+  TempProfile : TCoreWebView2Profile;
+begin
+  Result      := COREWEBVIEW2_PREFERRED_COLOR_SCHEME_AUTO;
+  TempProfile := nil;
+
+  if Initialized then
+    try
+      TempProfile := TCoreWebView2Profile.Create(FCoreWebView2.Profile);
+      Result      := TempProfile.PreferredColorScheme;
+    finally
+      if assigned(TempProfile) then
+        FreeAndNil(TempProfile);
+    end;
+end;
+
+procedure TWVBrowserBase.SetPreferredColorScheme(const aValue : TWVPreferredColorScheme);
+var
+  TempProfile : TCoreWebView2Profile;
+begin
+  TempProfile := nil;
+
+  if Initialized then
+    try
+      TempProfile := TCoreWebView2Profile.Create(FCoreWebView2.Profile);
+      TempProfile.PreferredColorScheme := aValue;
+    finally
+      if assigned(TempProfile) then
+        FreeAndNil(TempProfile);
+    end;
+end;
+
+function TWVBrowserBase.GetPreferredTrackingPreventionLevel : TWVTrackingPreventionLevel;
+var
+  TempProfile : TCoreWebView2Profile;
+begin
+  Result      := COREWEBVIEW2_TRACKING_PREVENTION_LEVEL_BALANCED;
+  TempProfile := nil;
+
+  if Initialized then
+    try
+      TempProfile := TCoreWebView2Profile.Create(FCoreWebView2.Profile);
+      Result      := TempProfile.PreferredTrackingPreventionLevel;
+    finally
+      if assigned(TempProfile) then
+        FreeAndNil(TempProfile);
+    end;
+end;
+
+function TWVBrowserBase.GetProfileCookieManager : ICoreWebView2CookieManager;
+var
+  TempProfile : TCoreWebView2Profile;
+begin
+  Result      := nil;
+  TempProfile := nil;
+
+  if Initialized then
+    try
+      TempProfile := TCoreWebView2Profile.Create(FCoreWebView2.Profile);
+      Result      := TempProfile.CookieManager;
+    finally
+      if assigned(TempProfile) then
+        FreeAndNil(TempProfile);
+    end;
+end;
+
+function TWVBrowserBase.GetProfileIsPasswordAutosaveEnabled : boolean;
+var
+  TempProfile : TCoreWebView2Profile;
+begin
+  Result      := False;
+  TempProfile := nil;
+
+  if Initialized then
+    try
+      TempProfile := TCoreWebView2Profile.Create(FCoreWebView2.Profile);
+      Result      := TempProfile.IsPasswordAutosaveEnabled;
+    finally
+      if assigned(TempProfile) then
+        FreeAndNil(TempProfile);
+    end;
+end;
+
+function TWVBrowserBase.GetProfileIsGeneralAutofillEnabled : boolean;
+var
+  TempProfile : TCoreWebView2Profile;
+begin
+  Result      := False;
+  TempProfile := nil;
+
+  if Initialized then
+    try
+      TempProfile := TCoreWebView2Profile.Create(FCoreWebView2.Profile);
+      Result      := TempProfile.IsGeneralAutofillEnabled;
+    finally
+      if assigned(TempProfile) then
+        FreeAndNil(TempProfile);
+    end;
+end;
+
+procedure TWVBrowserBase.SetPreferredTrackingPreventionLevel(const aValue : TWVTrackingPreventionLevel);
+var
+  TempProfile : TCoreWebView2Profile;
+begin
+  TempProfile := nil;
+
+  if Initialized then
+    try
+      TempProfile := TCoreWebView2Profile.Create(FCoreWebView2.Profile);
+      TempProfile.PreferredTrackingPreventionLevel := aValue;
+    finally
+      if assigned(TempProfile) then
+        FreeAndNil(TempProfile);
+    end;
+end;
+
+procedure TWVBrowserBase.SetProfileIsPasswordAutosaveEnabled(aValue : boolean);
+var
+  TempProfile : TCoreWebView2Profile;
+begin
+  TempProfile := nil;
+
+  if Initialized then
+    try
+      TempProfile := TCoreWebView2Profile.Create(FCoreWebView2.Profile);
+      TempProfile.IsPasswordAutosaveEnabled := aValue;
+    finally
+      if assigned(TempProfile) then
+        FreeAndNil(TempProfile);
+    end;
+end;
+
+procedure TWVBrowserBase.SetProfileIsGeneralAutofillEnabled(aValue : boolean);
+var
+  TempProfile : TCoreWebView2Profile;
+begin
+  TempProfile := nil;
+
+  if Initialized then
+    try
+      TempProfile := TCoreWebView2Profile.Create(FCoreWebView2.Profile);
+      TempProfile.IsGeneralAutofillEnabled := aValue;
+    finally
+      if assigned(TempProfile) then
+        FreeAndNil(TempProfile);
+    end;
+end;
+
+procedure TWVBrowserBase.SetMemoryUsageTargetLevel(aValue : TWVMemoryUsageTargetLevel);
+begin
+  if Initialized then
+    FCoreWebView2.MemoryUsageTargetLevel := aValue;
+end;
+
+function TWVBrowserBase.CreateSharedBuffer(aSize : Largeuint; var aSharedBuffer : ICoreWebView2SharedBuffer) : boolean;
+begin
+  Result := Initialized and
+            FCoreWebView2Environment.CreateSharedBuffer(aSize, aSharedBuffer);
 end;
 
 end.

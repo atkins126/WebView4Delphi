@@ -228,6 +228,21 @@ type
 
     // ICoreWebView2GetFaviconCompletedHandler
     function GetFaviconCompletedHandler_Invoke(errorCode: HResult; const faviconStream: IStream): HResult;
+
+    // ICoreWebView2PrintCompletedHandler
+    function PrintCompletedHandler_Invoke(errorCode: HResult; printStatus: COREWEBVIEW2_PRINT_STATUS): HResult;
+
+    // ICoreWebView2PrintToPdfStreamCompletedHandler
+    function PrintToPdfStreamCompletedHandler_Invoke(errorCode: HResult; const pdfStream: IStream): HResult;
+
+    // ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandler
+    function GetNonDefaultPermissionSettingsCompletedHandler_Invoke(errorCode: HResult; const collectionView: ICoreWebView2PermissionSettingCollectionView): HResult;
+
+    // ICoreWebView2SetPermissionStateCompletedHandler
+    function SetPermissionStateCompletedHandler_Invoke(errorCode: HResult): HResult;
+
+    // ICoreWebView2LaunchingExternalUriSchemeEventHandler
+    function LaunchingExternalUriSchemeEventHandler_Invoke(const sender: ICoreWebView2; const args: ICoreWebView2LaunchingExternalUriSchemeEventArgs): HResult;
   end;
 
 implementation

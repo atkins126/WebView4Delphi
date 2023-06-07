@@ -770,6 +770,61 @@ type
       destructor  Destroy; override;
   end;
 
+  TCoreWebView2PrintCompletedHandler = class(TInterfacedObject, ICoreWebView2PrintCompletedHandler)
+    protected
+      FEvents : Pointer;
+
+      function Invoke(errorCode: HResult; printStatus: COREWEBVIEW2_PRINT_STATUS): HResult; stdcall;
+
+    public
+      constructor Create(const aEvents: IWVBrowserEvents); reintroduce;
+      destructor  Destroy; override;
+  end;
+
+  TCoreWebView2PrintToPdfStreamCompletedHandler = class(TInterfacedObject, ICoreWebView2PrintToPdfStreamCompletedHandler)
+    protected
+      FEvents : Pointer;
+
+      function Invoke(errorCode: HResult; const pdfStream: IStream): HResult; stdcall;
+
+    public
+      constructor Create(const aEvents: IWVBrowserEvents); reintroduce;
+      destructor  Destroy; override;
+  end;
+
+  TCoreWebView2GetNonDefaultPermissionSettingsCompletedHandler = class(TInterfacedObject, ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandler)
+    protected
+      FEvents : Pointer;
+
+      function Invoke(errorCode: HResult; const collectionView: ICoreWebView2PermissionSettingCollectionView): HResult; stdcall;
+
+    public
+      constructor Create(const aEvents: IWVBrowserEvents); reintroduce;
+      destructor  Destroy; override;
+  end;
+
+  TCoreWebView2SetPermissionStateCompletedHandler = class(TInterfacedObject, ICoreWebView2SetPermissionStateCompletedHandler)
+    protected
+      FEvents : Pointer;
+
+      function Invoke(errorCode: HResult): HResult; stdcall;
+
+    public
+      constructor Create(const aEvents: IWVBrowserEvents); reintroduce;
+      destructor  Destroy; override;
+  end;
+
+  TCoreWebView2LaunchingExternalUriSchemeEventHandler = class(TInterfacedObject, ICoreWebView2LaunchingExternalUriSchemeEventHandler)
+    protected
+      FEvents : Pointer;
+
+      function Invoke(const sender: ICoreWebView2; const args: ICoreWebView2LaunchingExternalUriSchemeEventArgs): HResult; stdcall;
+
+    public
+      constructor Create(const aEvents: IWVBrowserEvents); reintroduce;
+      destructor  Destroy; override;
+  end;
+
 implementation
 
 
@@ -2492,6 +2547,132 @@ function TCoreWebView2GetFaviconCompletedHandler.Invoke(errorCode: HResult; cons
 begin
   if (FEvents <> nil) then
     Result := IWVBrowserEvents(FEvents).GetFaviconCompletedHandler_Invoke(errorCode, faviconStream)
+   else
+    Result := E_FAIL;
+end;
+
+
+// TCoreWebView2PrintToPdfStreamCompletedHandler
+
+constructor TCoreWebView2PrintCompletedHandler.Create(const aEvents: IWVBrowserEvents);
+begin
+  inherited Create;
+
+  FEvents := Pointer(aEvents);
+end;
+
+destructor TCoreWebView2PrintCompletedHandler.Destroy;
+begin
+  FEvents := nil;
+
+  inherited Destroy;
+end;
+
+function TCoreWebView2PrintCompletedHandler.Invoke(errorCode: HResult; printStatus: COREWEBVIEW2_PRINT_STATUS): HResult; stdcall;
+begin
+  if (FEvents <> nil) then
+    Result := IWVBrowserEvents(FEvents).PrintCompletedHandler_Invoke(errorCode, printStatus)
+   else
+    Result := E_FAIL;
+end;
+
+
+// TCoreWebView2PrintToPdfStreamCompletedHandler
+
+constructor TCoreWebView2PrintToPdfStreamCompletedHandler.Create(const aEvents: IWVBrowserEvents);
+begin
+  inherited Create;
+
+  FEvents := Pointer(aEvents);
+end;
+
+destructor TCoreWebView2PrintToPdfStreamCompletedHandler.Destroy;
+begin
+  FEvents := nil;
+
+  inherited Destroy;
+end;
+
+function TCoreWebView2PrintToPdfStreamCompletedHandler.Invoke(errorCode: HResult; const pdfStream: IStream): HResult; stdcall;
+begin
+  if (FEvents <> nil) then
+    Result := IWVBrowserEvents(FEvents).PrintToPdfStreamCompletedHandler_Invoke(errorCode, pdfStream)
+   else
+    Result := E_FAIL;
+end;
+
+
+// TCoreWebView2GetNonDefaultPermissionSettingsCompletedHandler
+
+constructor TCoreWebView2GetNonDefaultPermissionSettingsCompletedHandler.Create(const aEvents: IWVBrowserEvents);
+begin
+  inherited Create;
+
+  FEvents := Pointer(aEvents);
+end;
+
+destructor TCoreWebView2GetNonDefaultPermissionSettingsCompletedHandler.Destroy;
+begin
+  FEvents := nil;
+
+  inherited Destroy;
+end;
+
+function TCoreWebView2GetNonDefaultPermissionSettingsCompletedHandler.Invoke(errorCode: HResult; const collectionView: ICoreWebView2PermissionSettingCollectionView): HResult; stdcall;
+begin
+  if (FEvents <> nil) then
+    Result := IWVBrowserEvents(FEvents).GetNonDefaultPermissionSettingsCompletedHandler_Invoke(errorCode, collectionView)
+   else
+    Result := E_FAIL;
+end;
+
+
+// TCoreWebView2SetPermissionStateCompletedHandler
+
+constructor TCoreWebView2SetPermissionStateCompletedHandler.Create(const aEvents: IWVBrowserEvents);
+begin
+  inherited Create;
+
+  FEvents := Pointer(aEvents);
+end;
+
+destructor TCoreWebView2SetPermissionStateCompletedHandler.Destroy;
+begin
+  FEvents := nil;
+
+  inherited Destroy;
+end;
+
+function TCoreWebView2SetPermissionStateCompletedHandler.Invoke(errorCode: HResult): HResult; stdcall;
+begin
+  if (FEvents <> nil) then
+    Result := IWVBrowserEvents(FEvents).SetPermissionStateCompletedHandler_Invoke(errorCode)
+   else
+    Result := E_FAIL;
+end;
+
+
+// TCoreWebView2LaunchingExternalUriSchemeEventHandler
+
+constructor TCoreWebView2LaunchingExternalUriSchemeEventHandler.Create(const aEvents: IWVBrowserEvents);
+begin
+  inherited Create;
+
+  FEvents := Pointer(aEvents);
+end;
+
+destructor TCoreWebView2LaunchingExternalUriSchemeEventHandler.Destroy;
+begin
+  FEvents := nil;
+
+  inherited Destroy;
+end;
+
+function TCoreWebView2LaunchingExternalUriSchemeEventHandler.Invoke(const sender: ICoreWebView2;
+                                                                    const args: ICoreWebView2LaunchingExternalUriSchemeEventArgs): HResult; stdcall;
+begin
+  if (FEvents <> nil) then
+    Result := IWVBrowserEvents(FEvents).LaunchingExternalUriSchemeEventHandler_Invoke(sender, args)
    else
     Result := E_FAIL;
 end;

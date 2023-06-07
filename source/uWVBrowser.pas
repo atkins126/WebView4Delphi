@@ -117,6 +117,11 @@ type
       property OnServerCertificateErrorDetected;
       property OnFaviconChanged;
       property OnGetFaviconCompleted;
+      property OnPrintToPdfStreamCompleted;
+      property OnGetCustomSchemes;
+      property OnGetNonDefaultPermissionSettingsCompleted;
+      property OnSetPermissionStateCompleted;
+      property OnLaunchingExternalUriScheme;
   end;
 
 {$IFDEF FPC}

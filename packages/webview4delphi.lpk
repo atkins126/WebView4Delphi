@@ -12,8 +12,8 @@
         <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
     </CompilerOptions>
-    <Version Major="1" Release="1462" Build="37"/>
-    <Files Count="49">
+    <Version Major="1" Release="1823" Build="32"/>
+    <Files Count="55">
       <Item1>
         <Filename Value="..\source\uWVBrowser.pas"/>
         <HasRegisterProc Value="True"/>
@@ -212,6 +212,30 @@
         <Filename Value="..\source\uWVCoreWebView2Certificate.pas"/>
         <UnitName Value="uWVCoreWebView2Certificate"/>
       </Item49>
+      <Item50>
+        <Filename Value="..\source\uWVCoreWebView2CustomSchemeRegistration.pas"/>
+        <UnitName Value="uWVCoreWebView2CustomSchemeRegistration"/>
+      </Item50>
+      <Item51>
+        <Filename Value="..\source\uWVCoreWebView2SharedBuffer.pas"/>
+        <UnitName Value="uWVCoreWebView2SharedBuffer"/>
+      </Item51>
+      <Item52>
+        <Filename Value="..\source\uWVCoreWebView2PermissionSetting.pas"/>
+        <UnitName Value="uWVCoreWebView2PermissionSetting"/>
+      </Item52>
+      <Item53>
+        <Filename Value="..\source\uWVCoreWebView2PermissionSettingCollectionView.pas"/>
+        <UnitName Value="uWVCoreWebView2PermissionSettingCollectionView"/>
+      </Item53>
+      <Item54>
+        <Filename Value="..\source\uWVCoreWebView2File.pas"/>
+        <UnitName Value="uWVCoreWebView2File"/>
+      </Item54>
+      <Item55>
+        <Filename Value="..\source\uWVCoreWebView2ObjectCollectionView.pas"/>
+        <UnitName Value="uWVCoreWebView2ObjectCollectionView"/>
+      </Item55>
     </Files>
     <CompatibilityMode Value="True"/>
     <RequiredPkgs Count="2">

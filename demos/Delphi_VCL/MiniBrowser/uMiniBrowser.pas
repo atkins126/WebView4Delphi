@@ -58,6 +58,9 @@ type
     Cleatallstorage1: TMenuItem;
     Saveresourceas1: TMenuItem;
     Downloadfavicon1: TMenuItem;
+    ShowprintUI1: TMenuItem;
+    PrinttoPDFtostream1: TMenuItem;
+    SmartScreen1: TMenuItem;
 
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -94,6 +97,8 @@ type
     procedure Cleatallstorage1Click(Sender: TObject);
     procedure Saveresourceas1Click(Sender: TObject);
     procedure Downloadfavicon1Click(Sender: TObject);
+    procedure ShowprintUI1Click(Sender: TObject);
+    procedure PrinttoPDFtostream1Click(Sender: TObject);
 
     procedure WVBrowser1AfterCreated(Sender: TObject);
     procedure WVBrowser1DocumentTitleChanged(Sender: TObject);
@@ -117,11 +122,14 @@ type
     procedure WVBrowser1ClearBrowsingDataCompleted(Sender: TObject; aErrorCode: HRESULT);
     procedure WVBrowser1ServerCertificateErrorDetected(Sender: TObject; const aWebView: ICoreWebView2; const aArgs: ICoreWebView2ServerCertificateErrorDetectedEventArgs);
     procedure WVBrowser1GetFaviconCompleted(Sender: TObject; aErrorCode: HRESULT; const aFaviconStream: IStream);
+    procedure WVBrowser1PrintCompleted(Sender: TObject; aErrorCode: HRESULT; aPrintStatus: TWVPrintStatus);
+    procedure WVBrowser1PrintToPdfStreamCompleted(Sender: TObject; aErrorCode: HRESULT; const aPdfStream: IStream);
+    procedure WVBrowser1GetNonDefaultPermissionSettingsCompleted(Sender: TObject; aErrorCode: HRESULT; const aCollectionView: ICoreWebView2PermissionSettingCollectionView);
+    procedure SmartScreen1Click(Sender: TObject);
 
   protected
     FDownloadOperation : TCoreWebView2DownloadOperation;
     FDownloadIDGen     : integer;
-    FFileStream        : TFileStream;
     FBlockImages       : boolean;
     FGetHeaders        : boolean;
     FHeaders           : TStringList;
@@ -160,16 +168,15 @@ uses
 procedure TMiniBrowserFrm.Takesnapshot1Click(Sender: TObject);
 var
   TempAdapter : IStream;
+  TempStream  : TFileStream;
 begin
   SaveDialog1.Filter     := 'PNG files (*.png)|*.png';
   SaveDialog1.DefaultExt := 'png';
 
   if SaveDialog1.Execute and (length(SaveDialog1.FileName) > 0) then
     try
-      if (FFileStream <> nil) then FreeAndNil(FFileStream);
-
-      FFileStream := TFileStream.Create(SaveDialog1.FileName, fmCreate);
-      TempAdapter := TStreamAdapter.Create(FFileStream, soReference);
+      TempStream  := TFileStream.Create(SaveDialog1.FileName, fmCreate);
+      TempAdapter := TStreamAdapter.Create(TempStream, soOwned);
 
       WVBrowser1.CapturePreview(COREWEBVIEW2_CAPTURE_PREVIEW_IMAGE_FORMAT_PNG, TempAdapter);
     finally
@@ -315,7 +322,6 @@ procedure TMiniBrowserFrm.FormCreate(Sender: TObject);
 begin
   FGetHeaders             := True;
   FHeaders                := TStringList.Create;
-  FFileStream             := nil;
   FUserAuthFrm            := nil;
   FResourceContents       := nil;
   FBlockImages            := False;
@@ -328,9 +334,6 @@ procedure TMiniBrowserFrm.FormDestroy(Sender: TObject);
 begin
   if assigned(FHeaders) then
     FreeAndNil(FHeaders);
-
-  if assigned(FFileStream) then
-    FreeAndNil(FFileStream);
 
   if assigned(FDownloadOperation) then
     FreeAndNil(FDownloadOperation);
@@ -441,6 +444,7 @@ begin
   Offline1.Checked                 := WVBrowser1.Offline;
   Ignorecertificateerrors1.Checked := WVBrowser1.IgnoreCertificateErrors;
   Muted1.Checked                   := WVBrowser1.IsMuted;
+  SmartScreen1.Checked             := WVBrowser1.IsReputationCheckingRequired;
 end;
 
 procedure TMiniBrowserFrm.Print1Click(Sender: TObject);
@@ -455,6 +459,11 @@ begin
 
   if SaveDialog1.Execute and (length(SaveDialog1.FileName) > 0) then
     WVBrowser1.PrintToPDF(SaveDialog1.FileName);
+end;
+
+procedure TMiniBrowserFrm.PrinttoPDFtostream1Click(Sender: TObject);
+begin
+  WVBrowser1.PrintToPdfStream;
 end;
 
 procedure TMiniBrowserFrm.WVBrowser1AfterCreated(Sender: TObject);
@@ -492,9 +501,6 @@ procedure TMiniBrowserFrm.WVBrowser1CapturePreviewCompleted(
 begin
   if not(succeeded(aErrorCode)) then
     showmessage('There was an error taking the snapshot');
-
-  if (FFileStream <> nil) then
-    FreeAndNil(FFileStream);
 end;
 
 procedure TMiniBrowserFrm.WVBrowser1ClearBrowsingDataCompleted(
@@ -624,6 +630,13 @@ begin
   end;
 end;
 
+procedure TMiniBrowserFrm.WVBrowser1GetNonDefaultPermissionSettingsCompleted(
+  Sender: TObject; aErrorCode: HRESULT;
+  const aCollectionView: ICoreWebView2PermissionSettingCollectionView);
+begin
+  //
+end;
+
 procedure TMiniBrowserFrm.WVBrowser1InitializationError(Sender: TObject;
   aErrorCode: HRESULT; const aErrorMessage: wvstring);
 begin
@@ -657,6 +670,28 @@ begin
   StopBtn.Enabled    := aIsNavigating;
 end;
 
+procedure TMiniBrowserFrm.WVBrowser1PrintCompleted(Sender: TObject;
+  aErrorCode: HRESULT; aPrintStatus: TWVPrintStatus);
+begin
+  case aErrorCode of
+    S_OK :
+      case aPrintStatus of
+        COREWEBVIEW2_PRINT_STATUS_SUCCEEDED           : showmessage('Print operation succeeded.');
+        COREWEBVIEW2_PRINT_STATUS_PRINTER_UNAVAILABLE : showmessage('The printer was not found or the printer status is not available, offline or error state.');
+        COREWEBVIEW2_PRINT_STATUS_OTHER_ERROR         : showmessage('Print operation is failed.');
+      end;
+
+    E_INVALIDARG :
+      showmessage('Invalid settings for the specified printer.');
+
+    E_ABORT :
+      showmessage('Print operation is failed as printing job already in progress.');
+
+    else
+      showmessage('Print operation is failed.');
+  end;
+end;
+
 procedure TMiniBrowserFrm.WVBrowser1PrintToPdfCompleted(Sender: TObject;
   aErrorCode: HRESULT; aIsSuccessful: Boolean);
 begin
@@ -664,6 +699,46 @@ begin
     showmessage('The PDF file was generated successfully')
    else
     showmessage('There was a problem generating the PDF file.');
+end;
+
+procedure TMiniBrowserFrm.WVBrowser1PrintToPdfStreamCompleted(
+  Sender: TObject; aErrorCode: HRESULT; const aPdfStream: IStream);
+var
+  TempOLEStream  : TOLEStream;
+  TempFile       : TBytes;
+  TempFileStream : TFileStream;
+begin
+  TempOLEStream  := nil;
+  TempFileStream := nil;
+  try
+    if succeeded(aErrorCode) and assigned(aPdfStream) then
+      begin
+        TempOLEStream          := TOLEStream.Create(aPdfStream);
+        TempOLEStream.Position := 0;
+
+        if (TempOLEStream.Size > 0) then
+          begin
+            SetLength(TempFile, TempOLEStream.Size);
+            TempOLEStream.Read(TempFile, TempOLEStream.Size);
+
+            SaveDialog1.Filter     := 'PDF files (*.pdf)|*.pdf';
+            SaveDialog1.DefaultExt := 'pdf';
+
+            if SaveDialog1.Execute and (length(SaveDialog1.FileName) > 0) then
+              try
+                TempFileStream := TFileStream.Create(SaveDialog1.FileName, fmCreate);
+                TempFileStream.Write(TempFile, length(TempFile));
+              finally
+                FreeAndNil(TempFileStream);
+              end;
+          end;
+      end
+     else
+      showmessage('There was an error printing to PDF');
+  finally
+    if assigned(TempOLEStream) then
+      FreeAndNil(TempOLEStream);
+  end;
 end;
 
 procedure TMiniBrowserFrm.SaveAsTextFile(const aFileName : string; const aFileContents : wvstring);
@@ -691,6 +766,8 @@ begin
 end;
 
 procedure TMiniBrowserFrm.Saveresourceas1Click(Sender: TObject);
+var
+  TempStream : TFileStream;
 begin
   try
     if assigned(FResourceContents) and (length(FResourceContents) > 0) then
@@ -700,12 +777,10 @@ begin
 
         if SaveDialog1.Execute and (length(SaveDialog1.FileName) > 0) then
           try
-            if (FFileStream <> nil) then FreeAndNil(FFileStream);
-
-            FFileStream := TFileStream.Create(SaveDialog1.FileName, fmCreate);
-            FFileStream.Write(FResourceContents, length(FResourceContents));
+            TempStream := TFileStream.Create(SaveDialog1.FileName, fmCreate);
+            TempStream.Write(FResourceContents, length(FResourceContents));
           finally
-            FreeAndNil(FFileStream);
+            FreeAndNil(TempStream);
           end;
       end;
   except
@@ -880,6 +955,11 @@ begin
   TextViewerFrm.Show;
 end;
 
+procedure TMiniBrowserFrm.ShowprintUI1Click(Sender: TObject);
+begin
+  WVBrowser1.ShowPrintUI;
+end;
+
 procedure TMiniBrowserFrm.StopBtnClick(Sender: TObject);
 begin
   WVBrowser1.Stop;
@@ -916,9 +996,17 @@ begin
   FUserAuthFrm.ShowModal;
 end;
 
+procedure TMiniBrowserFrm.SmartScreen1Click(Sender: TObject);
+begin
+  if (WVBrowser1 <> nil) then
+    WVBrowser1.IsReputationCheckingRequired := not(SmartScreen1.Checked);
+end;
+
 initialization
   GlobalWebView2Loader                := TWVLoader.Create(nil);
   GlobalWebView2Loader.UserDataFolder := ExtractFileDir(Application.ExeName) + '\CustomCache';
+  GlobalWebView2Loader.RemoteDebuggingPort := 9999;
+  GlobalWebView2Loader.RemoteAllowOrigins := '*';
 
   // Set GlobalWebView2Loader.BrowserExecPath if you don't want to use the evergreen version of WebView Runtime
   //GlobalWebView2Loader.BrowserExecPath := 'c:\WVRuntime';
