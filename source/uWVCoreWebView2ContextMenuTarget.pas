@@ -10,6 +10,13 @@ uses
   uWVTypeLibrary, uWVTypes;
 
 type
+  /// <summary>
+  /// Represents the information regarding the context menu target.
+  /// Includes the context selected and the appropriate data used for the actions of a context menu.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2contextmenutarget">See the ICoreWebView2ContextMenuTarget article.</see></para>
+  /// </remarks>
   TCoreWebView2ContextMenuTarget = class
     protected
       FBaseIntf : ICoreWebView2ContextMenuTarget;
@@ -33,7 +40,13 @@ type
       constructor Create(const aBaseIntf : ICoreWebView2ContextMenuTarget); reintroduce;
       destructor  Destroy; override;
 
+      /// <summary>
+      /// Returns true when the interface implemented by this class is fully initialized.
+      /// </summary>
       property Initialized              : boolean                                read GetInitialized;
+      /// <summary>
+      /// Returns the interface implemented by this class.
+      /// </summary>
       property BaseIntf                 : ICoreWebView2ContextMenuTarget         read FBaseIntf;
       property Kind                     : TWVMenuTargetKind                      read GetKind;
       property IsEditable               : boolean                                read GetIsEditable;
