@@ -840,9 +840,25 @@ type
       /// </remarks>
       function    OpenTaskManagerWindow : boolean;
       /// <summary>
-      /// Post the specified webMessage to the top level document in this WebView.
+      /// <para>Post the specified webMessage to the top level document in this WebView.
       /// The main page receives the message by subscribing to the `message` event of the
-      /// `window.chrome.webview` of the page document.
+      /// `window.chrome.webview` of the page document.</para>
+      /// <code>
+      /// ```cpp
+      /// window.chrome.webview.addEventListener('message', handler)
+      /// window.chrome.webview.removeEventListener('message', handler)
+      /// ```
+      /// </code>
+      /// <para>The event args is an instance of `MessageEvent`.  The
+      /// `ICoreWebView2Settings.IsWebMessageEnabled` setting must be `TRUE` or
+      /// the web message will not be sent. The `data` property of the event
+      /// arg is the `webMessage` string parameter parsed as a JSON string into a
+      /// JavaScript object.  The `source` property of the event arg is a reference
+      ///  to the `window.chrome.webview` object.  For information about sending
+      /// messages from the HTML document in the WebView to the host, navigate to
+      /// [add_WebMessageReceived](/microsoft-edge/webview2/reference/win32/icorewebview2#add_webmessagereceived).
+      /// The message is delivered asynchronously.  If a navigation occurs before
+      /// the message is posted to the page, the message is discarded.</para>
       /// </summary>
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2#postwebmessageasjson">See the ICoreWebView2 article.</see></para>
@@ -878,6 +894,23 @@ type
       /// normalized, any URI fragment has been removed, and non-ASCII hostnames
       /// have been converted to punycode.</para>
       /// <para>Specifying an empty string for aURI matches no URIs.</para>
+      /// <para>For more information about resource context filters, navigate to
+      /// [COREWEBVIEW2_WEB_RESOURCE_CONTEXT](/microsoft-edge/webview2/reference/win32/webview2-idl#corewebview2_web_resource_context).</para>
+      /// <code>
+      /// | URI Filter String | Request URI | Match | Notes |
+      /// | ---- | ---- | ---- | ---- |
+      /// | `*` | `https://contoso.com/a/b/c` | Yes | A single * will match all URIs |
+      /// | `*://contoso.com/*` | `https://contoso.com/a/b/c` | Yes | Matches everything in contoso.com across all schemes |
+      /// | `*://contoso.com/*` | `https://example.com/?https://contoso.com/` | Yes | But also matches a URI with just the same text anywhere in the URI |
+      /// | `example` | `https://contoso.com/example` | No | The filter does not perform partial matches |
+      /// | `*example` | `https://contoso.com/example` | Yes | The filter matches across URI parts  |
+      /// | `*example` | `https://contoso.com/path/?example` | Yes | The filter matches across URI parts |
+      /// | `*example` | `https://contoso.com/path/?query#example` | No | The filter is matched against the URI with no fragment |
+      /// | `*example` | `https://example` | No | The URI is normalized before filter matching so the actual URI used for comparison is `https://example/` |
+      /// | `*example/` | `https://example` | Yes | Just like above, but this time the filter ends with a / just like the normalized URI |
+      /// | `https://xn--qei.example/` | `https://&#x2764;.example/` | Yes | Non-ASCII hostnames are normalized to punycode before wildcard comparison |
+      /// | `https://&#x2764;.example/` | `https://xn--qei.example/` | No | Non-ASCII hostnames are normalized to punycode before wildcard comparison |
+      /// </code>
       /// </summary>
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2#addwebresourcerequestedfilter">See the ICoreWebView2 article.</see></para>
@@ -1283,7 +1316,7 @@ type
       /// should clear the data between.  The `startTime` and `endTime`
       /// parameters correspond to the number of seconds since the UNIX epoch.</para>
       /// <para>`startTime` is inclusive while `endTime` is exclusive, therefore the data will
-      /// be cleared between [startTime, endTime).</para>
+      /// be cleared between startTime and endTime.</para>
       /// <para>This function is asynchronous and it triggers the TWVBrowserBase.OnClearBrowsingDataCompleted event when it finishes executing.</para>
       /// </summary>
       /// <remarks>
@@ -1464,7 +1497,7 @@ type
       property IgnoreCertificateErrors                         : boolean                                               read FIgnoreCertificateErrors                         write SetIgnoreCertificateErrors;
 
       // Properties used in the ICoreWebView2Environment creation
-      property BrowserExecPath                                 : wvstring                                              read FBrowserExecPath                                 write FBrowserExecPath;                           // CreateCoreWebView2EnvironmentWithOptions "browserExecutableFolder" parameter
+      property BrowserExecPath                                 : wvstring                                              read FBrowserExecPath                                 write FBrowserExecPath;
       /// <summary>
       /// Returns the user data folder that all CoreWebView2's created from this
       /// environment are using.
@@ -2094,7 +2127,7 @@ type
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2compositioncontroller#get_cursor">See the ICoreWebView2CompositionController article.</see></para>
       /// </remarks>
-      property Cursor                                          : HCURSOR                                               read GetCursor;                                                                                         // ICoreWebView2CompositionController.get_Cursor
+      property Cursor                                          : HCURSOR                                               read GetCursor;
       /// <summary>
       /// The RootVisualTarget is a visual in the hosting app's visual tree. This
       /// visual is where the WebView will connect its visual tree. The app uses
@@ -2110,7 +2143,7 @@ type
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2compositioncontroller#get_rootvisualtarget">See the ICoreWebView2CompositionController article.</see></para>
       /// </remarks>
-      property RootVisualTarget                                : IUnknown                                              read GetRootVisualTarget                              write SetRootVisualTarget;                        // ICoreWebView2CompositionController.get_RootVisualTarget
+      property RootVisualTarget                                : IUnknown                                              read GetRootVisualTarget                              write SetRootVisualTarget;
       /// <summary>
       /// The current system cursor ID reported by the underlying rendering engine
       /// for WebView. For example, most of the time, when the cursor is over text,
@@ -2125,7 +2158,7 @@ type
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2compositioncontroller#get_systemcursorid">See the ICoreWebView2CompositionController article.</see></para>
       /// </remarks>
-      property SystemCursorID                                  : cardinal                                              read GetSystemCursorID;                                                                                 // ICoreWebView2CompositionController.get_SystemCursorId
+      property SystemCursorID                                  : cardinal                                              read GetSystemCursorID;
       /// <summary>
       /// Returns the Automation Provider for the WebView. This object implements
       /// IRawElementProviderSimple.
@@ -2133,7 +2166,7 @@ type
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2compositioncontroller2#get_automationprovider">See the ICoreWebView2CompositionController2 article.</see></para>
       /// </remarks>
-      property AutomationProvider                              : IUnknown                                              read GetAutomationProvider;                                                                             // ICoreWebView2CompositionController2.get_UIAProvider
+      property AutomationProvider                              : IUnknown                                              read GetAutomationProvider;
       /// <summary>
       /// Returns the `ICoreWebView2ProcessInfoCollection`. Provide a list of all
       /// process using same user data folder except for crashpad process.
@@ -2421,7 +2454,22 @@ type
       /// </remarks>
       property OnPermissionRequested                           : TOnPermissionRequestedEvent                           read FOnPermissionRequested                           write FOnPermissionRequested;
       /// <summary>
-      /// `OnProcessFailed` runs when a WebView process ends unexpectedly or becomes unresponsive.
+      /// <para>`OnProcessFailed` runs when any of the processes in the
+      /// [WebView2 Process Group](https://learn.microsoft.com/microsoft-edge/webview2/concepts/process-model?tabs=csharp#processes-in-the-webview2-runtime)
+      /// encounters one of the following conditions:</para>
+      /// <code>
+      /// Condition | Details
+      /// ---|---
+      /// Unexpected exit | The process indicated by the event args has exited unexpectedly (usually due to a crash). The failure might or might not be recoverable and some failures are auto-recoverable.
+      /// Unresponsiveness | The process indicated by the event args has become unresponsive to user input. This is only reported for renderer processes, and will run every few seconds until the process becomes responsive again.
+      /// </code>
+      /// <para>NOTE: When the failing process is the browser process, a
+      /// `ICoreWebView2Environment5.BrowserProcessExited` event will run too.</para>
+      /// <para>Your application can use `ICoreWebView2ProcessFailedEventArgs` and
+      /// `ICoreWebView2ProcessFailedEventArgs2` to identify which condition and
+      /// process the event is for, and to collect diagnostics and handle recovery
+      /// if necessary. For more details about which cases need to be handled by
+      /// your application, see `COREWEBVIEW2_PROCESS_FAILED_KIND`.</para>
       /// </summary>
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2#add_processfailed">See the ICoreWebView2 article.</see></para>
