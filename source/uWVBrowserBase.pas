@@ -813,7 +813,7 @@ type
       /// <summary>
       /// Provides the Pdf data of current web page asynchronously for the TWVBrowserBase.CoreWebView2PrintSettings settings.
       /// Stream will be rewound to the start of the pdf data.
-      /// This function is asynchronous and it triggers the TWVBrowserBase.OnPrintToPdfStream event.
+      /// This function is asynchronous and it triggers the TWVBrowserBase.OnPrintToPdfStreamCompleted event.
       /// </summary>
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2_16#printtopdfstream">See the ICoreWebView2_16 article.</see></para>
@@ -2519,6 +2519,11 @@ type
       /// if a deferral is not taken on the event args.  If a deferral is taken,
       /// then the web resource requested is blocked until the deferral is
       /// completed.</para>
+      /// <para>If this event is subscribed in the add_NewWindowRequested handler it should be called
+      /// after the new window is set. For more details see `ICoreWebView2NewWindowRequestedEventArgs.put_NewWindow`.</para>
+      /// <para>This event is by default raised for file, http, and https URI schemes.
+      /// This is also raised for registered custom URI schemes. For more details
+      /// see `ICoreWebView2CustomSchemeRegistration`.</para>
       /// </summary>
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2#add_webresourcerequested">See the ICoreWebView2 article.</see></para>
@@ -4711,7 +4716,7 @@ begin
         TempOptionsIntf := nil;
       end
      else
-      if (TempHResult <> E_NOTIMPL) then
+      if (TempHResult = E_NOTIMPL) then
         begin
           FProfileName            := '';
           FIsInPrivateModeEnabled := False;
@@ -4779,7 +4784,7 @@ begin
       TempOptionsIntf := nil;
     end
    else
-    if (TempHResult <> E_NOTIMPL) then
+    if (TempHResult = E_NOTIMPL) then
       begin
         FProfileName            := '';
         FIsInPrivateModeEnabled := False;

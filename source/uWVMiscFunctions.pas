@@ -151,7 +151,9 @@ const
   ERROR_INVALID_STATE       = 5023;
 begin
   case aErrorCode of
-    E_ABORT : Result := 'The parent window was destroyed before the controller creation was finished.';
+    E_ABORT      : Result := 'The parent window was destroyed before the controller creation was finished.';
+    E_UNEXPECTED : Result := 'The runtime does not have permissions to the user data folder.';
+
     else
      if (aErrorCode = HResultFromWin32(ERROR_INVALID_STATE)) then
         Result := 'Another browser is using the same user data folder.'
@@ -167,6 +169,7 @@ function ControllerOptionsCreationErrorToString(aErrorCode : HRESULT) : wvstring
 begin
   case aErrorCode of
     E_INVALIDARG : Result := 'Invalid profile name.';
+    E_NOTIMPL    : Result := 'Not implemented.';  // This error code is not documented. It's caused by an outdated WebView2 Runtime installation.
     else           Result := 'Unexpected error result.';
   end;
 end;
@@ -177,7 +180,9 @@ const
   ERROR_INVALID_STATE       = 5023;
 begin
   case aErrorCode of
-    E_ABORT : Result := 'The parent window was destroyed before the composition controller creation was finished.';
+    E_ABORT      : Result := 'The parent window was destroyed before the composition controller creation was finished.';
+    E_UNEXPECTED : Result := 'The runtime does not have permissions to the user data folder.';
+
     else
       if (aErrorCode = HResultFromWin32(ERROR_INVALID_STATE)) then
         Result := 'Another browser is using the same user data folder.'
