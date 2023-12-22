@@ -111,7 +111,6 @@ object MiniBrowserFrm: TMiniBrowserFrm
         Width = 913
         Height = 23
         Align = alClient
-        ItemIndex = 0
         TabOrder = 0
         Text = 'https://www.bing.com'
         Items.Strings = (
@@ -151,7 +150,8 @@ object MiniBrowserFrm: TMiniBrowserFrm
           'https://badssl.com/'
           'edge://flags/'
           'edge://gpu/'
-          'edge://about/')
+          'edge://about/'
+          'edge://extensions-internals/')
         ExplicitWidth = 909
       end
     end
@@ -241,6 +241,7 @@ object MiniBrowserFrm: TMiniBrowserFrm
     OnSourceChanged = WVBrowser1SourceChanged
     OnDocumentTitleChanged = WVBrowser1DocumentTitleChanged
     OnWebResourceRequested = WVBrowser1WebResourceRequested
+    OnContainsFullScreenElementChanged = WVBrowser1ContainsFullScreenElementChanged
     OnWebResourceResponseReceived = WVBrowser1WebResourceResponseReceived
     OnWebResourceResponseViewGetContentCompleted = WVBrowser1WebResourceResponseViewGetContentCompleted
     OnDownloadStarting = WVBrowser1DownloadStarting
@@ -257,7 +258,8 @@ object MiniBrowserFrm: TMiniBrowserFrm
     OnServerCertificateErrorDetected = WVBrowser1ServerCertificateErrorDetected
     OnGetFaviconCompleted = WVBrowser1GetFaviconCompleted
     OnPrintToPdfStreamCompleted = WVBrowser1PrintToPdfStreamCompleted
-    OnGetNonDefaultPermissionSettingsCompleted = WVBrowser1GetNonDefaultPermissionSettingsCompleted
+    OnProfileAddBrowserExtensionCompleted = WVBrowser1ProfileAddBrowserExtensionCompleted
+    OnProfileGetBrowserExtensionsCompleted = WVBrowser1ProfileGetBrowserExtensionsCompleted
     Left = 48
     Top = 64
   end
@@ -304,6 +306,17 @@ object MiniBrowserFrm: TMiniBrowserFrm
       OnClick = PrinttoPDFtostream1Click
     end
     object N1: TMenuItem
+      Caption = '-'
+    end
+    object GetBrowserExtensionsMenu: TMenuItem
+      Caption = 'Installed browser extensions...'
+      OnClick = GetBrowserExtensionsMenuClick
+    end
+    object Addbrowserextension1: TMenuItem
+      Caption = 'Add unpacked browser extension...'
+      OnClick = Addbrowserextension1Click
+    end
+    object N3: TMenuItem
       Caption = '-'
     end
     object Opentaskmanager1: TMenuItem

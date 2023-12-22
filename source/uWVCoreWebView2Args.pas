@@ -23,7 +23,8 @@ type
   /// </remarks>
   TCoreWebView2AcceleratorKeyPressedEventArgs = class
     protected
-      FBaseIntf : ICoreWebView2AcceleratorKeyPressedEventArgs;
+      FBaseIntf  : ICoreWebView2AcceleratorKeyPressedEventArgs;
+      FBaseIntf2 : ICoreWebView2AcceleratorKeyPressedEventArgs2;
 
       function GetInitialized : boolean;
       function GetKeyEventKind : TWVKeyEventKind;
@@ -36,8 +37,12 @@ type
       function GetIsMenuKeyDown : boolean;
       function GetWasKeyDown : boolean;
       function GetIsKeyReleased : boolean;
+      function GetIsBrowserAcceleratorKeyEnabled : boolean;
 
       procedure SetHandled(aValue : boolean);
+      procedure SetIsBrowserAcceleratorKeyEnabled(aValue : boolean);
+
+      procedure InitializeFields;
 
     public
       constructor Create(const aArgs: ICoreWebView2AcceleratorKeyPressedEventArgs); reintroduce;
@@ -46,18 +51,18 @@ type
       /// <summary>
       /// Returns true when the interface implemented by this class is fully initialized.
       /// </summary>
-      property Initialized    : boolean                                      read GetInitialized;
+      property Initialized                    : boolean                                      read GetInitialized;
       /// <summary>
       /// Returns the interface implemented by this class.
       /// </summary>
-      property BaseIntf       : ICoreWebView2AcceleratorKeyPressedEventArgs  read FBaseIntf;
+      property BaseIntf                       : ICoreWebView2AcceleratorKeyPressedEventArgs  read FBaseIntf;
       /// <summary>
       /// The key event type that caused the event to run.
       /// </summary>
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2acceleratorkeypressedeventargs#get_keyeventkind">See the ICoreWebView2AcceleratorKeyPressedEventArgs article.</see></para>
       /// </remarks>
-      property KeyEventKind   : TWVKeyEventKind                              read GetKeyEventKind;
+      property KeyEventKind                   : TWVKeyEventKind                              read GetKeyEventKind;
       /// <summary>
       /// The Win32 virtual key code of the key that was pressed or released.  It
       /// is one of the Win32 virtual key constants such as `VK_RETURN` or an
@@ -68,7 +73,7 @@ type
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2acceleratorkeypressedeventargs#get_virtualkey">See the ICoreWebView2AcceleratorKeyPressedEventArgs article.</see></para>
       /// </remarks>
-      property VirtualKey     : LongWord                                     read GetVirtualKey;
+      property VirtualKey                     : LongWord                                     read GetVirtualKey;
       /// <summary>
       /// The `LPARAM` value that accompanied the window message.  For more
       /// information, navigate to [WM_KEYDOWN](/windows/win32/inputdev/wm-keydown)
@@ -77,7 +82,7 @@ type
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2acceleratorkeypressedeventargs#get_keyeventlparam">See the ICoreWebView2AcceleratorKeyPressedEventArgs article.</see></para>
       /// </remarks>
-      property KeyEventLParam : integer                                      read GetKeyEventLParam;
+      property KeyEventLParam                 : integer                                      read GetKeyEventLParam;
       /// <summary>
       /// Specifies the repeat count for the current message.
       /// </summary>
@@ -85,7 +90,7 @@ type
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2acceleratorkeypressedeventargs#get_physicalkeystatus">See the ICoreWebView2AcceleratorKeyPressedEventArgs article.</see></para>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/winrt/microsoft_web_webview2_core/corewebview2physicalkeystatus">See the CoreWebView2PhysicalKeyStatus Struct article.</see></para>
       /// </remarks>
-      property RepeatCount    : LongWord                                     read GetRepeatCount;
+      property RepeatCount                    : LongWord                                     read GetRepeatCount;
       /// <summary>
       /// Specifies the scan code.
       /// </summary>
@@ -93,7 +98,7 @@ type
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2acceleratorkeypressedeventargs#get_physicalkeystatus">See the ICoreWebView2AcceleratorKeyPressedEventArgs article.</see></para>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/winrt/microsoft_web_webview2_core/corewebview2physicalkeystatus">See the CoreWebView2PhysicalKeyStatus Struct article.</see></para>
       /// </remarks>
-      property ScanCode       : LongWord                                     read GetScanCode;
+      property ScanCode                       : LongWord                                     read GetScanCode;
       /// <summary>
       /// Indicates that the key is an extended key.
       /// </summary>
@@ -101,7 +106,7 @@ type
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2acceleratorkeypressedeventargs#get_physicalkeystatus">See the ICoreWebView2AcceleratorKeyPressedEventArgs article.</see></para>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/winrt/microsoft_web_webview2_core/corewebview2physicalkeystatus">See the CoreWebView2PhysicalKeyStatus Struct article.</see></para>
       /// </remarks>
-      property IsExtendedKey  : boolean                                      read GetIsExtendedKey;
+      property IsExtendedKey                  : boolean                                      read GetIsExtendedKey;
       /// <summary>
       /// Indicates that a menu key is held down (context code).
       /// </summary>
@@ -109,7 +114,7 @@ type
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2acceleratorkeypressedeventargs#get_physicalkeystatus">See the ICoreWebView2AcceleratorKeyPressedEventArgs article.</see></para>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/winrt/microsoft_web_webview2_core/corewebview2physicalkeystatus">See the CoreWebView2PhysicalKeyStatus Struct article.</see></para>
       /// </remarks>
-      property IsMenuKeyDown  : boolean                                      read GetIsMenuKeyDown;
+      property IsMenuKeyDown                  : boolean                                      read GetIsMenuKeyDown;
       /// <summary>
       /// Indicates that the key was held down.
       /// </summary>
@@ -117,7 +122,7 @@ type
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2acceleratorkeypressedeventargs#get_physicalkeystatus">See the ICoreWebView2AcceleratorKeyPressedEventArgs article.</see></para>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/winrt/microsoft_web_webview2_core/corewebview2physicalkeystatus">See the CoreWebView2PhysicalKeyStatus Struct article.</see></para>
       /// </remarks>
-      property WasKeyDown     : boolean                                      read GetWasKeyDown;
+      property WasKeyDown                     : boolean                                      read GetWasKeyDown;
       /// <summary>
       /// Indicates that the key was released.
       /// </summary>
@@ -125,7 +130,7 @@ type
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2acceleratorkeypressedeventargs#get_physicalkeystatus">See the ICoreWebView2AcceleratorKeyPressedEventArgs article.</see></para>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/winrt/microsoft_web_webview2_core/corewebview2physicalkeystatus">See the CoreWebView2PhysicalKeyStatus Struct article.</see></para>
       /// </remarks>
-      property IsKeyReleased  : boolean                                      read GetIsKeyReleased;
+      property IsKeyReleased                  : boolean                                      read GetIsKeyReleased;
       /// <summary>
       /// During `AcceleratorKeyPressedEvent` handler invocation the WebView is
       /// blocked waiting for the decision of if the accelerator is handled by the
@@ -137,7 +142,61 @@ type
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2acceleratorkeypressedeventargs#get_handled">See the ICoreWebView2AcceleratorKeyPressedEventArgs article.</see></para>
       /// </remarks>
-      property Handled        : boolean                                      read GetHandled          write SetHandled;
+      property Handled                        : boolean                                      read GetHandled                          write SetHandled;
+      /// <summary>
+      /// <para>This property allows developers to enable or disable the browser from handling a specific
+      /// browser accelerator key such as Ctrl+P or F3, etc.</para>
+      /// <para>Browser accelerator keys are the keys/key combinations that access features specific to
+      /// a web browser, including but not limited to:</para>
+      /// <code>
+      ///  - Ctrl-F and F3 for Find on Page
+      ///  - Ctrl-P for Print
+      ///  - Ctrl-R and F5 for Reload
+      ///  - Ctrl-Plus and Ctrl-Minus for zooming
+      ///  - Ctrl-Shift-C and F12 for DevTools
+      ///  - Special keys for browser functions, such as Back, Forward, and Search
+      /// </code>
+      /// <para>This property does not disable accelerator keys related to movement and text editing,
+      /// such as:</para>
+      /// <code>
+      ///  - Home, End, Page Up, and Page Down
+      ///  - Ctrl-X, Ctrl-C, Ctrl-V
+      ///  - Ctrl-A for Select All
+      ///  - Ctrl-Z for Undo
+      /// </code>
+      /// <para>The `ICoreWebView2Settings.AreBrowserAcceleratorKeysEnabled` API is a convenient setting
+      /// for developers to disable all the browser accelerator keys together, and sets the default
+      /// value for the `IsBrowserAcceleratorKeyEnabled` property.</para>
+      /// <para>By default, `ICoreWebView2Settings.AreBrowserAcceleratorKeysEnabled` is `TRUE` and
+      /// `IsBrowserAcceleratorKeyEnabled` is `TRUE`.</para>
+      /// <para>When developers change `ICoreWebView2Settings.AreBrowserAcceleratorKeysEnabled` setting to `FALSE`,
+      /// this will change default value for `IsBrowserAcceleratorKeyEnabled` to `FALSE`.</para>
+      /// <para>If developers want specific keys to be handled by the browser after changing the
+      /// `ICoreWebView2Settings.AreBrowserAcceleratorKeysEnabled` setting to `FALSE`, they need to enable
+      /// these keys by setting `IsBrowserAcceleratorKeyEnabled` to `TRUE`.</para>
+      /// <para>This API will give the event arg higher priority over the
+      /// `ICoreWebView2Settings.AreBrowserAcceleratorKeysEnabled` setting when we handle the keys.</para>
+      /// <para>For browser accelerator keys, when an accelerator key is pressed, the propagation and
+      /// processing order is:</para>
+      /// <code>
+      /// 1. A ICoreWebView2Controller.AcceleratorKeyPressed event is raised
+      /// 2. WebView2 browser feature accelerator key handling
+      /// 3. Web Content Handling: If the key combination isn't reserved for browser actions,
+      /// the key event propagates to the web content, where JavaScript event listeners can
+      /// capture and respond to it.
+      /// </code>
+      /// <para>`ICoreWebView2AcceleratorKeyPressedEventArgs` has a `Handled` property, that developers
+      /// can use to mark a key as handled. When the key is marked as handled anywhere along
+      /// the path, the event propagation stops, and web content will not receive the key.
+      /// With `IsBrowserAcceleratorKeyEnabled` property, if developers mark
+      /// `IsBrowserAcceleratorKeyEnabled` as `FALSE`, the browser will skip the WebView2
+      /// browser feature accelerator key handling process, but the event propagation
+      /// continues, and web content will receive the key combination.</para>
+      /// </summary>
+      /// <remarks>
+      /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2acceleratorkeypressedeventargs2#get_isbrowseracceleratorkeyenabled">See the ICoreWebView2AcceleratorKeyPressedEventArgs2 article.</see></para>
+      /// </remarks>
+      property IsBrowserAcceleratorKeyEnabled : boolean                                      read GetIsBrowserAcceleratorKeyEnabled   write SetIsBrowserAcceleratorKeyEnabled;
   end;
 
   /// <summary>
@@ -494,6 +553,7 @@ type
     protected
       FBaseIntf  : ICoreWebView2NewWindowRequestedEventArgs;
       FBaseIntf2 : ICoreWebView2NewWindowRequestedEventArgs2;
+      FBaseIntf3 : ICoreWebView2NewWindowRequestedEventArgs3;
 
       function  GetInitialized : boolean;
       function  GetURI : wvstring;
@@ -503,6 +563,7 @@ type
       function  GetDeferral : ICoreWebView2Deferral;
       function  GetWindowFeatures : ICoreWebView2WindowFeatures;
       function  GetName : wvstring;
+      function  GetOriginalSourceFrameInfo : ICoreWebView2FrameInfo;
 
       procedure SetNewWindow(const aValue : ICoreWebView2);
       procedure SetHandled(aValue : boolean);
@@ -516,32 +577,32 @@ type
       /// <summary>
       /// Returns true when the interface implemented by this class is fully initialized.
       /// </summary>
-      property Initialized      : boolean                                   read GetInitialized;
+      property Initialized             : boolean                                   read GetInitialized;
       /// <summary>
       /// Returns the interface implemented by this class.
       /// </summary>
-      property BaseIntf         : ICoreWebView2NewWindowRequestedEventArgs  read FBaseIntf;
+      property BaseIntf                : ICoreWebView2NewWindowRequestedEventArgs  read FBaseIntf;
       /// <summary>
       /// The target uri of the new window requested.
       /// </summary>
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2newwindowrequestedeventargs#get_uri">See the ICoreWebView2NewWindowRequestedEventArgs article.</see></para>
       /// </remarks>
-      property URI              : wvstring                                  read GetURI;
+      property URI                     : wvstring                                  read GetURI;
       /// <summary>
       /// Gets the new window.
       /// </summary>
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2newwindowrequestedeventargs#get_newwindow">See the ICoreWebView2NewWindowRequestedEventArgs article.</see></para>
       /// </remarks>
-      property NewWindow        : ICoreWebView2                             read GetNewWindow         write SetNewWindow;
+      property NewWindow               : ICoreWebView2                             read GetNewWindow         write SetNewWindow;
       /// <summary>
       /// Gets whether the `NewWindowRequested` event is handled by host.
       /// </summary>
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2newwindowrequestedeventargs#get_handled">See the ICoreWebView2NewWindowRequestedEventArgs article.</see></para>
       /// </remarks>
-      property Handled          : boolean                                   read GetHandled           write SetHandled;
+      property Handled                 : boolean                                   read GetHandled           write SetHandled;
       /// <summary>
       /// <para>`TRUE` when the new window request was initiated through a user gesture.
       /// Examples of user initiated requests are:</para>
@@ -557,7 +618,7 @@ type
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2newwindowrequestedeventargs#get_isuserinitiated">See the ICoreWebView2NewWindowRequestedEventArgs article.</see></para>
       /// </remarks>
-      property IsUserInitiated  : boolean                                   read GetIsUserInitiated;
+      property IsUserInitiated         : boolean                                   read GetIsUserInitiated;
       /// <summary>
       /// Obtain an `ICoreWebView2Deferral` object and put the event into a
       /// deferred state.  Use the `ICoreWebView2Deferral` object to complete the
@@ -568,7 +629,7 @@ type
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2newwindowrequestedeventargs#getdeferral">See the ICoreWebView2NewWindowRequestedEventArgs article.</see></para>
       /// </remarks>
-      property Deferral         : ICoreWebView2Deferral                     read GetDeferral;
+      property Deferral                : ICoreWebView2Deferral                     read GetDeferral;
       /// <summary>
       /// Window features specified by the `window.open`.  The features should be
       /// considered for positioning and sizing of new webview windows.
@@ -576,7 +637,7 @@ type
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2newwindowrequestedeventargs#get_windowfeatures">See the ICoreWebView2NewWindowRequestedEventArgs article.</see></para>
       /// </remarks>
-      property WindowFeatures   : ICoreWebView2WindowFeatures               read GetWindowFeatures;
+      property WindowFeatures          : ICoreWebView2WindowFeatures               read GetWindowFeatures;
       /// <summary>
       /// <para>Gets the name of the new window. This window can be created via `window.open(url, windowName)`,
       /// where the windowName parameter corresponds to `Name` property.</para>
@@ -591,7 +652,17 @@ type
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2newwindowrequestedeventargs2#get_name">See the ICoreWebView2NewWindowRequestedEventArgs2 article.</see></para>
       /// </remarks>
-      property Name             : wvstring                                  read GetName;
+      property Name                    : wvstring                                  read GetName;
+      /// <summary>
+      /// The frame info of the frame where the new window request originated. The
+      /// `OriginalSourceFrameInfo` is a snapshot of frame information at the time when the
+      /// new window was requested. See `ICoreWebView2FrameInfo` for details on frame
+      /// properties.
+      /// </summary>
+      /// <remarks>
+      /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2newwindowrequestedeventargs3#get_originalsourceframeinfo">See the ICoreWebView2NewWindowRequestedEventArgs3 article.</see></para>
+      /// </remarks>
+      property OriginalSourceFrameInfo : ICoreWebView2FrameInfo                    read GetOriginalSourceFrameInfo;
   end;
 
   /// <summary>
@@ -1754,14 +1825,25 @@ constructor TCoreWebView2AcceleratorKeyPressedEventArgs.Create(const aArgs: ICor
 begin
   inherited Create;
 
+  InitializeFields;
+
   FBaseIntf := aArgs;
+
+  if Initialized then
+    LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2AcceleratorKeyPressedEventArgs2, FBaseIntf2);
 end;
 
 destructor TCoreWebView2AcceleratorKeyPressedEventArgs.Destroy;
 begin
-  FBaseIntf := nil;
+  InitializeFields;
 
   inherited Destroy;
+end;
+
+procedure TCoreWebView2AcceleratorKeyPressedEventArgs.InitializeFields;
+begin
+  FBaseIntf  := nil;
+  FBaseIntf2 := nil;
 end;
 
 function TCoreWebView2AcceleratorKeyPressedEventArgs.GetInitialized : boolean;
@@ -1864,10 +1946,25 @@ begin
             (TempStatus.IsKeyReleased <> 0);
 end;
 
+function TCoreWebView2AcceleratorKeyPressedEventArgs.GetIsBrowserAcceleratorKeyEnabled : boolean;
+var
+  TempResult : integer;
+begin
+  Result := assigned(FBaseIntf2) and
+            succeeded(FBaseIntf2.Get_IsBrowserAcceleratorKeyEnabled(TempResult)) and
+            (TempResult <> 0);
+end;
+
 procedure TCoreWebView2AcceleratorKeyPressedEventArgs.SetHandled(aValue : boolean);
 begin
   if Initialized then
     FBaseIntf.Set_Handled(ord(aValue));
+end;
+
+procedure TCoreWebView2AcceleratorKeyPressedEventArgs.SetIsBrowserAcceleratorKeyEnabled(aValue : boolean);
+begin
+  if assigned(FBaseIntf2) then
+    FBaseIntf2.Set_IsBrowserAcceleratorKeyEnabled(ord(aValue));
 end;
 
 
@@ -2244,8 +2341,9 @@ begin
 
   FBaseIntf := aArgs;
 
-  if Initialized then
-    LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2NewWindowRequestedEventArgs2, FBaseIntf2);
+  if Initialized and
+     LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2NewWindowRequestedEventArgs2, FBaseIntf2) then
+    LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2NewWindowRequestedEventArgs3, FBaseIntf3);
 end;
 
 destructor TCoreWebView2NewWindowRequestedEventArgs.Destroy;
@@ -2259,6 +2357,7 @@ procedure TCoreWebView2NewWindowRequestedEventArgs.InitializeFields;
 begin
   FBaseIntf  := nil;
   FBaseIntf2 := nil;
+  FBaseIntf3 := nil;
 end;
 
 function TCoreWebView2NewWindowRequestedEventArgs.GetInitialized : boolean;
@@ -2353,6 +2452,19 @@ begin
       Result := TempString;
       CoTaskMemFree(TempString);
     end;
+end;
+
+function TCoreWebView2NewWindowRequestedEventArgs.GetOriginalSourceFrameInfo : ICoreWebView2FrameInfo;
+var
+  TempFrameInfo : ICoreWebView2FrameInfo;
+begin
+  Result        := nil;
+  TempFrameInfo := nil;
+
+  if (FBaseIntf3 <> nil) and
+     succeeded(FBaseIntf3.Get_OriginalSourceFrameInfo(TempFrameInfo)) and
+     (TempFrameInfo <> nil) then
+    Result := TempFrameInfo;
 end;
 
 procedure TCoreWebView2NewWindowRequestedEventArgs.SetNewWindow(const aValue : ICoreWebView2);
