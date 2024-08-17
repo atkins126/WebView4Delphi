@@ -7,7 +7,7 @@ unit uWVTypeLibrary;
 {$TYPEDADDRESS OFF} // Unit must be compiled without type-checked pointers. 
 {$WARN SYMBOL_PLATFORM OFF}
 {$WRITEABLECONST ON}
-{$VARPROPSETTER ON}
+{$VARPROPSETTER ON} // If you use Delphi 6 you'll need to download and install the second D6 patch in order for this to compile.
 {$ALIGN 4}
 
 interface
@@ -155,6 +155,11 @@ const
   IID_ICoreWebView2LaunchingExternalUriSchemeEventArgs: TGUID = '{07D1A6C3-7175-4BA1-9306-E593CA07E46C}';
   IID_ICoreWebView2_19: TGUID = '{6921F954-79B0-437F-A997-C85811897C68}';
   IID_ICoreWebView2_20: TGUID = '{B4BC1926-7305-11EE-B962-0242AC120002}';
+  IID_ICoreWebView2_21: TGUID = '{C4980DEA-587B-43B9-8143-3EF3BF552D95}';
+  IID_ICoreWebView2ExecuteScriptWithResultCompletedHandler: TGUID = '{1BB5317B-8238-4C67-A7FF-BAF6558F289D}';
+  IID_ICoreWebView2ExecuteScriptResult: TGUID = '{0CE15963-3698-4DF7-9399-71ED6CDD8C9F}';
+  IID_ICoreWebView2ScriptException: TGUID = '{054DAE00-84A3-49FF-BC17-4012A90BC9FD}';
+  IID_ICoreWebView2_22: TGUID = '{DB75DFC7-A857-4632-A398-6969DDE26C0A}';
   IID_ICoreWebView2BrowserProcessExitedEventArgs: TGUID = '{1F00663F-AF8C-4782-9CDD-DD01C52E34CB}';
   IID_ICoreWebView2BrowserProcessExitedEventHandler: TGUID = '{FA504257-A216-4911-A860-FE8825712861}';
   IID_ICoreWebView2CompositionController: TGUID = '{3DF9B733-B9AE-4A15-86B4-EB9EE9826469}';
@@ -200,6 +205,8 @@ const
   IID_ICoreWebView2EnvironmentOptions4: TGUID = '{AC52D13F-0D38-475A-9DCA-876580D6793E}';
   IID_ICoreWebView2EnvironmentOptions5: TGUID = '{0AE35D64-C47F-4464-814E-259C345D1501}';
   IID_ICoreWebView2EnvironmentOptions6: TGUID = '{57D29CC3-C84F-42A0-B0E2-EFFBD5E179DE}';
+  IID_ICoreWebView2EnvironmentOptions7: TGUID = '{C48D539F-E39F-441C-AE68-1F66E570BDC5}';
+  IID_ICoreWebView2EnvironmentOptions8: TGUID = '{7C7ECF51-E918-5CAF-853C-E9A2BCC27775}';
   IID_ICoreWebView2Frame2: TGUID = '{7A6A5834-D185-4DBF-B63F-4A9BC43107D4}';
   IID_ICoreWebView2FrameNavigationStartingEventHandler: TGUID = '{E79908BF-2D5D-4968-83DB-263FEA2C1DA3}';
   IID_ICoreWebView2FrameContentLoadingEventHandler: TGUID = '{0D6156F2-D332-49A7-9E03-7D8F2FEEEE54}';
@@ -223,6 +230,7 @@ const
   IID_ICoreWebView2PermissionRequestedEventArgs3: TGUID = '{E61670BC-3DCE-4177-86D2-C629AE3CB6AC}';
   IID_ICoreWebView2PrintSettings2: TGUID = '{CA7F0E1F-3484-41D1-8C1A-65CD44A63F8D}';
   IID_ICoreWebView2ProcessFailedEventArgs2: TGUID = '{4DAB9422-46FA-4C3E-A5D2-41D2071D3680}';
+  IID_ICoreWebView2ProcessFailedEventArgs3: TGUID = '{AB667428-094D-5FD1-B480-8B4C0FDBDF2F}';
   IID_ICoreWebView2Profile2: TGUID = '{FA740D4B-5EAE-4344-A8AD-74BE31925397}';
   IID_ICoreWebView2Profile3: TGUID = '{B188E659-5685-4E05-BDBA-FC640E0F1992}';
   IID_ICoreWebView2Profile4: TGUID = '{8F4AE680-192E-4EC8-833A-21CFADAEF628}';
@@ -245,6 +253,12 @@ const
   IID_ICoreWebView2Settings6: TGUID = '{11CB3ACD-9BC8-43B8-83BF-F40753714F87}';
   IID_ICoreWebView2Settings7: TGUID = '{488DC902-35EF-42D2-BC7D-94B65C4BC49C}';
   IID_ICoreWebView2Settings8: TGUID = '{9E6B0E8F-86AD-4E81-8147-A9B5EDB68650}';
+  IID_ICoreWebView2Settings9: TGUID = '{0528A73B-E92D-49F4-927A-E547DDDAA37D}';
+  IID_ICoreWebView2WebResourceRequestedEventArgs2: TGUID = '{9C562C24-B219-4D7F-92F6-B187FBBADD56}';
+  IID_ICoreWebView2NonClientRegionChangedEventHandler: TGUID = '{4A794E66-AA6C-46BD-93A3-382196837680}';
+  IID_ICoreWebView2NonClientRegionChangedEventArgs: TGUID = '{AB71D500-0820-4A52-809C-48DB04FF93BF}';
+  IID_ICoreWebView2RegionRectCollectionView: TGUID = '{333353B8-48BF-4449-8FCC-22697FAF5753}';
+  IID_ICoreWebView2CompositionController4: TGUID = '{7C367B9B-3D2B-450F-9E58-D61A20F486AA}';
   IID_ICoreWebView2File: TGUID = '{F2C19559-6BC1-4583-A757-90021BE9AFEC}';
   IID_ICoreWebView2ObjectCollectionView: TGUID = '{0F36FD87-4F69-4415-98DA-888F89FB9A33}';
   IID_ICoreWebView2WebMessageReceivedEventArgs2: TGUID = '{06FC7AB7-C90C-4297-9389-33CA01CF6D5E}';
@@ -599,7 +613,7 @@ const
   COREWEBVIEW2_PERMISSION_KIND_MULTIPLE_AUTOMATIC_DOWNLOADS = $00000007;
   /// <summary>
   /// Indicates permission to read and write to files or folders on the device.
-  /// Permission is requested when developers use the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API)
+  /// Permission is requested when developers use the [File System Access API](https://developer.mozilla.org/docs/Web/API/File_System_Access_API)
   /// to show the file or folder picker to the end user, and then request
   /// "readwrite" permission for the user's selection.
   /// </summary>
@@ -611,7 +625,7 @@ const
   /// Indicates permission to play audio and video automatically on sites. This
   /// permission affects the autoplay attribute and play method of the audio and
   /// video HTML elements, and the start method of the Web Audio API. See the
-  /// [Autoplay guide for media and Web Audio APIs](https://developer.mozilla.org/en-US/docs/Web/Media/Autoplay_guide) for details.
+  /// [Autoplay guide for media and Web Audio APIs](https://developer.mozilla.org/docs/Web/Media/Autoplay_guide) for details.
   /// </summary>
   /// <remarks>
   /// <para>This is one of the COREWEBVIEW2_PERMISSION_KIND values.</para>
@@ -629,7 +643,7 @@ const
   /// <summary>
   /// Indicates permission to send and receive system exclusive messages to/from MIDI
   /// (Musical Instrument Digital Interface) devices. Permission is requested
-  /// when developers use the [Web MIDI API](https://developer.mozilla.org/en-US/docs/Web/API/Web_MIDI_API)
+  /// when developers use the [Web MIDI API](https://developer.mozilla.org/docs/Web/API/Web_MIDI_API)
   /// to request access to system exclusive MIDI messages.
   /// </summary>
   /// <remarks>
@@ -2050,6 +2064,119 @@ const
   /// </remarks>
   COREWEBVIEW2_PROCESS_KIND_PPAPI_BROKER = $00000006;
 
+type
+  /// <summary>
+  /// The channel search kind determines the order that release channels are
+  /// searched for during environment creation. The default behavior is to search
+  /// for and use the most stable channel found on the device. The order from most
+  /// to least stable is: WebView2 Runtime -> Beta -> Dev -> Canary. Switch the
+  /// order to prefer the least stable channel in order to perform pre-release
+  /// testing. See `COREWEBVIEW2_RELEASE_CHANNELS` for descriptions of channels.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl#corewebview2_channel_search_kind">See the Globals article.</see></para>
+  /// </remarks>
+  COREWEBVIEW2_CHANNEL_SEARCH_KIND = TOleEnum;
+const
+  /// <summary>
+  /// Search for a release channel from most to least stable:
+  /// WebView2 Runtime -> Beta -> Dev -> Canary. This is the default behavior.
+  /// </summary>
+  /// <remarks>
+  /// <para>This is one of the COREWEBVIEW2_CHANNEL_SEARCH_KIND values.</para>
+  /// </remarks>
+  COREWEBVIEW2_CHANNEL_SEARCH_KIND_MOST_STABLE = $00000000;
+  /// <summary>
+  /// Search for a release channel from least to most stable:
+  /// Canary -> Dev -> Beta -> WebView2 Runtime.
+  /// </summary>
+  /// <remarks>
+  /// <para>This is one of the COREWEBVIEW2_CHANNEL_SEARCH_KIND values.</para>
+  /// </remarks>
+  COREWEBVIEW2_CHANNEL_SEARCH_KIND_LEAST_STABLE = $00000001;
+
+type
+  /// <summary>
+  /// <para>The WebView2 release channels. Use `ReleaseChannels` and `ChannelSearchKind`
+  /// on `ICoreWebView2EnvironmentOptions` to control which channel is searched
+  /// for during environment creation.</para>
+  /// <code>
+  /// |Channel|Primary purpose|How often updated with new features|
+  /// |:---:|---|:---:|
+  /// |Stable (WebView2 Runtime)|Broad Deployment|Monthly|
+  /// |Beta|Flighting with inner rings, automated testing|Monthly|
+  /// |Dev|Automated testing, selfhosting to test new APIs and features|Weekly|
+  /// |Canary|Automated testing, selfhosting to test new APIs and features|Daily|
+  /// </code>
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl#corewebview2_release_channels">See the Globals article.</see></para>
+  /// </remarks>
+  COREWEBVIEW2_RELEASE_CHANNELS = TOleEnum;
+const
+  /// <summary>
+  /// No release channel. Passing only this value to `ReleaseChannels` results
+  /// in HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND).
+  /// </summary>
+  /// <remarks>
+  /// <para>This is one of the COREWEBVIEW2_RELEASE_CHANNELS values.</para>
+  /// </remarks>
+  COREWEBVIEW2_RELEASE_CHANNELS_NONE = $00000000;
+  /// <summary>
+  /// The stable WebView2 Runtime that is released every 4 weeks.
+  /// </summary>
+  /// <remarks>
+  /// <para>This is one of the COREWEBVIEW2_RELEASE_CHANNELS values.</para>
+  /// </remarks>
+  COREWEBVIEW2_RELEASE_CHANNELS_STABLE = $00000001;
+  /// <summary>
+  /// The Beta release channel that is released every 4 weeks, a week before the
+  /// stable release.
+  /// </summary>
+  /// <remarks>
+  /// <para>This is one of the COREWEBVIEW2_RELEASE_CHANNELS values.</para>
+  /// </remarks>
+  COREWEBVIEW2_RELEASE_CHANNELS_BETA = $00000002;
+  /// <summary>
+  /// The Dev release channel that is released weekly.
+  /// </summary>
+  /// <remarks>
+  /// <para>This is one of the COREWEBVIEW2_RELEASE_CHANNELS values.</para>
+  /// </remarks>
+  COREWEBVIEW2_RELEASE_CHANNELS_DEV = $00000004;
+  /// <summary>
+  /// The Canary release channel that is released daily.
+  /// </summary>
+  /// <remarks>
+  /// <para>This is one of the COREWEBVIEW2_RELEASE_CHANNELS values.</para>
+  /// </remarks>
+  COREWEBVIEW2_RELEASE_CHANNELS_CANARY = $00000008;
+
+type
+  /// <summary>
+  /// Set ScrollBar style on `ICoreWebView2EnvironmentOptions` during environment creation.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl#corewebview2_scrollbar_style">See the Globals article.</see></para>
+  /// </remarks>
+  COREWEBVIEW2_SCROLLBAR_STYLE = TOleEnum;
+const
+  /// <summary>
+  /// Browser default ScrollBar style.
+  /// </summary>
+  /// <remarks>
+  /// <para>This is one of the COREWEBVIEW2_SCROLLBAR_STYLE values.</para>
+  /// </remarks>
+  COREWEBVIEW2_SCROLLBAR_STYLE_DEFAULT = $00000000;
+  /// <summary>
+  /// <para>Window style fluent overlay scroll bar.</para>
+  /// <para>Please see [Fluent UI](https://developer.microsoft.com/fluentui#/)
+  /// for more details on fluent UI.</para>
+  /// </summary>
+  /// <remarks>
+  /// <para>This is one of the COREWEBVIEW2_SCROLLBAR_STYLE values.</para>
+  /// </remarks>
+  COREWEBVIEW2_SCROLLBAR_STYLE_FLUENT_OVERLAY = $00000001;
 
 type
   /// <summary>
@@ -2644,6 +2771,46 @@ const
   /// </remarks>
   COREWEBVIEW2_PDF_TOOLBAR_ITEMS_MORE_SETTINGS = $00001000;
 
+  /// <summary>
+  /// This enum contains values representing possible regions a given
+  /// point lies within.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl#corewebview2_non_client_region_kind">See the Globals article.</see></para>
+  /// </remarks>
+type
+  COREWEBVIEW2_NON_CLIENT_REGION_KIND = TOleEnum;
+const
+  /// <summary>
+  /// A hit test region out of bounds of the WebView2.
+  /// This has the same value as the Win32 HTNOWHERE
+  /// </summary>
+  /// <remarks>
+  /// <para>This is one of the COREWEBVIEW2_NON_CLIENT_REGION_KIND values.</para>
+  /// </remarks>
+  COREWEBVIEW2_NON_CLIENT_REGION_KIND_NOWHERE = $00000000;
+  /// <summary>
+  /// A hit test region in the WebView2 which does not have the CSS style
+  /// `-webkit-app-region: drag` set. This is normal web content that should not be
+  /// considered part of the app window's title bar. This has the same value
+  /// as the Win32 HTCLIENT constant.
+  /// </summary>
+  /// <remarks>
+  /// <para>This is one of the COREWEBVIEW2_NON_CLIENT_REGION_KIND values.</para>
+  /// </remarks>
+  COREWEBVIEW2_NON_CLIENT_REGION_KIND_CLIENT = $00000001;
+  /// <summary>
+  /// A hit test region in the WebView2 which has the CSS style
+  /// `-webkit-app-region: drag` set. Web content should use this CSS
+  /// style to identify regions that should be treated like the app
+  /// window's title bar. This has the same value as the Win32 HTCAPTION
+  /// constant.
+  /// </summary>
+  /// <remarks>
+  /// <para>This is one of the COREWEBVIEW2_NON_CLIENT_REGION_KIND values.</para>
+  /// </remarks>
+  COREWEBVIEW2_NON_CLIENT_REGION_KIND_CAPTION = $00000002;
+
 type
   /// <summary>
   /// Specifies memory usage target level of WebView.
@@ -2668,6 +2835,52 @@ const
   /// <para>This is one of the COREWEBVIEW2_MEMORY_USAGE_TARGET_LEVEL values.</para>
   /// </remarks>
   COREWEBVIEW2_MEMORY_USAGE_TARGET_LEVEL_LOW = $00000001;
+
+type
+  /// <summary>
+  /// Specifies the source of `WebResourceRequested` event.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl#corewebview2_web_resource_request_source_kinds">See the Globals article.</see></para>
+  /// </remarks>
+  COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS = TOleEnum;
+const
+  /// <summary>
+  /// Indicates that no web resource is requested.
+  /// </summary>
+  /// <remarks>
+  /// <para>This is one of the COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS values.</para>
+  /// </remarks>
+  COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_NONE = $00000000;
+  /// <summary>
+  /// Indicates that web resource is requested from main page including dedicated workers and iframes.
+  /// </summary>
+  /// <remarks>
+  /// <para>This is one of the COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS values.</para>
+  /// </remarks>
+  COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_DOCUMENT = $00000001;
+  /// <summary>
+  /// Indicates that web resource is requested from shared worker.
+  /// </summary>
+  /// <remarks>
+  /// <para>This is one of the COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS values.</para>
+  /// </remarks>
+  COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_SHARED_WORKER = $00000002;
+  /// <summary>
+  /// Indicates that web resource is requested from service worker.
+  /// </summary>
+  /// <remarks>
+  /// <para>This is one of the COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS values.</para>
+  /// </remarks>
+  COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_SERVICE_WORKER = $00000004;
+  /// <summary>
+  /// Indicates that web resource is requested from any supported source.
+  /// </summary>
+  /// <remarks>
+  /// <para>This is one of the COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS values.</para>
+  /// </remarks>
+  COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_ALL = $FFFFFFFF;
+
 
 type
 {*
@@ -2799,6 +3012,11 @@ type
   ICoreWebView2LaunchingExternalUriSchemeEventArgs = interface;
   ICoreWebView2_19 = interface;
   ICoreWebView2_20 = interface;
+  ICoreWebView2_21 = interface;
+  ICoreWebView2ExecuteScriptWithResultCompletedHandler = interface;
+  ICoreWebView2ExecuteScriptResult = interface;
+  ICoreWebView2ScriptException = interface;
+  ICoreWebView2_22 = interface;
   ICoreWebView2BrowserProcessExitedEventArgs = interface;
   ICoreWebView2BrowserProcessExitedEventHandler = interface;
   ICoreWebView2CompositionController = interface;
@@ -2844,6 +3062,8 @@ type
   ICoreWebView2EnvironmentOptions4 = interface;
   ICoreWebView2EnvironmentOptions5 = interface;
   ICoreWebView2EnvironmentOptions6 = interface;
+  ICoreWebView2EnvironmentOptions7 = interface;
+  ICoreWebView2EnvironmentOptions8 = interface;
   ICoreWebView2Frame2 = interface;
   ICoreWebView2FrameNavigationStartingEventHandler = interface;
   ICoreWebView2FrameContentLoadingEventHandler = interface;
@@ -2867,6 +3087,7 @@ type
   ICoreWebView2PermissionRequestedEventArgs3 = interface;
   ICoreWebView2PrintSettings2 = interface;
   ICoreWebView2ProcessFailedEventArgs2 = interface;
+  ICoreWebView2ProcessFailedEventArgs3 = interface;
   ICoreWebView2Profile2 = interface;
   ICoreWebView2Profile3 = interface;
   ICoreWebView2Profile4 = interface;
@@ -2889,6 +3110,12 @@ type
   ICoreWebView2Settings6 = interface;
   ICoreWebView2Settings7 = interface;
   ICoreWebView2Settings8 = interface;
+  ICoreWebView2Settings9 = interface;
+  ICoreWebView2WebResourceRequestedEventArgs2 = interface;
+  ICoreWebView2NonClientRegionChangedEventHandler = interface;
+  ICoreWebView2NonClientRegionChangedEventArgs = interface;
+  ICoreWebView2RegionRectCollectionView = interface;
+  ICoreWebView2CompositionController4 = interface;
   ICoreWebView2File = interface;
   ICoreWebView2ObjectCollectionView = interface;
   ICoreWebView2WebMessageReceivedEventArgs2 = interface;
@@ -3871,6 +4098,11 @@ type
     /// If you require CDP methods to run in a particular order, you should wait
     /// for the previous method's completed handler to run before calling the
     /// next method.
+    /// If the method is to run in add_NewWindowRequested handler it should be called
+    /// before the new window is set if the cdp message should affect the initial navigation. If
+    /// called after setting the NewWindow property, the cdp messages
+    /// may or may not apply to the initial navigation and may only apply to the subsequent navigation.
+    /// For more details see `ICoreWebView2NewWindowRequestedEventArgs::put_NewWindow`.
     ///
     /// \snippet ScriptComponent.cpp CallDevToolsProtocolMethod
     /// </summary>
@@ -4029,6 +4261,7 @@ type
     /// `defaultSyncProxy` | When calling a method on a synchronous proxy, the result should also be a synchronous proxy. But in some cases, the sync/async context is lost (for example, when providing to native code a reference to a function, and then calling that function in native code). In these cases, the proxy will be asynchronous, unless this property is set.
     /// `forceAsyncMethodMatches ` | This is an array of regular expressions. When calling a method on a synchronous proxy, the method call will be performed asynchronously if the method name matches a string or regular expression in this array. Setting this value to `Async` will make any method that ends with Async be an asynchronous method call. If an async method doesn't match here and isn't forced to be asynchronous, the method will be invoked synchronously, blocking execution of the calling JavaScript and then returning the resolution of the promise, rather than returning a promise.
     /// `ignoreMemberNotFoundError` | By default, an exception is thrown when attempting to get the value of a proxy property that doesn't exist on the corresponding native class. Setting this property to `true` switches the behavior to match Chakra WinRT projection (and general JavaScript) behavior of returning `undefined` with no error.
+    /// `shouldPassTypedArraysAsArrays` | By default, typed arrays will be passed to host as IDispatch. Otherwise, set to true to pass typed arrays to host as array.
     ///
     /// Host object proxies additionally have the following methods which run
     /// locally.
@@ -4200,11 +4433,12 @@ type
     /// `WindowCloseRequested` triggers when content inside the WebView
     /// requested to close the window, such as after `window.close` is run.  The
     /// app should close the WebView and related app window if that makes sense
-    /// to the app.
+    /// to the app. After the first window.close() call, this event may not fire
+    /// for any immediate back to back window.close() calls.
     ///
     /// \snippet AppWindow.cpp WindowCloseRequested
     /// </summary>
-    function add_WindowCloseRequested(const eventHandler: ICoreWebView2WindowCloseRequestedEventHandler; 
+    function add_WindowCloseRequested(const eventHandler: ICoreWebView2WindowCloseRequestedEventHandler;
                                       out token: EventRegistrationToken): HResult; stdcall;
     /// <summary>
     /// Remove an event handler previously added with `add_WindowCloseRequested`.
@@ -4400,10 +4634,11 @@ type
     /// navigation is not longer present and the content of the current page is
     /// intact.  For performance reasons, `GET` HTTP requests may happen, while
     /// the host is responding.  You may set cookies and use part of a request
-    /// for the navigation.  Cancellation for navigation to `about:blank` or
-    /// frame navigation to `srcdoc` is not supported.  Such attempts are
-    /// ignored.  A cancelled navigation will fire a `NavigationCompleted` event
-    /// with a `WebErrorStatus` of
+    /// for the navigation.  Navigations to about schemes are cancellable, unless
+    /// `msWebView2CancellableAboutNavigations` feature flag is disabled.
+    /// Cancellation of frame navigation to `srcdoc` is not supported and
+    /// wil be ignored.  A cancelled navigation will fire a `NavigationCompleted`
+    /// event with a `WebErrorStatus` of
     /// `COREWEBVIEW2_WEB_ERROR_STATUS_OPERATION_CANCELED`.
     /// </summary>
     function Get_Cancel(out Cancel: Integer): HResult; stdcall;
@@ -5038,7 +5273,7 @@ type
     /// a WebView as the target for a `window.open()` from inside the
     /// requesting WebView. If this is set, the top-level window of this WebView
     /// is returned as the opened
-    /// [WindowProxy](https://developer.mozilla.org/en-US/docs/glossary/windowproxy)
+    /// [WindowProxy](https://developer.mozilla.org/docs/glossary/windowproxy)
     /// to the opener script. If this is not set, then `Handled` is checked to
     /// determine behavior for NewWindowRequested event.
     /// CoreWebView2 provided in the `NewWindow` property must be on the same
@@ -5337,12 +5572,12 @@ type
     /// When providing the response data, you should consider relevant HTTP
     /// request headers just like an HTTP server would do. For example, if the
     /// request was for a video resource in a HTML video element, the request may
-    /// contain the [Range](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range)
+    /// contain the [Range](https://developer.mozilla.org/docs/Web/HTTP/Headers/Range)
     /// header to request only a part of the video that is streaming. In this
     /// case, your response stream should be only the portion of the video
     /// specified by the range HTTP request headers and you should set the
     /// appropriate
-    /// [Content-Range](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Range)
+    /// [Content-Range](https://developer.mozilla.org/docs/Web/HTTP/Headers/Content-Range)
     /// header in the response.
     /// </summary>
     function Get_Content(out Content: IStream): HResult; stdcall;
@@ -5883,7 +6118,6 @@ type
     /// In rare cases the creation can fail with `E_UNEXPECTED` if runtime does not have
     /// permissions to the user data folder.
     /// </summary>
-    {* var ParentWindow: _RemotableHandle --> ParentWindow: HWND    ************** WEBVIEW4DELPHI ************** *}
     function CreateCoreWebView2Controller(ParentWindow: HWND;
                                           const handler: ICoreWebView2CreateCoreWebView2ControllerCompletedHandler): HResult; stdcall;
     /// <summary>
@@ -6219,8 +6453,9 @@ type
   ICoreWebView2Frame = interface(IUnknown)
     ['{F1131A5E-9BA9-11EB-A8B3-0242AC130003}']
     /// <summary>
-    /// The name of the iframe from the iframe html tag declaring it.
-    /// You can access this property even if the iframe is destroyed.
+    /// The value of iframe's window.name property. The default value equals to
+    /// iframe html tag declaring it. You can access this property even if the
+    /// iframe is destroyed.
     ///
     /// The caller must free the returned string with `CoTaskMemFree`.  See
     /// [API Conventions](/microsoft-edge/webview2/concepts/win32-api-conventions#strings).
@@ -7232,7 +7467,7 @@ type
     /// Basic HTTP Authentication request as described in
     /// https://developer.mozilla.org/docs/Web/HTTP/Authentication, a Digest
     /// HTTP Authentication request as described in
-    /// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization#digest,
+    /// https://developer.mozilla.org/docs/Web/HTTP/Headers/Authorization#digest,
     /// an NTLM authentication or a Proxy Authentication request.
     ///
     /// The host can provide a response with credentials for the authentication or
@@ -8366,7 +8601,14 @@ type
     ///
     /// If the request is initiated by a cross-origin frame without a user gesture,
     /// the request will be blocked and the `LaunchingExternalUriScheme` event will not
-    /// be raised.
+    /// be raised. A URI scheme may be blocked for safety reasons. In this case the
+    /// `LaunchingExternalUriScheme` event will not be raised. The default dialog may show
+    /// an "always allow" checkbox which allows the user to opt-in to relaxed security
+    /// (i.e. skipping future default dialogs) for the combination of the URI scheme and the
+    /// origin of the page initiating this external URI scheme launch. The checkbox is offered
+    /// so long as the group policy to show the checkbox is not explicitly disabled and there
+    /// is a trustworthy initiating origin. If the user has checked this box, future attempts
+    /// to launch this URI scheme will still raise the event.
     /// \snippet SettingsComponent.cpp ToggleLaunchingExternalUriScheme
     /// </summary>
     function add_LaunchingExternalUriScheme(const eventHandler: ICoreWebView2LaunchingExternalUriSchemeEventHandler; 
@@ -8406,13 +8648,19 @@ type
     /// </summary>
     function Get_uri(out value: PWideChar): HResult; stdcall;
     /// <summary>
-    /// The origin initiating the external URI scheme launch.
+    /// <para>The origin initiating the external URI scheme launch.
     /// The origin will be an empty string if the request is initiated by calling
     /// `CoreWebView2.Navigate` on the external URI scheme. If a script initiates
     /// the navigation, the `InitiatingOrigin` will be the top-level document's
-    /// `Source`, for example, if `window.location` is set to `"calculator://", the
+    /// `Source`, for example, if `window.location` is set to `"calculator://"`, the
     /// `InitiatingOrigin` will be set to `calculator://`. If the request is initiated
-    ///  from a child frame, the `InitiatingOrigin` will be the source of that child frame.
+    ///  from a child frame, the `InitiatingOrigin` will be the source of that child frame.</para>
+    /// <para>If the `InitiatingOrigin` is
+    /// [opaque](https://html.spec.whatwg.org/multipage/origin.html#concept-origin-opaque),
+    /// the `InitiatingOrigin` reported in the event args will be its precursor origin.
+    /// The precursor origin is the origin that created the opaque origin. For example, if
+    /// a frame on example.com opens a subframe with a different opaque origin, the subframe's
+    /// precursor origin is example.com.</para>
     /// </summary>
     function Get_InitiatingOrigin(out value: PWideChar): HResult; stdcall;
     /// <summary>
@@ -8510,6 +8758,222 @@ type
     /// </summary>
     function Get_FrameId(out id: SYSUINT): HResult; stdcall;
   end;
+
+  /// <summary>
+  /// This is the interface for getting string and exception with ExecuteScriptWithResult.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2_21">See the ICoreWebView2_21 article.</see></para>
+  /// </remarks>
+  ICoreWebView2_21 = interface(ICoreWebView2_20)
+    ['{C4980DEA-587B-43B9-8143-3EF3BF552D95}']
+    /// <summary>
+    /// Run JavaScript code from the JavaScript parameter in the current
+    /// top-level document rendered in the WebView.
+    /// The result of the execution is returned asynchronously in the CoreWebView2ExecuteScriptResult object
+    /// which has methods and properties to obtain the successful result of script execution as well as any
+    /// unhandled JavaScript exceptions.
+    /// If this method is
+    /// run after the NavigationStarting event during a navigation, the script
+    /// runs in the new document when loading it, around the time
+    /// ContentLoading is run. This operation executes the script even if
+    /// ICoreWebView2Settings::IsScriptEnabled is set to FALSE.
+    ///
+    /// \snippet ScriptComponent.cpp ExecuteScriptWithResult
+    /// </summary>
+    function ExecuteScriptWithResult(javaScript: PWideChar;
+                                     const handler: ICoreWebView2ExecuteScriptWithResultCompletedHandler): HResult; stdcall;
+  end;
+
+  /// <summary>
+  /// This is the callback for ExecuteScriptWithResult
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2executescriptwithresultcompletedhandler">See the ICoreWebView2ExecuteScriptWithResultCompletedHandler article.</see></para>
+  /// </remarks>
+  ICoreWebView2ExecuteScriptWithResultCompletedHandler = interface(IUnknown)
+    ['{1BB5317B-8238-4C67-A7FF-BAF6558F289D}']
+    /// <summary>
+    /// Provides the result of ExecuteScriptWithResult
+    /// </summary>
+    function Invoke(errorCode: HResult; const result: ICoreWebView2ExecuteScriptResult): HResult; stdcall;
+  end;
+
+  /// <summary>
+  /// This is the result for ExecuteScriptWithResult.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2executescriptresult">See the ICoreWebView2ExecuteScriptResult article.</see></para>
+  /// </remarks>
+  ICoreWebView2ExecuteScriptResult = interface(IUnknown)
+    ['{0CE15963-3698-4DF7-9399-71ED6CDD8C9F}']
+    /// <summary>
+    /// This property is true if ExecuteScriptWithResult successfully executed script with
+    /// no unhandled exceptions and the result is available in the ResultAsJson property
+    /// or via the TryGetResultAsString method.
+    /// If it is false then the script execution had an unhandled exception which you
+    /// can get via the Exception property.
+    /// </summary>
+    function Get_Succeeded(out value: Integer): HResult; stdcall;
+    /// <summary>
+    /// A function that has no explicit return value returns undefined. If the
+    /// script that was run throws an unhandled exception, then the result is
+    /// also "null". This method is applied asynchronously. If the method is
+    /// run before `ContentLoading`, the script will not be executed
+    /// and the string "null" will be returned.
+    /// The return value description is as follows
+    /// 1. S_OK: Execution succeeds.
+    /// 2. E_POINTER: When the `jsonResult` is nullptr.
+    /// </summary>
+    function Get_ResultAsJson(out jsonResult: PWideChar): HResult; stdcall;
+    /// <summary>
+    /// If Succeeded is true and the result of script execution is a string, this method provides the value of the string result,
+    /// and we will get the `FALSE` var value when the js result is not string type.
+    /// The return value description is as follows
+    /// 1. S_OK: Execution succeeds.
+    /// 2. E_POINTER: When the `stringResult` or `value` is nullptr.
+    /// NOTE: If the `value` returns `FALSE`, the `stringResult` will be set to a empty string.
+    /// </summary>
+    function TryGetResultAsString(out stringResult: PWideChar; out value: Integer): HResult; stdcall;
+    /// <summary>
+    /// If Succeeded is false, you can use this property to get the unhandled exception thrown by script execution
+    /// Note that due to the compatibility of the WinRT/.NET interface,
+    /// S_OK will be returned even if the acquisition fails.
+    /// We can determine whether the acquisition is successful by judging whether the `exception` is nullptr.
+    /// </summary>
+    function Get_Exception(out Exception: ICoreWebView2ScriptException): HResult; stdcall;
+  end;
+
+  /// <summary>
+  /// This interface represents a JavaScript exception.
+  /// If the CoreWebView2.ExecuteScriptWithResult result has Succeeded as false,
+  /// you can use the result's Exception property to get the script exception.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2scriptexception">See the ICoreWebView2ScriptException article.</see></para>
+  /// </remarks>
+  ICoreWebView2ScriptException = interface(IUnknown)
+    ['{054DAE00-84A3-49FF-BC17-4012A90BC9FD}']
+    /// <summary>
+    /// The line number of the source where the exception occurred.
+    /// In the JSON it is `exceptionDetail.lineNumber`.
+    /// Note that this position starts at 0.
+    /// </summary>
+    function Get_LineNumber(out value: SYSUINT): HResult; stdcall;
+    /// <summary>
+    /// The column number of the source where the exception occurred.
+    /// In the JSON it is `exceptionDetail.columnNumber`.
+    /// Note that this position starts at 0.
+    /// </summary>
+    function Get_ColumnNumber(out value: SYSUINT): HResult; stdcall;
+    /// <summary>
+    /// The Name is the exception's class name.
+    /// In the JSON it is `exceptionDetail.exception.className`.
+    /// This is the empty string if the exception doesn't have a class name.
+    /// This can happen if the script throws a non-Error object such as `throw "abc";`
+    /// </summary>
+    function Get_name(out value: PWideChar): HResult; stdcall;
+    /// <summary>
+    /// The Message is the exception's message and potentially stack.
+    /// In the JSON it is exceptionDetail.exception.description.
+    /// This is the empty string if the exception doesn't have a description.
+    /// This can happen if the script throws a non-Error object such as throw "abc";.
+    /// </summary>
+    function Get_Message(out value: PWideChar): HResult; stdcall;
+    /// <summary>
+    /// This will return all details of the exception as a JSON string.
+    /// In the case that script has thrown a non-Error object such as `throw "abc";`
+    /// or any other non-Error object, you can get object specific properties.
+    /// </summary>
+    function Get_ToJson(out value: PWideChar): HResult; stdcall;
+  end;
+
+  /// <summary>
+  /// This interface is an extension of `ICoreWebView2` that allows to
+  /// set filters in order to receive WebResourceRequested events for
+  /// service workers, shared workers and different origin iframes.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2_22">See the ICoreWebView2_22 article.</see></para>
+  /// </remarks>
+  ICoreWebView2_22 = interface(ICoreWebView2_21)
+    ['{DB75DFC7-A857-4632-A398-6969DDE26C0A}']
+    /// <summary>
+    /// A web resource request with a resource context that matches this
+    /// filter's resource context and a URI that matches this filter's URI
+    /// wildcard string for corresponding request sources will be raised via
+    /// the `WebResourceRequested` event. To receive all raised events filters
+    /// have to be added before main page navigation.
+    ///
+    /// The `uri` parameter value is a wildcard string matched against the URI
+    /// of the web resource request. This is a glob style
+    /// wildcard string in which a `*` matches zero or more characters and a `?`
+    /// matches exactly one character.
+    /// These wildcard characters can be escaped using a backslash just before
+    /// the wildcard character in order to represent the literal `*` or `?`.
+    ///
+    /// The matching occurs over the URI as a whole string and not limiting
+    /// wildcard matches to particular parts of the URI.
+    /// The wildcard filter is compared to the URI after the URI has been
+    /// normalized, any URI fragment has been removed, and non-ASCII hostnames
+    /// have been converted to punycode.
+    ///
+    /// Specifying a `nullptr` for the uri is equivalent to an empty string which
+    /// matches no URIs.
+    ///
+    /// For more information about resource context filters, navigate to
+    /// [COREWEBVIEW2_WEB_RESOURCE_CONTEXT](/microsoft-edge/webview2/reference/win32/icorewebview2#corewebview2_web_resource_context).
+    ///
+    /// The `requestSourceKinds` is a mask of one or more
+    /// `COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS`. OR operation(s) can be
+    /// applied to multiple `COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS` to
+    /// create a mask representing those data types. API returns `E_INVALIDARG` if
+    /// `requestSourceKinds` equals to zero. For more information about request
+    /// source kinds, navigate to
+    /// [COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS](/microsoft-edge/webview2/reference/win32/icorewebview2#corewebview2_web_resource_request_source_kinds).
+    ///
+    /// Because service workers and shared workers run separately from any one
+    /// HTML document their WebResourceRequested will be raised for all
+    /// CoreWebView2s that have appropriate filters added in the corresponding
+    /// CoreWebView2Environment. You should only add a WebResourceRequested filter
+    /// for COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_SERVICE_WORKER or
+    /// COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_SHARED_WORKER on
+    /// one CoreWebView2 to avoid handling the same WebResourceRequested
+    /// event multiple times.
+    ///
+    /// | URI Filter String | Request URI | Match | Notes |
+    /// | ---- | ---- | ---- | ---- |
+    /// | `*` | `https://contoso.com/a/b/c` | Yes | A single * will match all URIs |
+    /// | `*://contoso.com/*` | `https://contoso.com/a/b/c` | Yes | Matches everything in contoso.com across all schemes |
+    /// | `*://contoso.com/*` | `https://example.com/?https://contoso.com/` | Yes | But also matches a URI with just the same text anywhere in the URI |
+    /// | `example` | `https://contoso.com/example` | No | The filter does not perform partial matches |
+    /// | `*example` | `https://contoso.com/example` | Yes | The filter matches across URI parts |
+    /// | `*example` | `https://contoso.com/path/?example` | Yes | The filter matches across URI parts |
+    /// | `*example` | `https://contoso.com/path/?query#example` | No | The filter is matched against the URI with no fragment |
+    /// | `*example` | `https://example` | No | The URI is normalized before filter matching so the actual URI used for comparison is `https://example/` |
+    /// | `*example/` | `https://example` | Yes | Just like above, but this time the filter ends with a / just like the normalized URI |
+    /// | `https://xn--qei.example/` | `https://&#x2764;.example/` | Yes | Non-ASCII hostnames are normalized to punycode before wildcard comparison |
+    /// | `https://&#x2764;.example/` | `https://xn--qei.example/` | No | Non-ASCII hostnames are normalized to punycode before wildcard comparison |
+    ///
+    /// \snippet ScenarioSharedWorkerWRR.cpp WebResourceRequested2
+    /// </summary>
+    function AddWebResourceRequestedFilterWithRequestSourceKinds(uri: PWideChar;
+                                                                 ResourceContext: COREWEBVIEW2_WEB_RESOURCE_CONTEXT;
+                                                                 requestSourceKinds: COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS): HResult; stdcall;
+    /// <summary>
+    /// Removes a matching WebResource filter that was previously added for the
+    /// `WebResourceRequested` event.  If the same filter was added multiple
+    /// times, then it must be removed as many times as it was added for the
+    /// removal to be effective. Returns `E_INVALIDARG` for a filter that was
+    /// not added or is already removed.
+    /// If the filter was added for multiple requestSourceKinds and removed just for one of them
+    /// the filter remains for the non-removed requestSourceKinds.
+    /// </summary>
+    function RemoveWebResourceRequestedFilterWithRequestSourceKinds(uri: PWideChar;
+                                                                    ResourceContext: COREWEBVIEW2_WEB_RESOURCE_CONTEXT;
+                                                                    requestSourceKinds: COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS): HResult; stdcall;
+  end;
+
 
   /// <summary>
   /// Event args for the BrowserProcessExited event.
@@ -9786,7 +10250,6 @@ type
     /// - Windows Server 2019
     /// - Windows Server 2016
     /// </summary>
-    {* var ParentWindow: _RemotableHandle --> ParentWindow: HWND    ************** WEBVIEW4DELPHI ************** *}
     function CreateCoreWebView2CompositionController(ParentWindow: HWND;
                                                      const handler: ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler): HResult; stdcall;
     /// <summary>
@@ -9812,7 +10275,6 @@ type
     /// called, the app can pass the HWND to GetAutomationProviderForWindow to
     /// find the matching WebView Automation Provider.
     /// </summary>
-    {* function GetAutomationProviderForWindow(var hwnd: _RemotableHandle; out provider: IUnknown): HResult; stdcall;  var hwnd: _RemotableHandle -> aHWND: HWND    ************** WEBVIEW4DELPHI ************** *}
     function GetAutomationProviderForWindow(aHWND: HWND; out provider: IUnknown): HResult; stdcall;
   end;
 
@@ -10055,14 +10517,12 @@ type
     /// <summary>
     /// Create a new WebView with options.
     /// </summary>
-    {* var ParentWindow: _RemotableHandle --> ParentWindow: HWND    ************** WEBVIEW4DELPHI ************** *}
     function CreateCoreWebView2ControllerWithOptions(ParentWindow: HWND;
                                                      const options: ICoreWebView2ControllerOptions;
                                                      const handler: ICoreWebView2CreateCoreWebView2ControllerCompletedHandler): HResult; stdcall;
     /// <summary>
     /// Create a new WebView in visual hosting mode with options.
     /// </summary>
-    {* var ParentWindow: _RemotableHandle --> ParentWindow: HWND    ************** WEBVIEW4DELPHI ************** *}
     function CreateCoreWebView2CompositionControllerWithOptions(ParentWindow: HWND;
                                                                 const options: ICoreWebView2ControllerOptions; 
                                                                 const handler: ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler): HResult; stdcall;
@@ -10250,10 +10710,13 @@ type
   ICoreWebView2FrameInfo = interface(IUnknown)
     ['{DA86B8A1-BDF3-4F11-9955-528CEFA59727}']
     /// <summary>
-    /// <para>The name attribute of the frame, as in `<iframe name="frame-name" ...>`.
-    /// The returned string is empty when the frame has no name attribute.</para>
-    /// <para>The caller must free the returned string with `CoTaskMemFree`.  See
-    /// [API Conventions](/microsoft-edge/webview2/concepts/win32-api-conventions#strings).</para>
+    /// The value of iframe's window.name property. The default value equals to
+    /// iframe html tag declaring it, as in `<iframe name="frame-name" ...>`.
+    /// The returned string is empty when the frame has no name attribute and
+    /// no assigned value for window.name.
+    ///
+    /// The caller must free the returned string with `CoTaskMemFree`.  See
+    /// [API Conventions](/microsoft-edge/webview2/concepts/win32-api-conventions#strings).
     /// </summary>
     function Get_name(out name: PWideChar): HResult; stdcall;
     /// <summary>
@@ -10510,6 +10973,109 @@ type
     /// Sets the `AreBrowserExtensionsEnabled` property.
     /// </summary>
     function Set_AreBrowserExtensionsEnabled(value: Integer): HResult; stdcall;
+  end;
+
+  /// <summary>
+  /// Additional options used to create the WebView2 Environment that support
+  /// specifying the `ReleaseChannels` and `ChannelSearchKind`.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2environmentoptions7">See the ICoreWebView2EnvironmentOptions7 article.</see></para>
+  /// </remarks>
+  ICoreWebView2EnvironmentOptions7 = interface(IUnknown)
+    ['{C48D539F-E39F-441C-AE68-1F66E570BDC5}']
+    /// <summary>
+    /// Gets the `ChannelSearchKind` property.
+    /// </summary>
+    function Get_ChannelSearchKind(out value: COREWEBVIEW2_CHANNEL_SEARCH_KIND): HResult; stdcall;
+    /// <summary>
+    /// <para>The `ChannelSearchKind` property is `COREWEBVIEW2_CHANNEL_SEARCH_KIND_MOST_STABLE`
+    /// by default; environment creation searches for a release channel on the machine
+    /// from most to least stable using the first channel found. The default search order is:
+    /// WebView2 Runtime -&gt; Beta -&gt; Dev -&gt; Canary. Set `ChannelSearchKind` to
+    /// `COREWEBVIEW2_CHANNEL_SEARCH_KIND_LEAST_STABLE` to reverse the search order
+    /// so that environment creation searches for a channel from least to most stable. If
+    /// `ReleaseChannels` has been provided, the loader will only search
+    /// for channels in the set. See `COREWEBVIEW2_RELEASE_CHANNELS` for more details
+    /// on channels.</para>
+    /// <para>This property can be overridden by the corresponding
+    /// registry key `ChannelSearchKind` or the environment variable
+    /// `WEBVIEW2_CHANNEL_SEARCH_KIND`. Set the value to `1` to set the search kind to
+    /// `COREWEBVIEW2_CHANNEL_SEARCH_KIND_LEAST_STABLE`. See
+    /// `CreateCoreWebView2EnvironmentWithOptions` for more details on overrides.</para>
+    /// </summary>
+    function Set_ChannelSearchKind(value: COREWEBVIEW2_CHANNEL_SEARCH_KIND): HResult; stdcall;
+    /// <summary>
+    /// Gets the `ReleaseChannels` property.
+    /// </summary>
+    function Get_ReleaseChannels(out value: COREWEBVIEW2_RELEASE_CHANNELS): HResult; stdcall;
+    /// <summary>
+    /// <para>Sets the `ReleaseChannels`, which is a mask of one or more
+    /// `COREWEBVIEW2_RELEASE_CHANNELS` indicating which channels environment
+    /// creation should search for. OR operation(s) can be applied to multiple
+    /// `COREWEBVIEW2_RELEASE_CHANNELS` to create a mask. The default value is a
+    /// a mask of all the channels. By default, environment creation searches for
+    /// channels from most to least stable, using the first channel found on the
+    /// device. When `ReleaseChannels` is provided, environment creation will only
+    /// search for the channels specified in the set. Set `ChannelSearchKind` to
+    /// `COREWEBVIEW2_CHANNEL_SEARCH_KIND_LEAST_STABLE` to reverse the search order
+    /// so environment creation searches for least stable build first. See
+    /// `COREWEBVIEW2_RELEASE_CHANNELS` for descriptions of each channel.</para>
+    /// <para>`CreateCoreWebView2EnvironmentWithOptions` fails with
+    /// `HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)` if environment creation is unable
+    /// to find any channel from the `ReleaseChannels` installed on the device.
+    /// Use `GetAvailableCoreWebView2BrowserVersionStringWithOptions` on
+    /// `ICoreWebView2Environment` to verify which channel is used when this option
+    /// is set.</para>
+    /// Examples:
+    /// <code>
+    /// |   ReleaseChannels   |   Channel Search Kind: Most Stable (default)   |   Channel Search Kind: Least Stable   |
+    /// | --- | --- | --- |
+    /// |COREWEBVIEW2_RELEASE_CHANNELS_BETA \| COREWEBVIEW2_RELEASE_CHANNELS_STABLE| WebView2 Runtime -&gt; Beta | Beta -&gt; WebView2 Runtime|
+    /// |COREWEBVIEW2_RELEASE_CHANNELS_CANARY \| COREWEBVIEW2_RELEASE_CHANNELS_DEV \| COREWEBVIEW2_RELEASE_CHANNELS_BETA \| COREWEBVIEW2_RELEASE_CHANNELS_STABLE| WebView2 Runtime -&gt; Beta -&gt; Dev -&gt; Canary | Canary -&gt; Dev -&gt; Beta -&gt; WebView2 Runtime |
+    /// |COREWEBVIEW2_RELEASE_CHANNELS_CANARY| Canary | Canary |
+    /// |COREWEBVIEW2_RELEASE_CHANNELS_BETA \| COREWEBVIEW2_RELEASE_CHANNELS_CANARY \| COREWEBVIEW2_RELEASE_CHANNELS_STABLE | WebView2 Runtime -&gt; Beta -&gt; Canary | Canary -&gt; Beta -&gt; WebView2 Runtime |
+    /// </code>
+    /// <para>If both `BrowserExecutableFolder` and `ReleaseChannels` are provided, the
+    /// `BrowserExecutableFolder` takes precedence, regardless of whether or not the
+    /// channel of `BrowserExecutableFolder` is included in the `ReleaseChannels`.</para>
+    /// <para>`ReleaseChannels` can be overridden by the corresponding registry override
+    /// `ReleaseChannels` or the environment variable `WEBVIEW2_RELEASE_CHANNELS`.</para>
+    /// <para>Set the value to a comma-separated string of integers, which map to the
+    /// following release channel values: Stable (0), Beta (1), Dev (2), and
+    /// Canary (3). For example, the values "0,2" and "2,0" indicate that environment
+    /// creation should only search for Dev channel and the WebView2 Runtime, using the
+    /// order indicated by `ChannelSearchKind`. Environment creation attempts to
+    /// interpret each integer and treats any invalid entry as Stable channel. See
+    /// `CreateCoreWebView2EnvironmentWithOptions` for more details on overrides.</para>
+    /// </summary>
+    function Set_ReleaseChannels(value: COREWEBVIEW2_RELEASE_CHANNELS): HResult; stdcall;
+  end;
+
+  /// <summary>
+  /// Additional options used to create WebView2 Environment.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2environmentoptions8">See the ICoreWebView2EnvironmentOptions8 article.</see></para>
+  /// </remarks>
+  ICoreWebView2EnvironmentOptions8 = interface(IUnknown)
+    ['{7C7ECF51-E918-5CAF-853C-E9A2BCC27775}']
+    /// <summary>
+    /// Gets the `ScrollBarStyle` property.
+    /// </summary>
+    function Get_ScrollBarStyle(out value: COREWEBVIEW2_SCROLLBAR_STYLE): HResult; stdcall;
+    /// <summary>
+    /// The ScrollBar style being set on the WebView2 Environment.
+    /// The default value is `COREWEBVIEW2_SCROLLBAR_STYLE_DEFAULT`
+    /// which specifies the default browser ScrollBar style.
+    /// The `color-scheme` CSS property needs to be set on the corresponding page
+    /// to allow ScrollBar to follow light or dark theme. Please see
+    /// [color-scheme](https://developer.mozilla.org/docs/Web/CSS/color-scheme#declaring_color_scheme_preferences)
+    /// for how `color-scheme` can be set.
+    /// CSS styles that modify the ScrollBar applied on top of native ScrollBar styling
+    /// that is selected with `ScrollBarStyle`.
+    /// </summary>
+    function Set_ScrollBarStyle(value: COREWEBVIEW2_SCROLLBAR_STYLE): HResult; stdcall;
   end;
 
   /// <summary>
@@ -11370,6 +11936,45 @@ type
   end;
 
   /// <summary>
+  /// A continuation of the ICoreWebView2ProcessFailedEventArgs2 interface
+  /// for getting blocked file for code integrity process failures.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2processfailedeventargs3">See the icorewebview2processfailedeventargs3 article.</see></para>
+  /// </remarks>
+  ICoreWebView2ProcessFailedEventArgs3 = interface(ICoreWebView2ProcessFailedEventArgs2)
+    ['{AB667428-094D-5FD1-B480-8B4C0FDBDF2F}']
+    /// <summary>
+    /// This property is the full path of the module that caused the
+    /// crash in cases of Windows Code Integrity failures.
+    /// [Windows Code Integrity](/mem/intune/user-help/you-need-to-enable-code-integrity)
+    /// is a feature that verifies the integrity and
+    /// authenticity of dynamic-link libraries (DLLs)
+    /// on Windows systems. It ensures that only trusted
+    /// code can run on the system and prevents unauthorized or
+    /// malicious modifications.
+    /// When ProcessFailed occurred due to a failed Code Integrity check,
+    /// this property returns the full path of the file that was prevented from
+    /// loading on the system.
+    /// The webview2 process which tried to load the DLL will fail with
+    /// exit code STATUS_INVALID_IMAGE_HASH(-1073740760).
+    /// A file can fail integrity check for various
+    /// reasons, such as:
+    /// - It has an invalid or missing signature that does
+    /// not match the publisher or signer of the file.
+    /// - It has been tampered with or corrupted by malware or other software.
+    /// - It has been blocked by an administrator or a security policy.
+    /// This property always will be the empty string if failure is not caused by
+    /// STATUS_INVALID_IMAGE_HASH.
+    ///
+    ///
+    /// The caller must free the returned string with `CoTaskMemFree`.  See
+    /// [API Conventions](/microsoft-edge/webview2/concepts/win32-api-conventions#strings).
+    /// </summary>
+    function Get_FailureSourceModulePath(out value: PWideChar): HResult; stdcall;
+  end;
+
+  /// <summary>
   /// Profile2 interface.
   /// </summary>
   /// <remarks>
@@ -11490,7 +12095,7 @@ type
     /// otherwise the method fails with `E_INVALIDARG`. Additional URI parts like
     /// path and fragment are ignored. For example, "https://wwww.example.com/app1/index.html/"
     /// is treated the same as "https://wwww.example.com". See the
-    /// [MDN origin definition](https://developer.mozilla.org/en-US/docs/Glossary/Origin)
+    /// [MDN origin definition](https://developer.mozilla.org/docs/Glossary/Origin)
     /// for more details.
     ///
     /// \snippet ScenarioPermissionManagement.cpp SetPermissionState
@@ -11615,7 +12220,7 @@ type
   ICoreWebView2Profile7 = interface(ICoreWebView2Profile6)
     ['{7B4C7906-A1AA-4CB4-B723-DB09F813D541}']
     /// <summary>
-    /// Adds the [browser extension](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions)
+    /// Adds the [browser extension](https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions)
     /// using the extension path for unpacked extensions from the local device. Extension is
     /// running right after installation.
     /// The extension folder path is the topmost folder of an unpacked browser extension and
@@ -11687,7 +12292,7 @@ type
     ['{7EF7FFA0-FAC5-462C-B189-3D9EDBE575DA}']
     /// <summary>
     /// This is the browser extension's ID. This is the same browser extension ID returned by
-    /// the browser extension API [`chrome.runtime.id`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/runtime/id).
+    /// the browser extension API [`chrome.runtime.id`](https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/API/runtime/id).
     /// Please see that documentation for more details on how the ID is generated.
     /// After an extension is removed, calling `Id` will return the id of the extension that is removed.
     /// The caller must free the returned string with `CoTaskMemFree`.  See
@@ -11698,7 +12303,7 @@ type
     /// This is the browser extension's name. This value is defined in this browser extension's
     /// manifest.json file. If manifest.json define extension's localized name, this value will
     /// be the localized version of the name.
-    /// Please see [Manifest.json name](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/name)
+    /// Please see [Manifest.json name](https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/manifest.json/name)
     /// for more details.
     /// After an extension is removed, calling `Name` will return the name of the extension that is removed.
     /// The caller must free the returned string with `CoTaskMemFree`.  See
@@ -11873,6 +12478,13 @@ type
     /// Sets the `UserAgent` property. This property may be overridden if
     /// the User-Agent header is set in a request. If the parameter is empty
     /// the User Agent will not be updated and the current User Agent will remain.
+    /// Setting this property may clear User Agent Client Hints headers
+    /// Sec-CH-UA-* and script values from navigator.userAgentData. Current
+    /// implementation behavior is subject to change.
+    /// The User Agent set will also be effective on service workers
+    /// and shared workers associated with the WebView.
+    /// If there are multiple WebViews associated with the same service worker or
+    /// shared worker, the last User Agent set will be used.
     /// Returns `HRESULT_FROM_WIN32(ERROR_INVALID_STATE)` if the owning WebView is
     /// closed.
     /// </summary>
@@ -12124,8 +12736,167 @@ type
   end;
 
   /// <summary>
+  /// A continuation of the ICoreWebView2Settings interface to manage non-client
+  /// regions.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2settings9">See the ICoreWebView2Settings9 article.</see></para>
+  /// </remarks>
+  ICoreWebView2Settings9 = interface(ICoreWebView2Settings8)
+    ['{0528A73B-E92D-49F4-927A-E547DDDAA37D}']
+    /// <summary>
+    /// The `IsNonClientRegionSupportEnabled` property enables web pages to use the
+    /// `app-region` CSS style. Disabling/Enabling the `IsNonClientRegionSupportEnabled`
+    /// takes effect after the next navigation. Defaults to `FALSE`.
+    ///
+    /// When this property is `TRUE`, then all the non-client region features
+    /// will be enabled:
+    /// Draggable Regions will be enabled, they are regions on a webpage that
+    /// are marked with the CSS attribute `app-region: drag/no-drag`. When set to
+    /// `drag`, these regions will be treated like the window's title bar, supporting
+    /// dragging of the entire WebView and its host app window; the system menu shows
+    /// upon right click, and a double click will trigger maximizing/restoration of the
+    /// window size.
+    ///
+    /// When set to `FALSE`, all non-client region support will be disabled.
+    /// The `app-region` CSS style will be ignored on web pages.
+    /// \snippet SettingsComponent.cpp ToggleNonClientRegionSupportEnabled
+    /// </summary>
+    function Get_IsNonClientRegionSupportEnabled(out enabled: Integer): HResult; stdcall;
+    /// <summary>
+    /// Set the IsNonClientRegionSupportEnabled property
+    /// </summary>
+    function Set_IsNonClientRegionSupportEnabled(enabled: Integer): HResult; stdcall;
+  end;
+
+  /// <summary>
+  /// Event args for the `WebResourceRequested` event.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2webresourcerequestedeventargs2">See the ICoreWebView2WebResourceRequestedEventArgs2 article.</see></para>
+  /// </remarks>
+  ICoreWebView2WebResourceRequestedEventArgs2 = interface(ICoreWebView2WebResourceRequestedEventArgs)
+    ['{9C562C24-B219-4D7F-92F6-B187FBBADD56}']
+    /// <summary>
+    /// The web resource requested source.
+    /// </summary>
+    function Get_RequestedSourceKind(out RequestedSourceKind: COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS): HResult; stdcall;
+  end;
+
+  /// <summary>
+  /// This is the Interface of the event handler for the non-client region changed
+  /// event.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2nonclientregionchangedeventhandler">See the ICoreWebView2NonClientRegionChangedEventHandler article.</see></para>
+  /// </remarks>
+  ICoreWebView2NonClientRegionChangedEventHandler = interface(IUnknown)
+    ['{4A794E66-AA6C-46BD-93A3-382196837680}']
+    /// <summary>
+    /// This is the event handler for add_NonClientRegionChanged when executed,
+    /// it recieves the event args.
+    /// </summary>
+    function Invoke(const sender: ICoreWebView2CompositionController;
+                    const args: ICoreWebView2NonClientRegionChangedEventArgs): HResult; stdcall;
+  end;
+
+  /// <summary>
+  /// This is the Interface for non-client region change event args.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2nonclientregionchangedeventargs">See the ICoreWebView2NonClientRegionChangedEventArgs article.</see></para>
+  /// </remarks>
+  ICoreWebView2NonClientRegionChangedEventArgs = interface(IUnknown)
+    ['{AB71D500-0820-4A52-809C-48DB04FF93BF}']
+    /// <summary>
+    /// This property represents the COREWEBVIEW2_NON_CLIENT_REGION_KIND which the
+    /// region changed event corresponds to. With this property an app can query
+    /// for a collection of rects which have that region kind by using
+    /// QueryNonClientRegion on the composition controller.
+    /// </summary>
+    function Get_RegionKind(out value: COREWEBVIEW2_NON_CLIENT_REGION_KIND): HResult; stdcall;
+  end;
+
+  /// <summary>
+  /// This Interface Represents a Collection of Region Rects.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2regionrectcollectionview">See the ICoreWebView2RegionRectCollectionView article.</see></para>
+  /// </remarks>
+  ICoreWebView2RegionRectCollectionView = interface(IUnknown)
+    ['{333353B8-48BF-4449-8FCC-22697FAF5753}']
+    /// <summary>
+    /// This method gets the number of Rects contained in the collection.
+    /// </summary>
+    function Get_Count(out value: SYSUINT): HResult; stdcall;
+    /// <summary>
+    /// This method gets the Rect at the specified index.
+    /// </summary>
+    function GetValueAtIndex(index: SYSUINT; out value: tagRECT): HResult; stdcall;
+  end;
+
+  /// <summary>
+  /// This Interface includes an API which enables non-client hit-testing support for WebView2.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2compositioncontroller4">See the ICoreWebView2CompositionController4 article.</see></para>
+  /// </remarks>
+  ICoreWebView2CompositionController4 = interface(ICoreWebView2CompositionController3)
+    ['{7C367B9B-3D2B-450F-9E58-D61A20F486AA}']
+    /// <summary>
+    /// If you are hosting a WebView2 using CoreWebView2CompositionController, you can call
+    /// this method in your Win32 WndProc to determine if the mouse is moving over or
+    /// clicking on WebView2 web content that should be considered part of a non-client region.
+
+    /// The point parameter is expected to be in the client coordinate space of WebView2.
+    /// The method sets the out parameter value as follows:
+    ///     - COREWEBVIEW2_NON_CLIENT_REGION_KIND_CAPTION when point corresponds to
+    ///         a region (HTML element) within the WebView2 with
+    ///         `-webkit-app-region: drag` CSS style set.
+    ///     - COREWEBVIEW2_NON_CLIENT_REGION_KIND_CLIENT when point corresponds to
+    ///         a region (HTML element) within the WebView2 without
+    ///         `-webkit-app-region: drag` CSS style set.
+    ///     - COREWEBVIEW2_NON_CLIENT_REGION_KIND_NOWHERE when point is not within the WebView2.
+    ///
+    /// NOTE: in order for WebView2 to properly handle the title bar system menu,
+    /// the app needs to send WM_NCRBUTTONDOWN and WM_NCRBUTTONUP to SendMouseInput.
+    /// See sample code below.
+    /// \snippet ViewComponent.cpp DraggableRegions2
+    ///
+    /// \snippet ViewComponent.cpp DraggableRegions1
+    /// </summary>
+    function GetNonClientRegionAtPoint(point: tagPOINT;
+                                       out value: COREWEBVIEW2_NON_CLIENT_REGION_KIND): HResult; stdcall;
+    /// <summary>
+    /// This method is used to get the collection of rects that correspond
+    /// to a particular COREWEBVIEW2_NON_CLIENT_REGION_KIND. This is to be used in
+    /// the callback of add_NonClientRegionChanged whose event args object contains
+    /// a region property of type COREWEBVIEW2_NON_CLIENT_REGION_KIND.
+    ///
+    /// \snippet ScenarioNonClientRegionSupport.cpp AddChangeListener
+    /// </summary>
+    function QueryNonClientRegion(Kind: COREWEBVIEW2_NON_CLIENT_REGION_KIND;
+                                  out rects: ICoreWebView2RegionRectCollectionView): HResult; stdcall;
+    /// <summary>
+    /// This method is used to add a listener for NonClientRegionChanged.
+    /// The event is fired when regions which are marked as non-client in the
+    /// app html have changed. So either when new regions have been marked,
+    /// or unmarked, or the region(s) have been changed to a different kind.
+    ///
+    /// \snippet ScenarioNonClientRegionSupport.cpp AddChangeListener
+    /// </summary>
+    function add_NonClientRegionChanged(const eventHandler: ICoreWebView2NonClientRegionChangedEventHandler;
+                                        out token: EventRegistrationToken): HResult; stdcall;
+    /// <summary>
+    /// This method is used to remove an event handler previously added with
+    /// add_NonClientRegionChanged
+    /// </summary>
+    function remove_NonClientRegionChanged(token: EventRegistrationToken): HResult; stdcall;
+  end;
+
+  /// <summary>
   /// Representation of a DOM
-  /// [File](https://developer.mozilla.org/en-US/docs/Web/API/File) object
+  /// [File](https://developer.mozilla.org/docs/Web/API/File) object
   /// passed via WebMessage. You can use this object to obtain the path of a
   /// File dropped on WebView2.
   /// </summary>

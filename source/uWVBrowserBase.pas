@@ -42,28 +42,32 @@ type
       FDefaultURL                                      : wvstring;
       FBrowserExecPath                                 : wvstring;
       FUserDataFolder                                  : wvstring;
-      FAdditionalBrowserArguments                      : wvstring;
-      FLanguage                                        : wvstring;
-      FTargetCompatibleBrowserVersion                  : wvstring;
-      FAllowSingleSignOnUsingOSPrimaryAccount          : boolean;
-      FExclusiveUserDataFolderAccess                   : boolean;
-      FCustomCrashReportingEnabled                     : boolean;
       FIgnoreCertificateErrors                         : boolean;
       FZoomStep                                        : byte;
       FOffline                                         : boolean;
       FIsNavigating                                    : boolean;
       FProfileName                                     : wvstring;
       FIsInPrivateModeEnabled                          : boolean;
-      FMenuItemHandler                                 : ICoreWebView2CustomItemSelectedEventHandler;
       FClearBrowsingDataCompletedHandler               : ICoreWebView2ClearBrowsingDataCompletedHandler;
       FSetPermissionStateCompletedHandler              : ICoreWebView2SetPermissionStateCompletedHandler;
       FGetNonDefaultPermissionSettingsCompletedHandler : ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandler;
       FProfileAddBrowserExtensionCompletedHandler      : ICoreWebView2ProfileAddBrowserExtensionCompletedHandler;
       FProfileGetBrowserExtensionsCompletedHandler     : ICoreWebView2ProfileGetBrowserExtensionsCompletedHandler;
-      FEnableTrackingPrevention                        : boolean;
-      FAreBrowserExtensionsEnabled                     : boolean;
       FPreferredTrackingPreventionLevel                : TWVTrackingPreventionLevel;
       FScriptLocale                                    : wvstring;
+
+      // Fields used to create the environment
+      FAdditionalBrowserArguments                      : wvstring;
+      FLanguage                                        : wvstring;
+      FTargetCompatibleBrowserVersion                  : wvstring;
+      FAllowSingleSignOnUsingOSPrimaryAccount          : boolean;
+      FExclusiveUserDataFolderAccess                   : boolean;
+      FCustomCrashReportingEnabled                     : boolean;
+      FEnableTrackingPrevention                        : boolean;
+      FAreBrowserExtensionsEnabled                     : boolean;
+      FChannelSearchKind                               : TWVChannelSearchKind;
+      FReleaseChannels                                 : TWVReleaseChannels;
+      FScrollBarStyle                                  : TWVScrollBarStyle;
 
       FOldWidget0CompWndPrc                           : TFNWndProc;
       FOldWidget1CompWndPrc                           : TFNWndProc;
@@ -170,6 +174,8 @@ type
       FOnProfileAddBrowserExtensionCompleted          : TOnProfileAddBrowserExtensionCompletedEvent;
       FOnProfileGetBrowserExtensionsCompleted         : TOnProfileGetBrowserExtensionsCompletedEvent;
       FOnProfileDeleted                               : TOnProfileDeletedEvent;
+      FOnExecuteScriptWithResultCompleted             : TOnExecuteScriptWithResultCompletedEvent;
+      FOnNonClientRegionChanged                       : TOnNonClientRegionChangedEvent;
 
       function  GetBrowserProcessID : cardinal;
       function  GetBrowserVersionInfo : wvstring;
@@ -220,7 +226,7 @@ type
       function  GetAllowExternalDrop : boolean;
       function  GetHiddenPdfToolbarItems : TWVPDFToolbarItems;
       function  GetIsReputationCheckingRequired : boolean;
-      function  GetCustomItemSelectedEventHandler : ICoreWebView2CustomItemSelectedEventHandler;
+      function  GetIsNonClientRegionSupportEnabled : boolean;
       function  GetFaviconURI : wvstring;
       function  GetScreenScale : single; virtual;
       function  GetProfileName : wvstring;
@@ -269,6 +275,7 @@ type
       procedure SetAllowExternalDrop(aValue : boolean);
       procedure SetHiddenPdfToolbarItems(aValue : TWVPDFToolbarItems);
       procedure SetIsReputationCheckingRequired(aValue : boolean);
+      procedure SetIsNonClientRegionSupportEnabled(aValue : boolean);
       procedure SetProfileName(const aValue : wvstring);
       procedure SetDefaultDownloadFolderPath(const aValue : wvstring);
       procedure SetPreferredColorScheme(const aValue : TWVPreferredColorScheme);
@@ -288,8 +295,8 @@ type
       procedure DestroyProfile;
       procedure DestroySettings;
       procedure DestroyPrintSettings;
-      procedure DestroyMenuItemHandler;
 
+      procedure CalculateZoomStep;
       procedure UpdateZoomStep(aInc : boolean);
       procedure UpdateZoomPct(const aValue : double);
 
@@ -384,6 +391,8 @@ type
       function ProfileAddBrowserExtensionCompletedHandler_Invoke(errorCode: HResult; const extension: ICoreWebView2BrowserExtension): HRESULT;
       function ProfileGetBrowserExtensionsCompletedHandler_Invoke(errorCode: HResult; const extensionList: ICoreWebView2BrowserExtensionList): HRESULT;
       function ProfileDeletedEventHandler_Invoke(const sender: ICoreWebView2Profile; const args: IUnknown): HRESULT;
+      function ExecuteScriptWithResultCompletedHandler_Invoke(errorCode: HResult; const result_: ICoreWebView2ExecuteScriptResult; aExecutionID : integer): HRESULT;
+      function NonClientRegionChangedEventHandler_Invoke(const sender: ICoreWebView2CompositionController; const args: ICoreWebView2NonClientRegionChangedEventArgs): HRESULT;
 
       procedure doOnInitializationError(aErrorCode: HRESULT; const aErrorMessage: wvstring); virtual;
       procedure doOnEnvironmentCompleted; virtual;
@@ -473,6 +482,8 @@ type
       procedure doOnProfileAddBrowserExtensionCompletedEvent(errorCode: HResult; const extension: ICoreWebView2BrowserExtension); virtual;
       procedure doOnProfileGetBrowserExtensionsCompletedEvent(errorCode: HResult; const extensionList: ICoreWebView2BrowserExtensionList); virtual;
       procedure doOnProfileDeletedEvent(const sender: ICoreWebView2Profile; const args: IUnknown); virtual;
+      procedure doOnExecuteScriptWithResultCompletedEvent(errorCode: HResult; const result_: ICoreWebView2ExecuteScriptResult; aExecutionID : integer); virtual;
+      procedure doOnNonClientRegionChangedEvent(const sender: ICoreWebView2CompositionController; const args: ICoreWebView2NonClientRegionChangedEventArgs); virtual;
 
     public
       constructor Create(AOwner: TComponent); override;
@@ -508,6 +519,22 @@ type
       /// <param name="aHandle">The TWVDirectCompositionHost handle.</param>
       /// <param name="aEnvironment">Custom environment to be used by this browser.</param>
       function    CreateWindowlessBrowser(aHandle : THandle; const aEnvironment : ICoreWebView2Environment) : boolean; overload;
+      /// <summary>
+      /// Used to create an invisible browser using the global environment by default.
+      /// You are not able to reparent the window after you have created the browser.
+      /// The browser will be fully initialized when the TWVBrowserBase.OnAfterCreated
+      /// event is triggered.
+      /// </summary>
+      /// <param name="aUseDefaultEnvironment">Use the global environment or create a new one for this browser.</param>
+      function    CreateInvisibleBrowser(aUseDefaultEnvironment : boolean = True) : boolean; overload;
+      /// <summary>
+      /// Used to create an invisible browser using a custom environment.
+      /// You are not able to reparent the window after you have created the browser.
+      /// The browser will be fully initialized when the TWVBrowserBase.OnAfterCreated
+      /// event is triggered.
+      /// </summary>
+      /// <param name="aEnvironment">Custom environment to be used by this browser.</param>
+      function    CreateInvisibleBrowser(const aEnvironment : ICoreWebView2Environment) : boolean; overload;
       /// <summary>
       /// Navigates the WebView to the previous page in the navigation history.
       /// </summary>
@@ -595,6 +622,11 @@ type
       /// CDP method calls may be processed out of order.
       /// If you require CDP methods to run in a particular order, you should wait
       /// for the previous method is finished before calling the next method.</para>
+      /// <para>If the method is to run in add_NewWindowRequested handler it should be called
+      /// before the new window is set if the cdp message should affect the initial navigation. If
+      /// called after setting the NewWindow property, the cdp messages
+      /// may or may not apply to the initial navigation and may only apply to the subsequent navigation.
+      /// For more details see `ICoreWebView2NewWindowRequestedEventArgs::put_NewWindow`.</para>
       /// </summary>
       /// <param name="aMethodName">The DevTools protocol full method name.</param>
       /// <param name="aParametersAsJson">JSON formatted string containing the parameters for the corresponding method.</param>
@@ -658,6 +690,25 @@ type
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2controller#movefocus">See the ICoreWebView2Controller article.</see></para>
       /// </remarks>
       function    FocusPrevious : boolean;
+      /// <summary>
+      /// <para>Run JavaScript code from the JavaScript parameter in the current
+      /// top-level document rendered in the WebView.</para>
+      /// <para>The TWVBrowserBase.OnExecuteScriptWithResultCompleted event is triggered
+      /// when it finishes executing.</para>
+      /// <para>The result of the execution is returned asynchronously in the ICoreWebView2ExecuteScriptResult object
+      /// which has methods and properties to obtain the successful result of script execution as well as any
+      /// unhandled JavaScript exceptions.</para>
+      /// <para>If this method is run after the NavigationStarting event during a navigation, the script
+      /// runs in the new document when loading it, around the time
+      /// ContentLoading is run. This operation executes the script even if
+      /// ICoreWebView2Settings.IsScriptEnabled is set to FALSE.</para>
+      /// </summary>
+      /// <param name="aJavaScript">The JavaScript code.</param>
+      /// <param name="aExecutionID">A custom event ID that will be passed as a parameter in the TWVBrowserBase event.</param>
+      /// <remarks>
+      /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2_21#executescriptwithresult">See the icorewebview2_21 article.</see></para>
+      /// </remarks>
+      function ExecuteScriptWithResult(const aJavaScript: wvstring; aExecutionID : integer = 0): boolean;
       /// <summary>
       /// <para>Run JavaScript code from the aJavaScript parameter in the current
       /// top-level document rendered in the WebView.</para>
@@ -737,7 +788,7 @@ type
       /// </remarks>
       function    GetNonDefaultPermissionSettings: boolean;
       /// <summary>
-      /// <para>Adds the [browser extension](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions)
+      /// <para>Adds the [browser extension](https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions)
       /// using the extension path for unpacked extensions from the local device. Extension is
       /// running right after installation.</para>
       /// <para>The extension folder path is the topmost folder of an unpacked browser extension and
@@ -873,7 +924,8 @@ type
       /// <summary>
       /// Retrieve the text contents. The TWVBrowserBase.OnRetrieveTextCompleted event is triggered asynchronously with the text contents.
       /// </summary>
-      function    RetrieveText : boolean;
+      /// <param name="aVisibleTextOnly">Exclude text that is hidden with CSS or rendered as invisible due to its parent's visibility settings.</param>
+      function    RetrieveText(aVisibleTextOnly: boolean = False) : boolean;
       /// <summary>
       /// Retrieve the web page contents in MHTML format. The TWVBrowserBase.OnRetrieveMHTMLCompleted event is triggered asynchronously with the MHTML contents.
       /// </summary>
@@ -1019,6 +1071,79 @@ type
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2#removewebresourcerequestedfilter">See the ICoreWebView2 article.</see></para>
       /// </remarks>
       function    RemoveWebResourceRequestedFilter(const aURI: wvstring; aResourceContext: TWVWebResourceContext) : boolean;
+      /// <summary>
+      /// <para>A web resource request with a resource context that matches this
+      /// filter's resource context and a URI that matches this filter's URI
+      /// wildcard string for corresponding request sources will be raised via
+      /// the `WebResourceRequested` event. To receive all raised events filters
+      /// have to be added before main page navigation.</para>
+      /// <para>The `uri` parameter value is a wildcard string matched against the URI
+      /// of the web resource request. This is a glob style
+      /// wildcard string in which a `*` matches zero or more characters and a `?`
+      /// matches exactly one character.</para>
+      /// <para>These wildcard characters can be escaped using a backslash just before
+      /// the wildcard character in order to represent the literal `*` or `?`.</para>
+      /// <para>The matching occurs over the URI as a whole string and not limiting
+      /// wildcard matches to particular parts of the URI.</para>
+      /// <para>The wildcard filter is compared to the URI after the URI has been
+      /// normalized, any URI fragment has been removed, and non-ASCII hostnames
+      /// have been converted to punycode.</para>
+      /// <para>Specifying a `nullptr` for the uri is equivalent to an empty string which
+      /// matches no URIs.</para>
+      /// <para>For more information about resource context filters, navigate to
+      /// [COREWEBVIEW2_WEB_RESOURCE_CONTEXT](/microsoft-edge/webview2/reference/win32/icorewebview2#corewebview2_web_resource_context).</para>
+      /// <para>The `requestSourceKinds` is a mask of one or more
+      /// `COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS`. OR operation(s) can be
+      /// applied to multiple `COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS` to
+      /// create a mask representing those data types. API returns `E_INVALIDARG` if
+      /// `requestSourceKinds` equals to zero. For more information about request
+      /// source kinds, navigate to
+      /// [COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS](/microsoft-edge/webview2/reference/win32/icorewebview2#corewebview2_web_resource_request_source_kinds).</para>
+      /// <para>Because service workers and shared workers run separately from any one
+      /// HTML document their WebResourceRequested will be raised for all
+      /// CoreWebView2s that have appropriate filters added in the corresponding
+      /// CoreWebView2Environment. You should only add a WebResourceRequested filter
+      /// for COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_SERVICE_WORKER or
+      /// COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_SHARED_WORKER on
+      /// one CoreWebView2 to avoid handling the same WebResourceRequested
+      /// event multiple times.</para>
+      /// <code>
+      /// | URI Filter String | Request URI | Match | Notes |
+      /// | ---- | ---- | ---- | ---- |
+      /// | `*` | `https://contoso.com/a/b/c` | Yes | A single * will match all URIs |
+      /// | `*://contoso.com/*` | `https://contoso.com/a/b/c` | Yes | Matches everything in contoso.com across all schemes |
+      /// | `*://contoso.com/*` | `https://example.com/?https://contoso.com/` | Yes | But also matches a URI with just the same text anywhere in the URI |
+      /// | `example` | `https://contoso.com/example` | No | The filter does not perform partial matches |
+      /// | `*example` | `https://contoso.com/example` | Yes | The filter matches across URI parts |
+      /// | `*example` | `https://contoso.com/path/?example` | Yes | The filter matches across URI parts |
+      /// | `*example` | `https://contoso.com/path/?query#example` | No | The filter is matched against the URI with no fragment |
+      /// | `*example` | `https://example` | No | The URI is normalized before filter matching so the actual URI used for comparison is `https://example/` |
+      /// | `*example/` | `https://example` | Yes | Just like above, but this time the filter ends with a / just like the normalized URI |
+      /// | `https://xn--qei.example/` | `https://&#x2764;.example/` | Yes | Non-ASCII hostnames are normalized to punycode before wildcard comparison |
+      /// | `https://&#x2764;.example/` | `https://xn--qei.example/` | No | Non-ASCII hostnames are normalized to punycode before wildcard comparison |
+      /// </code>
+      /// </summary>
+      /// <remarks>
+      /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2_22#addwebresourcerequestedfilterwithrequestsourcekinds">See the ICoreWebView2_22 article.</see></para>
+      /// </remarks>
+      function AddWebResourceRequestedFilterWithRequestSourceKinds(const uri: wvstring;
+                                                                   ResourceContext: TWVWebResourceContext;
+                                                                   requestSourceKinds: TWVWebResourceRequestSourceKind): boolean;
+      /// <summary>
+      /// <para>Removes a matching WebResource filter that was previously added for the
+      /// `WebResourceRequested` event.  If the same filter was added multiple
+      /// times, then it must be removed as many times as it was added for the
+      /// removal to be effective. Returns `E_INVALIDARG` for a filter that was
+      /// not added or is already removed.</para>
+      /// <para>If the filter was added for multiple requestSourceKinds and removed just for one of them
+      /// the filter remains for the non-removed requestSourceKinds.</para>
+      /// </summary>
+      /// <remarks>
+      /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2_22#removewebresourcerequestedfilterwithrequestsourcekinds">See the ICoreWebView2_22 article.</see></para>
+      /// </remarks>
+      function RemoveWebResourceRequestedFilterWithRequestSourceKinds(const uri: wvstring;
+                                                                      ResourceContext: TWVWebResourceContext;
+                                                                      requestSourceKinds: TWVWebResourceRequestSourceKind): boolean;
       /// <summary>
       /// Add the provided host object to script running in the WebView with the
       /// specified name.  Host objects are exposed as host object proxies using
@@ -1257,6 +1382,20 @@ type
       /// key event. This function is asynchronous and it triggers the
       /// TWVBrowserBase.OnSimulateKeyEventCompleted event when it finishes executing.
       /// </summary>
+      /// <param name="type_">Type of the key event.</param>
+      /// <param name="modifiers">Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8.</param>
+      /// <param name="windowsVirtualKeyCode">Windows virtual key code.</param>
+      /// <param name="nativeVirtualKeyCode">Native virtual key code.</param>
+      /// <param name="timestamp">Time at which the event occurred.</param>
+      /// <param name="location">Whether the event was from the left or right side of the keyboard. 1=Left, 2=Right.</param>
+      /// <param name="autoRepeat">Whether the event was generated from auto repeat.</param>
+      /// <param name="isKeypad">Whether the event was generated from the keypad.</param>
+      /// <param name="isSystemKey">Whether the event was a system key event.</param>
+      /// <param name="text">Text as generated by processing a virtual key code with a keyboard layout. Not needed for for keyUp and rawKeyDown events.</param>
+      /// <param name="unmodifiedtext">Text that would have been generated by the keyboard if no modifiers were pressed (except for shift). Useful for shortcut (accelerator) key handling.</param>
+      /// <param name="keyIdentifier">Unique key identifier (e.g., 'U+0041').</param>
+      /// <param name="code">Unique DOM defined string value for each physical key (e.g., 'KeyA').</param>
+      /// <param name="key">Unique DOM defined string value describing the meaning of the key in the context of active modifiers, keyboard layout, etc (e.g., 'AltGr').</param>
       /// <remarks>
       /// <para><see href="https://chromedevtools.github.io/devtools-protocol/1-3/Input/#method-dispatchKeyEvent">See the "Input.dispatchKeyEvent" DevTools method.</see></para>
       /// </remarks>
@@ -1377,6 +1516,38 @@ type
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2compositioncontroller3#drop">See the ICoreWebView2CompositionController3 article.</see></para>
       /// </remarks>
       function    Drop(const dataObject: IDataObject; keyState: LongWord; point: TPoint; out effect: LongWord) : HResult;
+      /// <summary>
+      /// <para>If you are hosting a WebView2 using CoreWebView2CompositionController, you can call
+      /// this method in your Win32 WndProc to determine if the mouse is moving over or
+      /// clicking on WebView2 web content that should be considered part of a non-client region.</para>
+      /// <para>The point parameter is expected to be in the client coordinate space of WebView2.
+      /// The method sets the out parameter value as follows:</para>
+      /// <code>
+      ///     - COREWEBVIEW2_NON_CLIENT_REGION_KIND_CAPTION when point corresponds to
+      ///         a region (HTML element) within the WebView2 with
+      ///         `-webkit-app-region: drag` CSS style set.
+      ///     - COREWEBVIEW2_NON_CLIENT_REGION_KIND_CLIENT when point corresponds to
+      ///         a region (HTML element) within the WebView2 without
+      ///         `-webkit-app-region: drag` CSS style set.
+      ///     - COREWEBVIEW2_NON_CLIENT_REGION_KIND_NOWHERE when point is not within the WebView2.
+      /// </code>
+      /// <para>NOTE: in order for WebView2 to properly handle the title bar system menu,
+      /// the app needs to send WM_NCRBUTTONDOWN and WM_NCRBUTTONUP to SendMouseInput.</para>
+      /// </summary>
+      /// <remarks>
+      /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2compositioncontroller4#getnonclientregionatpoint">See the ICoreWebView2CompositionController4 article.</see></para>
+      /// </remarks>
+      function    GetNonClientRegionAtPoint(point: TPoint) : TWVNonClientRegionKind;
+      /// <summary>
+      /// This method is used to get the collection of rects that correspond
+      /// to a particular TWVNonClientRegionKind. This is to be used in
+      /// the callback of add_NonClientRegionChanged whose event args object contains
+      /// a region property of type TWVNonClientRegionKind.
+      /// </summary>
+      /// <remarks>
+      /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2compositioncontroller4#querynonclientregion">See the ICoreWebView2CompositionController4 article.</see></para>
+      /// </remarks>
+      function    QueryNonClientRegion(Kind: TWVNonClientRegionKind): ICoreWebView2RegionRectCollectionView;
       /// <summary>
       /// Clears the browser cache. This function is asynchronous and it triggers the TWVBrowserBase.OnClearCacheCompleted event when it finishes executing.
       /// </summary>
@@ -1586,13 +1757,6 @@ type
       /// </summary>
       property D3DWindowCompHWND                               : THandle                                               read FD3DWindowCompHWND;
       /// <summary>
-      /// ICoreWebView2ContextMenuRequestedEventHandler wrapper used by this browser to handle context menu item events.
-      /// </summary>
-      /// <remarks>
-      /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2customitemselectedeventhandler">See the ICoreWebView2CustomItemSelectedEventHandler article.</see></para>
-      /// </remarks>
-      property CustomItemSelectedEventHandler                  : ICoreWebView2CustomItemSelectedEventHandler           read GetCustomItemSelectedEventHandler;
-      /// <summary>
       /// Returns the GlobalWebView2Loader.DeviceScaleFactor value.
       /// </summary>
       property ScreenScale                                     : single                                                read GetScreenScale;
@@ -1705,6 +1869,88 @@ type
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2browserextension">See the ICoreWebView2BrowserExtension article for Extensions API details.</see></para>
       /// </remarks>
       property AreBrowserExtensionsEnabled                     : boolean                                               read FAreBrowserExtensionsEnabled                     write FAreBrowserExtensionsEnabled;
+      /// <summary>
+      /// <para>The `ChannelSearchKind` property is `COREWEBVIEW2_CHANNEL_SEARCH_KIND_MOST_STABLE`
+      /// by default; environment creation searches for a release channel on the machine
+      /// from most to least stable using the first channel found. The default search order is:
+      /// WebView2 Runtime -&gt; Beta -&gt; Dev -&gt; Canary. Set `ChannelSearchKind` to
+      /// `COREWEBVIEW2_CHANNEL_SEARCH_KIND_LEAST_STABLE` to reverse the search order
+      /// so that environment creation searches for a channel from least to most stable. If
+      /// `ReleaseChannels` has been provided, the loader will only search
+      /// for channels in the set. See `COREWEBVIEW2_RELEASE_CHANNELS` for more details
+      /// on channels.</para>
+      /// <para>This property can be overridden by the corresponding
+      /// registry key `ChannelSearchKind` or the environment variable
+      /// `WEBVIEW2_CHANNEL_SEARCH_KIND`. Set the value to `1` to set the search kind to
+      /// `COREWEBVIEW2_CHANNEL_SEARCH_KIND_LEAST_STABLE`. See
+      /// `CreateCoreWebView2EnvironmentWithOptions` for more details on overrides.</para>
+      /// </summary>
+      /// <remarks>
+      /// <para>Property used to create the environment. Used as ICoreWebView2EnvironmentOptions7.Get_ChannelSearchKind.</para>
+      /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2environmentoptions7">See the ICoreWebView2EnvironmentOptions7 article.</see></para>
+      /// </remarks>
+      property ChannelSearchKind                               : TWVChannelSearchKind                                  read FChannelSearchKind                               write FChannelSearchKind;
+      /// <summary>
+      /// <para>Sets the `ReleaseChannels`, which is a mask of one or more
+      /// `COREWEBVIEW2_RELEASE_CHANNELS` indicating which channels environment
+      /// creation should search for. OR operation(s) can be applied to multiple
+      /// `COREWEBVIEW2_RELEASE_CHANNELS` to create a mask. The default value is a
+      /// a mask of all the channels. By default, environment creation searches for
+      /// channels from most to least stable, using the first channel found on the
+      /// device. When `ReleaseChannels` is provided, environment creation will only
+      /// search for the channels specified in the set. Set `ChannelSearchKind` to
+      /// `COREWEBVIEW2_CHANNEL_SEARCH_KIND_LEAST_STABLE` to reverse the search order
+      /// so environment creation searches for least stable build first. See
+      /// `COREWEBVIEW2_RELEASE_CHANNELS` for descriptions of each channel.</para>
+      /// <para>`CreateCoreWebView2EnvironmentWithOptions` fails with
+      /// `HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)` if environment creation is unable
+      /// to find any channel from the `ReleaseChannels` installed on the device.
+      /// Use `GetAvailableCoreWebView2BrowserVersionStringWithOptions` on
+      /// `ICoreWebView2Environment` to verify which channel is used when this option
+      /// is set.</para>
+      /// Examples:
+      /// <code>
+      /// |   ReleaseChannels   |   Channel Search Kind: Most Stable (default)   |   Channel Search Kind: Least Stable   |
+      /// | --- | --- | --- |
+      /// |COREWEBVIEW2_RELEASE_CHANNELS_BETA \| COREWEBVIEW2_RELEASE_CHANNELS_STABLE| WebView2 Runtime -&gt; Beta | Beta -&gt; WebView2 Runtime|
+      /// |COREWEBVIEW2_RELEASE_CHANNELS_CANARY \| COREWEBVIEW2_RELEASE_CHANNELS_DEV \| COREWEBVIEW2_RELEASE_CHANNELS_BETA \| COREWEBVIEW2_RELEASE_CHANNELS_STABLE| WebView2 Runtime -&gt; Beta -&gt; Dev -&gt; Canary | Canary -&gt; Dev -&gt; Beta -&gt; WebView2 Runtime |
+      /// |COREWEBVIEW2_RELEASE_CHANNELS_CANARY| Canary | Canary |
+      /// |COREWEBVIEW2_RELEASE_CHANNELS_BETA \| COREWEBVIEW2_RELEASE_CHANNELS_CANARY \| COREWEBVIEW2_RELEASE_CHANNELS_STABLE | WebView2 Runtime -&gt; Beta -&gt; Canary | Canary -&gt; Beta -&gt; WebView2 Runtime |
+      /// </code>
+      /// <para>If both `BrowserExecutableFolder` and `ReleaseChannels` are provided, the
+      /// `BrowserExecutableFolder` takes precedence, regardless of whether or not the
+      /// channel of `BrowserExecutableFolder` is included in the `ReleaseChannels`.</para>
+      /// <para>`ReleaseChannels` can be overridden by the corresponding registry override
+      /// `ReleaseChannels` or the environment variable `WEBVIEW2_RELEASE_CHANNELS`.</para>
+      /// <para>Set the value to a comma-separated string of integers, which map to the
+      /// following release channel values: Stable (0), Beta (1), Dev (2), and
+      /// Canary (3). For example, the values "0,2" and "2,0" indicate that environment
+      /// creation should only search for Dev channel and the WebView2 Runtime, using the
+      /// order indicated by `ChannelSearchKind`. Environment creation attempts to
+      /// interpret each integer and treats any invalid entry as Stable channel. See
+      /// `CreateCoreWebView2EnvironmentWithOptions` for more details on overrides.</para>
+      /// </summary>
+      /// <remarks>
+      /// <para>Property used to create the environment. Used as ICoreWebView2EnvironmentOptions7.Get_ReleaseChannels.</para>
+      /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2environmentoptions7">See the ICoreWebView2EnvironmentOptions7 article.</see></para>
+      /// </remarks>
+      property ReleaseChannels                                 : TWVReleaseChannels                                    read FReleaseChannels                                 write FReleaseChannels;
+      /// <summary>
+      /// <para>The ScrollBar style being set on the WebView2 Environment.</para>
+      /// <para>The default value is `COREWEBVIEW2_SCROLLBAR_STYLE_DEFAULT`
+      /// which specifies the default browser ScrollBar style.</para>
+      /// <para>The `color-scheme` CSS property needs to be set on the corresponding page
+      /// to allow ScrollBar to follow light or dark theme. Please see
+      /// [color-scheme](https://developer.mozilla.org/docs/Web/CSS/color-scheme#declaring_color_scheme_preferences)
+      /// for how `color-scheme` can be set.</para>
+      /// <para>CSS styles that modify the ScrollBar applied on top of native ScrollBar styling
+      /// that is selected with `ScrollBarStyle`.</para>
+      /// </summary>
+      /// <remarks>
+      /// <para>Property used to create the environment. Used as ICoreWebView2EnvironmentOptions8.Get_ScrollBarStyle.</para>
+      /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2environmentoptions8">See the ICoreWebView2EnvironmentOptions8 article.</see></para>
+      /// </remarks>
+      property ScrollBarStyle                                  : TWVScrollBarStyle                                     read FScrollBarStyle                                  write FScrollBarStyle;
       /// <summary>
       /// The browser version info of the current `ICoreWebView2Environment`,
       /// including channel name if it is not the WebView2 Runtime.  It matches the
@@ -2104,8 +2350,18 @@ type
       /// </remarks>
       property ZoomControlEnabled                              : boolean                                               read GetZoomControlEnabled                            write SetZoomControlEnabled;
       /// <summary>
-      /// Returns the User Agent. The default value is the default User Agent of the
-      /// Microsoft Edge browser.
+      /// <para>Returns the User Agent. The default value is the default User Agent of the
+      /// Microsoft Edge browser.</para>
+      /// <para>This property may be overridden if
+      /// the User-Agent header is set in a request. If the parameter is empty
+      /// the User Agent will not be updated and the current User Agent will remain.
+      /// Setting this property may clear User Agent Client Hints headers
+      /// Sec-CH-UA-* and script values from navigator.userAgentData. Current
+      /// implementation behavior is subject to change.</para>
+      /// <para>The User Agent set will also be effective on service workers
+      /// and shared workers associated with the WebView.
+      /// If there are multiple WebViews associated with the same service worker or
+      /// shared worker, the last User Agent set will be used.</para>
       /// </summary>
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2settings2#get_useragent">See the ICoreWebView2Settings2 article.</see></para>
@@ -2248,6 +2504,25 @@ type
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2settings8#get_isreputationcheckingrequired">See the ICoreWebView2Settings8 article.</see></para>
       /// </remarks>
       property IsReputationCheckingRequired                    : boolean                                               read GetIsReputationCheckingRequired                  write SetIsReputationCheckingRequired;
+      /// <summary>
+      /// <para>The `IsNonClientRegionSupportEnabled` property enables web pages to use the
+      /// `app-region` CSS style. Disabling/Enabling the `IsNonClientRegionSupportEnabled`
+      /// takes effect after the next navigation. Defaults to `FALSE`.</para>
+      /// <para>When this property is `TRUE`, then all the non-client region features
+      /// will be enabled:</para>
+      /// <para>Draggable Regions will be enabled, they are regions on a webpage that
+      /// are marked with the CSS attribute `app-region: drag/no-drag`. When set to
+      /// `drag`, these regions will be treated like the window's title bar, supporting
+      /// dragging of the entire WebView and its host app window; the system menu shows
+      /// upon right click, and a double click will trigger maximizing/restoration of the
+      /// window size.</para>
+      /// <para>When set to `FALSE`, all non-client region support will be disabled.
+      /// The `app-region` CSS style will be ignored on web pages.</para>
+      /// </summary>
+      /// <remarks>
+      /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2settings9#get_isnonclientregionsupportenabled">See the ICoreWebView2Settings9 article.</see></para>
+      /// </remarks>
+      property IsNonClientRegionSupportEnabled                 : boolean                                               read GetIsNonClientRegionSupportEnabled               write SetIsNonClientRegionSupportEnabled;
       /// <summary>
       /// The current cursor that WebView thinks it should be. The cursor should be
       /// set in WM_SETCURSOR through \::SetCursor or set on the corresponding
@@ -2675,7 +2950,8 @@ type
       /// `OnWindowCloseRequested` triggers when content inside the WebView
       /// requested to close the window, such as after `window.close` is run.  The
       /// app should close the WebView and related app window if that makes sense
-      /// to the app.
+      /// to the app. After the first window.close() call, this event may not fire
+      /// for any immediate back to back window.close() calls.
       /// </summary>
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2#add_windowcloserequested">See the ICoreWebView2 article.</see></para>
@@ -2769,7 +3045,7 @@ type
       /// Basic HTTP Authentication request as described in
       /// https://developer.mozilla.org/docs/Web/HTTP/Authentication, a Digest
       /// HTTP Authentication request as described in
-      /// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization#digest,
+      /// https://developer.mozilla.org/docs/Web/HTTP/Headers/Authorization#digest,
       /// an NTLM authentication or a Proxy Authentication request.</para>
       /// <para>The host can provide a response with credentials for the authentication or
       /// cancel the request. If the host sets the Cancel property to false but does not
@@ -3272,7 +3548,14 @@ type
       /// potentially-trustworthy-origin); however, the event will still be raised.</para>
       /// <para>If the request is initiated by a cross-origin frame without a user gesture,
       /// the request will be blocked and the `OnLaunchingExternalUriScheme` event will not
-      /// be raised.</para>
+      /// be raised. A URI scheme may be blocked for safety reasons. In this case the
+      /// `LaunchingExternalUriScheme` event will not be raised. The default dialog may show
+      /// an "always allow" checkbox which allows the user to opt-in to relaxed security
+      /// (i.e. skipping future default dialogs) for the combination of the URI scheme and the
+      /// origin of the page initiating this external URI scheme launch. The checkbox is offered
+      /// so long as the group policy to show the checkbox is not explicitly disabled and there
+      /// is a trustworthy initiating origin. If the user has checked this box, future attempts
+      /// to launch this URI scheme will still raise the event.</para>
       /// </summary>
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2_18#add_launchingexternalurischeme">See the ICoreWebView2_18 article.</see></para>
@@ -3320,6 +3603,22 @@ type
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2profile8#delete">See the ICoreWebView2Profile8 article.</see></para>
       /// </remarks>
       property OnProfileDeleted                                : TOnProfileDeletedEvent                                read FOnProfileDeleted                                write FOnProfileDeleted;
+      /// <summary>
+      /// Provides the result of ExecuteScriptWithResult.
+      /// </summary>
+      /// <remarks>
+      /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2_21#executescriptwithresult">See the ICoreWebView2_21 article.</see></para>
+      /// </remarks>
+      property OnExecuteScriptWithResultCompleted              : TOnExecuteScriptWithResultCompletedEvent              read FOnExecuteScriptWithResultCompleted              write FOnExecuteScriptWithResultCompleted;
+      /// <summary>
+      /// This event is fired when regions which are marked as non-client in the
+      /// app html have changed. So either when new regions have been marked,
+      /// or unmarked, or the region(s) have been changed to a different kind.
+      /// </summary>
+      /// <remarks>
+      /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2compositioncontroller4#add_nonclientregionchanged">See the ICoreWebView2CompositionController4 article.</see></para>
+      /// </remarks>
+      property OnNonClientRegionChanged                        : TOnNonClientRegionChangedEvent                        read FOnNonClientRegionChanged                        write FOnNonClientRegionChanged;
   end;
 
 implementation
@@ -3340,28 +3639,35 @@ begin
   FCoreWebView2                                    := nil;
   FCoreWebView2Profile                             := nil;
   FDefaultURL                                      := '';
-  FAdditionalBrowserArguments                      := '';
-  FLanguage                                        := '';
   FUseDefaultEnvironment                           := False;
   FUseCompositionController                        := False;
-  FTargetCompatibleBrowserVersion                  := LowestChromiumVersion;
-  FAllowSingleSignOnUsingOSPrimaryAccount          := False;
-  FExclusiveUserDataFolderAccess                   := False;
-  FCustomCrashReportingEnabled                     := False;
-  FEnableTrackingPrevention                        := True;
-  FAreBrowserExtensionsEnabled                     := False;
   FZoomStep                                        := ZOOM_STEP_DEF;
   FOffline                                         := False;
   FIsNavigating                                    := False;
   FProfileName                                     := '';
   FIsInPrivateModeEnabled                          := False;
   FScriptLocale                                    := '';
-  FMenuItemHandler                                 := nil;
   FClearBrowsingDataCompletedHandler               := nil;
   FSetPermissionStateCompletedHandler              := nil;
   FGetNonDefaultPermissionSettingsCompletedHandler := nil;
   FProfileAddBrowserExtensionCompletedHandler      := nil;
   FProfileGetBrowserExtensionsCompletedHandler     := nil;
+
+  // Fields used to create the environment
+  FAdditionalBrowserArguments                      := '';
+  FLanguage                                        := '';
+  FTargetCompatibleBrowserVersion                  := LowestChromiumVersion;
+  FAllowSingleSignOnUsingOSPrimaryAccount          := False;
+  FExclusiveUserDataFolderAccess                   := False;
+  FCustomCrashReportingEnabled                     := False;
+  FEnableTrackingPrevention                        := True;
+  FAreBrowserExtensionsEnabled                     := False;
+  FChannelSearchKind                               := COREWEBVIEW2_CHANNEL_SEARCH_KIND_MOST_STABLE;
+  FReleaseChannels                                 := COREWEBVIEW2_RELEASE_CHANNELS_STABLE or
+                                                      COREWEBVIEW2_RELEASE_CHANNELS_BETA or
+                                                      COREWEBVIEW2_RELEASE_CHANNELS_DEV or
+                                                      COREWEBVIEW2_RELEASE_CHANNELS_CANARY;
+  FScrollBarStyle                                  := COREWEBVIEW2_SCROLLBAR_STYLE_DEFAULT;
 
   FOldWidget0CompWndPrc                            := nil;
   FOldWidget1CompWndPrc                            := nil;
@@ -3468,6 +3774,8 @@ begin
   FOnProfileAddBrowserExtensionCompleted           := nil;
   FOnProfileGetBrowserExtensionsCompleted          := nil;
   FOnProfileDeleted                                := nil;
+  FOnExecuteScriptWithResultCompleted              := nil;
+  FOnNonClientRegionChanged                        := nil;
 end;
 
 destructor TWVBrowserBase.Destroy;
@@ -3481,7 +3789,7 @@ begin
     DestroyWebView;
     DestroyController;
     DestroyCompositionController;
-    DestroyMenuItemHandler;
+
     FClearBrowsingDataCompletedHandler               := nil;
     FSetPermissionStateCompletedHandler              := nil;
     FGetNonDefaultPermissionSettingsCompletedHandler := nil;
@@ -3532,23 +3840,6 @@ procedure TWVBrowserBase.DestroyPrintSettings;
 begin
   if assigned(FCoreWebView2PrintSettings) then
     FreeAndNil(FCoreWebView2PrintSettings);
-end;
-
-procedure TWVBrowserBase.DestroyMenuItemHandler;
-begin
-  try
-    try
-      // WebView2 doesn't release any ICoreWebView2CustomItemSelectedEventHandler instances
-      while assigned(FMenuItemHandler) and
-            (TCoreWebView2CustomItemSelectedEventHandler(FMenuItemHandler).RefCount > 1) do
-        FMenuItemHandler._Release;
-    except
-      on e : exception do
-        if CustomExceptionHandler('TWVBrowserBase.DestroyMenuItemHandler', e) then raise;
-    end;
-  finally
-    FMenuItemHandler := nil;
-  end;
 end;
 
 procedure TWVBrowserBase.AfterConstruction;
@@ -3801,6 +4092,22 @@ begin
             FCoreWebView2.RemoveWebResourceRequestedFilter(aURI, aResourceContext);
 end;
 
+function TWVBrowserBase.AddWebResourceRequestedFilterWithRequestSourceKinds(const uri                : wvstring;
+                                                                                  ResourceContext    : TWVWebResourceContext;
+                                                                                  requestSourceKinds : TWVWebResourceRequestSourceKind): boolean;
+begin
+  Result := Initialized and
+            FCoreWebView2.AddWebResourceRequestedFilterWithRequestSourceKinds(uri, ResourceContext, requestSourceKinds);
+end;
+
+function TWVBrowserBase.RemoveWebResourceRequestedFilterWithRequestSourceKinds(const uri                : wvstring;
+                                                                                     ResourceContext    : TWVWebResourceContext;
+                                                                                     requestSourceKinds : TWVWebResourceRequestSourceKind): boolean;
+begin
+  Result := Initialized and
+            FCoreWebView2.RemoveWebResourceRequestedFilterWithRequestSourceKinds(uri, ResourceContext, requestSourceKinds);
+end;
+
 // This function is asynchronous and it triggers the TWVBrowserBase.OnCapturePreviewCompleted event when it finishes
 function TWVBrowserBase.CapturePreview(aImageFormat: TWVCapturePreviewImageFormat; const aImageStream: IStream) : boolean;
 begin
@@ -3871,6 +4178,7 @@ begin
 
             if assigned(TempSettings) then
               begin
+                DestroyProfile;
                 FCoreWebView2Profile := TCoreWebView2Profile.Create(FCoreWebView2.Profile);
                 FCoreWebView2Profile.AddAllBrowserEvents(self);
 
@@ -4108,6 +4416,7 @@ end;
 function TWVBrowserBase.ZoomFactorChangedEventHandler_Invoke(const sender: ICoreWebView2Controller; const args: IUnknown): HRESULT;
 begin
   Result := S_OK;
+  CalculateZoomStep;
   doOnZoomFactorChanged(sender);
 end;
 
@@ -4559,6 +4868,18 @@ begin
     FOnProfileDeleted(self, sender);
 end;
 
+procedure TWVBrowserBase.doOnExecuteScriptWithResultCompletedEvent(errorCode: HResult; const result_: ICoreWebView2ExecuteScriptResult; aExecutionID : integer);
+begin
+  if assigned(FOnExecuteScriptWithResultCompleted) then
+    FOnExecuteScriptWithResultCompleted(self, errorCode, result_, aExecutionID);
+end;
+
+procedure TWVBrowserBase.doOnNonClientRegionChangedEvent(const sender: ICoreWebView2CompositionController; const args: ICoreWebView2NonClientRegionChangedEventArgs);
+begin
+  if assigned(FOnNonClientRegionChanged) then
+    FOnNonClientRegionChanged(self, sender, args);
+end;
+
 procedure TWVBrowserBase.doOnRetrieveMHTMLCompleted(      aErrorCode          : HRESULT;
                                                     const aReturnObjectAsJson : wvstring);
 var
@@ -4772,7 +5093,6 @@ function TWVBrowserBase.ContextMenuRequestedEventHandler_Invoke(const sender : I
                                                                 const args   : ICoreWebView2ContextMenuRequestedEventArgs): HRESULT;
 begin
   Result := S_OK;
-  DestroyMenuItemHandler;
   doOnContextMenuRequestedEvent(sender, args);
 end;
 
@@ -4895,6 +5215,18 @@ begin
   doOnProfileDeletedEvent(sender, args);
 end;
 
+function TWVBrowserBase.ExecuteScriptWithResultCompletedHandler_Invoke(errorCode: HResult; const result_: ICoreWebView2ExecuteScriptResult; aExecutionID : integer): HRESULT;
+begin
+  Result := S_OK;
+  doOnExecuteScriptWithResultCompletedEvent(errorCode, result_, aExecutionID);
+end;
+
+function TWVBrowserBase.NonClientRegionChangedEventHandler_Invoke(const sender: ICoreWebView2CompositionController; const args: ICoreWebView2NonClientRegionChangedEventArgs): HRESULT;
+begin
+  Result := S_OK;
+  doOnNonClientRegionChangedEvent(sender, args);
+end;
+
 function TWVBrowserBase.ExecuteScriptCompletedHandler_Invoke(errorCode: HRESULT; resultObjectAsJson: PWideChar; aExecutionID : integer): HRESULT;
 begin
   Result := S_OK;
@@ -4955,6 +5287,16 @@ begin
     end
    else
     Result := CreateEnvironment;
+end;
+
+function TWVBrowserBase.CreateInvisibleBrowser(aUseDefaultEnvironment : boolean) : boolean;
+begin
+  Result := CreateBrowser(HWND_MESSAGE, aUseDefaultEnvironment);
+end;
+
+function TWVBrowserBase.CreateInvisibleBrowser(const aEnvironment : ICoreWebView2Environment) : boolean;
+begin
+  Result := CreateBrowser(HWND_MESSAGE, aEnvironment);
 end;
 
 function TWVBrowserBase.CreateWindowlessBrowser(aHandle : THandle; aUseDefaultEnvironment : boolean) : boolean;
@@ -5129,6 +5471,12 @@ begin
     end
    else
     Result := CreateEnvironment;
+end;
+
+function TWVBrowserBase.ExecuteScriptWithResult(const aJavaScript: wvstring; aExecutionID : integer): boolean;
+begin
+  Result := Initialized and
+            FCoreWebView2.ExecuteScriptWithResult(aJavaScript, aExecutionID, self);
 end;
 
 function TWVBrowserBase.ExecuteScript(const aJavaScript : wvstring; aExecutionID : integer) : boolean;
@@ -5470,12 +5818,10 @@ begin
     Result := True;
 end;
 
-function TWVBrowserBase.GetCustomItemSelectedEventHandler : ICoreWebView2CustomItemSelectedEventHandler;
+function TWVBrowserBase.GetIsNonClientRegionSupportEnabled : boolean;
 begin
-  if not(assigned(FMenuItemHandler)) then
-    FMenuItemHandler := TCoreWebView2CustomItemSelectedEventHandler.Create(self);
-
-  Result := FMenuItemHandler;
+  Result := Initialized and
+            FCoreWebView2Settings.IsNonClientRegionSupportEnabled;
 end;
 
 function TWVBrowserBase.GetFaviconURI : wvstring;
@@ -5560,7 +5906,10 @@ begin
                                                           FCustomCrashReportingEnabled,
                                                           TempSchemeRegistrations,
                                                           FEnableTrackingPrevention,
-                                                          FAreBrowserExtensionsEnabled);
+                                                          FAreBrowserExtensionsEnabled,
+                                                          FChannelSearchKind,
+                                                          FReleaseChannels,
+                                                          FScrollBarStyle);
 
     TempHResult := CreateCoreWebView2EnvironmentWithOptions(PWideChar(FBrowserExecPath),
                                                             PWideChar(FUserDataFolder),
@@ -5721,6 +6070,12 @@ procedure TWVBrowserBase.SetIsReputationCheckingRequired(aValue : boolean);
 begin
   if Initialized then
     FCoreWebView2Settings.IsReputationCheckingRequired := aValue;
+end;
+
+procedure TWVBrowserBase.SetIsNonClientRegionSupportEnabled(aValue : boolean);
+begin
+  if Initialized then
+    FCoreWebView2Settings.IsNonClientRegionSupportEnabled := aValue;
 end;
 
 procedure TWVBrowserBase.SetProfileName(const aValue : wvstring);
@@ -5900,12 +6255,15 @@ end;
 function TWVBrowserBase.RetrieveHTML : boolean;
 begin
   // JS code created by Alessandro Mancini
-  Result := ExecuteScript('encodeURI(document.documentElement.outerHTML);', WEBVIEW4DELPHI_JS_RETRIEVEHTMLJOB_ID);
+  Result := ExecuteScript('encodeURIComponent(document.documentElement.outerHTML);', WEBVIEW4DELPHI_JS_RETRIEVEHTMLJOB_ID);
 end;
 
-function TWVBrowserBase.RetrieveText : boolean;
+function TWVBrowserBase.RetrieveText(aVisibleTextOnly: boolean) : boolean;
 begin
-  Result := ExecuteScript('encodeURI(document.body.textContent);', WEBVIEW4DELPHI_JS_RETRIEVETEXTJOB_ID);
+  if aVisibleTextOnly then
+    Result := ExecuteScript('encodeURIComponent(document.body.innerText);', WEBVIEW4DELPHI_JS_RETRIEVETEXTJOB_ID)
+   else
+    Result := ExecuteScript('encodeURIComponent(document.body.textContent);', WEBVIEW4DELPHI_JS_RETRIEVETEXTJOB_ID);
 end;
 
 function TWVBrowserBase.RetrieveMHTML : boolean;
@@ -6654,6 +7012,35 @@ begin
     FOnAddScriptToExecuteOnDocumentCreatedCompleted(self, aErrorCode, aID);
 end;
 
+procedure TWVBrowserBase.CalculateZoomStep;
+var
+  TempPct, TempDelta, TempBest : double;
+  i, TempStep : integer;
+begin
+  TempPct  := ZoomPct;
+  TempStep := ZOOM_STEP_DEF;
+  TempBest := 10000;
+  i        := ZOOM_STEP_MIN;
+
+  while (i <= ZOOM_STEP_MAX) do
+    begin
+      TempDelta := abs(ZoomStepValues[i] - TempPCt);
+
+      if (TempBest > TempDelta) then
+        begin
+          TempBest := TempDelta;
+          TempStep := i;
+        end
+       else
+        if (TempBest < TempDelta) then
+          break;
+
+      inc(i);
+    end;
+
+  FZoomStep := TempStep;
+end;
+
 procedure TWVBrowserBase.UpdateZoomStep(aInc : boolean);
 var
   TempPct, TempPrev, TempNext : double;
@@ -6673,10 +7060,10 @@ begin
         end
        else
         if (FZoomStep > ZOOM_STEP_MIN) then
-        begin
-          dec(FZoomStep);
-          UpdateZoomPct(ZoomStepValues[FZoomStep]);
-        end;
+          begin
+            dec(FZoomStep);
+            UpdateZoomPct(ZoomStepValues[FZoomStep]);
+          end;
     end
    else
     begin
@@ -6874,11 +7261,28 @@ begin
   Result := S_OK;
   effect := DROPEFFECT_NONE;
 
-  TempPoint.x := point.X;
-  TempPoint.y := point.Y;
-
   if FUseCompositionController and Initialized then
-    Result := FCoreWebView2CompositionController.Drop(dataObject, keyState, TempPoint, effect);
+    begin
+      TempPoint.x := point.X;
+      TempPoint.y := point.Y;
+      Result      := FCoreWebView2CompositionController.Drop(dataObject, keyState, TempPoint, effect);
+    end;
+end;
+
+function TWVBrowserBase.GetNonClientRegionAtPoint(point: TPoint) : TWVNonClientRegionKind;
+begin
+  if FUseCompositionController and Initialized then
+    Result := FCoreWebView2CompositionController.GetNonClientRegionAtPoint(point)
+   else
+    Result := COREWEBVIEW2_NON_CLIENT_REGION_KIND_NOWHERE;
+end;
+
+function TWVBrowserBase.QueryNonClientRegion(Kind: TWVNonClientRegionKind): ICoreWebView2RegionRectCollectionView;
+begin
+  if FUseCompositionController and Initialized then
+    Result := FCoreWebView2CompositionController.QueryNonClientRegion(Kind)
+   else
+    Result := nil;
 end;
 
 function TWVBrowserBase.ClearBrowsingData(dataKinds: TWVBrowsingDataKinds): boolean;

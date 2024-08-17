@@ -499,10 +499,11 @@ type
       /// navigation is not longer present and the content of the current page is
       /// intact.  For performance reasons, `GET` HTTP requests may happen, while
       /// the host is responding.  You may set cookies and use part of a request
-      /// for the navigation.  Cancellation for navigation to `about:blank` or
-      /// frame navigation to `srcdoc` is not supported.  Such attempts are
-      /// ignored.  A cancelled navigation will fire a `NavigationCompleted` event
-      /// with a `WebErrorStatus` of
+      /// for the navigation.  Navigations to about schemes are cancellable, unless
+      /// `msWebView2CancellableAboutNavigations` feature flag is disabled.
+      /// Cancellation of frame navigation to `srcdoc` is not supported and
+      /// wil be ignored.  A cancelled navigation will fire a `NavigationCompleted`
+      /// event with a `WebErrorStatus` of
       /// `COREWEBVIEW2_WEB_ERROR_STATUS_OPERATION_CANCELED`.
       /// </summary>
       /// <remarks>
@@ -788,6 +789,7 @@ type
     protected
       FBaseIntf  : ICoreWebView2ProcessFailedEventArgs;
       FBaseIntf2 : ICoreWebView2ProcessFailedEventArgs2;
+      FBaseIntf3 : ICoreWebView2ProcessFailedEventArgs3;
 
       function GetInitialized : boolean;
       function GetProcessFailedKind : TWVProcessFailedKind;
@@ -795,6 +797,7 @@ type
       function GetExtiCode : integer;
       function GetProcessDescription : wvstring;
       function GetFrameInfosForFailedProcess : ICoreWebView2FrameInfoCollection;
+      function GetFailureSourceModulePath : wvstring;
 
       procedure InitializeFields;
 
@@ -879,6 +882,32 @@ type
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2processfailedeventargs2#get_frameinfosforfailedprocess">See the ICoreWebView2ProcessFailedEventArgs2 article.</see></para>
       /// </remarks>
       property FrameInfosForFailedProcess : ICoreWebView2FrameInfoCollection     read GetFrameInfosForFailedProcess;
+      /// <summary>
+      /// <para>This property is the full path of the module that caused the
+      /// crash in cases of Windows Code Integrity failures.</para>
+      /// <para>[Windows Code Integrity](/mem/intune/user-help/you-need-to-enable-code-integrity)
+      /// is a feature that verifies the integrity and
+      /// authenticity of dynamic-link libraries (DLLs)
+      /// on Windows systems. It ensures that only trusted
+      /// code can run on the system and prevents unauthorized or
+      /// malicious modifications.</para>
+      /// <para>When ProcessFailed occurred due to a failed Code Integrity check,
+      /// this property returns the full path of the file that was prevented from
+      /// loading on the system.</para>
+      /// <para>The webview2 process which tried to load the DLL will fail with
+      /// exit code STATUS_INVALID_IMAGE_HASH(-1073740760).</para>
+      /// <para>A file can fail integrity check for various
+      /// reasons, such as:</para>
+      /// <code>
+      /// - It has an invalid or missing signature that does
+      /// not match the publisher or signer of the file.
+      /// - It has been tampered with or corrupted by malware or other software.
+      /// - It has been blocked by an administrator or a security policy.
+      /// </code>
+      /// <para>This property always will be the empty string if failure is not caused by
+      /// STATUS_INVALID_IMAGE_HASH.</para>
+      /// </summary>
+      property FailureSourceModulePath    : wvstring                             read GetFailureSourceModulePath;
   end;
 
   /// <summary>
@@ -1091,15 +1120,19 @@ type
   /// </remarks>
   TCoreWebView2WebResourceRequestedEventArgs = class
     protected
-      FBaseIntf : ICoreWebView2WebResourceRequestedEventArgs;
+      FBaseIntf  : ICoreWebView2WebResourceRequestedEventArgs;
+      FBaseIntf2 : ICoreWebView2WebResourceRequestedEventArgs2;
 
       function  GetInitialized : boolean;
       function  GetRequest : ICoreWebView2WebResourceRequest;
       function  GetResponse : ICoreWebView2WebResourceResponse;
       function  GetDeferral : ICoreWebView2Deferral;
       function  GetResourceContext : TWVWebResourceContext;
+      function  GetRequestedSourceKind : TWVWebResourceRequestSourceKind;
 
       procedure SetResponse(const aValue : ICoreWebView2WebResourceResponse);
+
+      procedure InitializeFields;
 
     public
       constructor Create(const aArgs: ICoreWebView2WebResourceRequestedEventArgs); reintroduce;
@@ -1108,11 +1141,11 @@ type
       /// <summary>
       /// Returns true when the interface implemented by this class is fully initialized.
       /// </summary>
-      property Initialized     : boolean                                     read GetInitialized;
+      property Initialized         : boolean                                     read GetInitialized;
       /// <summary>
       /// Returns the interface implemented by this class.
       /// </summary>
-      property BaseIntf        : ICoreWebView2WebResourceRequestedEventArgs  read FBaseIntf;
+      property BaseIntf            : ICoreWebView2WebResourceRequestedEventArgs  read FBaseIntf;
       /// <summary>
       /// The Web resource request.  The request object may be missing some headers
       /// that are added by network stack at a later time.
@@ -1120,7 +1153,7 @@ type
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2webresourcerequestedeventargs#get_request">See the ICoreWebView2WebResourceRequestedEventArgs article.</see></para>
       /// </remarks>
-      property Request         : ICoreWebView2WebResourceRequest             read GetRequest;
+      property Request             : ICoreWebView2WebResourceRequest             read GetRequest;
       /// <summary>
       /// A placeholder for the web resource response object.  If this object is
       /// set, the web resource request is completed with the specified response.
@@ -1128,7 +1161,7 @@ type
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2webresourcerequestedeventargs#get_response">See the ICoreWebView2WebResourceRequestedEventArgs article.</see></para>
       /// </remarks>
-      property Response        : ICoreWebView2WebResourceResponse            read GetResponse         write SetResponse;
+      property Response            : ICoreWebView2WebResourceResponse            read GetResponse         write SetResponse;
       /// <summary>
       /// Obtain an `ICoreWebView2Deferral` object and put the event into a
       /// deferred state.  Use the `ICoreWebView2Deferral` object to complete the
@@ -1137,14 +1170,21 @@ type
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2webresourcerequestedeventargs#getdeferral">See the ICoreWebView2WebResourceRequestedEventArgs article.</see></para>
       /// </remarks>
-      property Deferral        : ICoreWebView2Deferral                       read GetDeferral;
+      property Deferral            : ICoreWebView2Deferral                       read GetDeferral;
       /// <summary>
       /// The web resource request context.
       /// </summary>
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2webresourcerequestedeventargs#get_resourcecontext">See the ICoreWebView2WebResourceRequestedEventArgs article.</see></para>
       /// </remarks>
-      property ResourceContext : TWVWebResourceContext                       read GetResourceContext;
+      property ResourceContext     : TWVWebResourceContext                       read GetResourceContext;
+      /// <summary>
+      /// The web resource requested source.
+      /// </summary>
+      /// <remarks>
+      /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2webresourcerequestedeventargs2#get_requestedsourcekind">See the ICoreWebView2WebResourceRequestedEventArgs2 article.</see></para>
+      /// </remarks>
+      property RequestedSourceKind : TWVWebResourceRequestSourceKind             read GetRequestedSourceKind;
   end;
 
   /// <summary>
@@ -1776,9 +1816,15 @@ type
       /// <para>The origin will be an empty string if the request is initiated by calling
       /// `CoreWebView2.Navigate` on the external URI scheme. If a script initiates
       /// the navigation, the `InitiatingOrigin` will be the top-level document's
-      /// `Source`, for example, if `window.location` is set to `"calculator://", the
+      /// `Source`, for example, if `window.location` is set to `"calculator://"`, the
       /// `InitiatingOrigin` will be set to `calculator://`. If the request is initiated
       ///  from a child frame, the `InitiatingOrigin` will be the source of that child frame.</para>
+      /// <para>If the `InitiatingOrigin` is
+      /// [opaque](https://html.spec.whatwg.org/multipage/origin.html#concept-origin-opaque),
+      /// the `InitiatingOrigin` reported in the event args will be its precursor origin.
+      /// The precursor origin is the origin that created the opaque origin. For example, if
+      /// a frame on example.com opens a subframe with a different opaque origin, the subframe's
+      /// precursor origin is example.com.</para>
       /// </summary>
       /// <remarks>
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2launchingexternalurischemeeventargs#get_initiatingorigin">See the ICoreWebView2LaunchingExternalUriSchemeEventArgs article.</see></para>
@@ -1812,6 +1858,43 @@ type
       /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2launchingexternalurischemeeventargs#getdeferral">See the ICoreWebView2LaunchingExternalUriSchemeEventArgs article.</see></para>
       /// </remarks>
       property Deferral                      : ICoreWebView2Deferral                             read GetDeferral;
+  end;
+
+  /// <summary>
+  /// This is the Interface for non-client region change event args.
+  /// </summary>
+  /// <remarks>
+  /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2nonclientregionchangedeventargs">See the ICoreWebView2NonClientRegionChangedEventArgs article.</see></para>
+  /// </remarks>
+  TCoreWebView2NonClientRegionChangedEventArgs = class
+    protected
+      FBaseIntf : ICoreWebView2NonClientRegionChangedEventArgs;
+
+      function  GetInitialized : boolean;
+      function  GetRegionKind : TWVNonClientRegionKind;
+
+    public
+      constructor Create(const aArgs: ICoreWebView2NonClientRegionChangedEventArgs); reintroduce;
+      destructor  Destroy; override;
+
+      /// <summary>
+      /// Returns true when the interface implemented by this class is fully initialized.
+      /// </summary>
+      property Initialized                   : boolean                                           read GetInitialized;
+      /// <summary>
+      /// Returns the interface implemented by this class.
+      /// </summary>
+      property BaseIntf                      : ICoreWebView2NonClientRegionChangedEventArgs      read FBaseIntf;
+      /// <summary>
+      /// This property represents the COREWEBVIEW2_NON_CLIENT_REGION_KIND which the
+      /// region changed event corresponds to. With this property an app can query
+      /// for a collection of rects which have that region kind by using
+      /// QueryNonClientRegion on the composition controller.
+      /// </summary>
+      /// <remarks>
+      /// <para><see href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2nonclientregionchangedeventargs#get_regionkind">See the ICoreWebView2NonClientRegionChangedEventArgs article.</see></para>
+      /// </remarks>
+      property RegionKind                    : TWVNonClientRegionKind                            read GetRegionKind;
   end;
 
 implementation
@@ -2634,8 +2717,9 @@ begin
 
   FBaseIntf := aArgs;
 
-  if Initialized then
-    LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2ProcessFailedEventArgs2, FBaseIntf2);
+  if Initialized and
+     LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2ProcessFailedEventArgs2, FBaseIntf2) then
+    LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2ProcessFailedEventArgs3, FBaseIntf3);
 end;
 
 destructor TCoreWebView2ProcessFailedEventArgs.Destroy;
@@ -2649,6 +2733,7 @@ procedure TCoreWebView2ProcessFailedEventArgs.InitializeFields;
 begin
   FBaseIntf  := nil;
   FBaseIntf2 := nil;
+  FBaseIntf3 := nil;
 end;
 
 function TCoreWebView2ProcessFailedEventArgs.GetInitialized : boolean;
@@ -2718,6 +2803,22 @@ begin
      succeeded(FBaseIntf2.Get_FrameInfosForFailedProcess(TempResult)) and
      (TempResult <> nil) then
     Result := TempResult;
+end;
+
+function TCoreWebView2ProcessFailedEventArgs.GetFailureSourceModulePath : wvstring;
+var
+  TempString : PWideChar;
+begin
+  Result     := '';
+  TempString := nil;
+
+  if assigned(FBaseIntf3) and
+     succeeded(FBaseIntf3.Get_FailureSourceModulePath(TempString)) and
+     (TempString <> nil) then
+    begin
+      Result := TempString;
+      CoTaskMemFree(TempString);
+    end;
 end;
 
 
@@ -2971,14 +3072,25 @@ constructor TCoreWebView2WebResourceRequestedEventArgs.Create(const aArgs: ICore
 begin
   inherited Create;
 
+  InitializeFields;
+
   FBaseIntf := aArgs;
+
+  if Initialized then
+    LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2WebResourceRequestedEventArgs2, FBaseIntf2);
 end;
 
 destructor TCoreWebView2WebResourceRequestedEventArgs.Destroy;
 begin
-  FBaseIntf := nil;
+  InitializeFields;
 
   inherited Destroy;
+end;
+
+procedure TCoreWebView2WebResourceRequestedEventArgs.InitializeFields;
+begin
+  FBaseIntf  := nil;
+  FBaseIntf2 := nil;
 end;
 
 function TCoreWebView2WebResourceRequestedEventArgs.GetInitialized : boolean;
@@ -3033,7 +3145,18 @@ begin
      succeeded(FBaseIntf.Get_ResourceContext(TempContext)) then
     Result := TempContext
    else
-    Result := 0;
+    Result := COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL;
+end;
+
+function TCoreWebView2WebResourceRequestedEventArgs.GetRequestedSourceKind : TWVWebResourceRequestSourceKind;
+var
+  TempResult : COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS;
+begin
+  if assigned(FBaseIntf2) and
+     succeeded(FBaseIntf2.Get_RequestedSourceKind(TempResult)) then
+    Result := TempResult
+   else
+    Result := COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_NONE;
 end;
 
 procedure TCoreWebView2WebResourceRequestedEventArgs.SetResponse(const aValue : ICoreWebView2WebResourceResponse);
@@ -3824,6 +3947,39 @@ procedure TCoreWebView2LaunchingExternalUriSchemeEventArgs.SetCancel(aValue: boo
 begin
   if Initialized then
     FBaseIntf.Set_Cancel(ord(aValue));
+end;
+
+
+// TCoreWebView2NonClientRegionChangedEventArgs
+
+constructor TCoreWebView2NonClientRegionChangedEventArgs.Create(const aArgs: ICoreWebView2NonClientRegionChangedEventArgs);
+begin
+  inherited Create;
+
+  FBaseIntf := aArgs;
+end;
+
+destructor TCoreWebView2NonClientRegionChangedEventArgs.Destroy;
+begin
+  FBaseIntf := nil;
+
+  inherited Destroy;
+end;
+
+function TCoreWebView2NonClientRegionChangedEventArgs.GetInitialized : boolean;
+begin
+  Result := assigned(FBaseIntf);
+end;
+
+function TCoreWebView2NonClientRegionChangedEventArgs.GetRegionKind : TWVNonClientRegionKind;
+var
+  TempResult : COREWEBVIEW2_NON_CLIENT_REGION_KIND;
+begin
+  Result := COREWEBVIEW2_NON_CLIENT_REGION_KIND_NOWHERE;
+
+  if Initialized and
+     succeeded(FBaseIntf.Get_RegionKind(TempResult)) then
+    Result := TempResult;
 end;
 
 end.

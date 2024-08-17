@@ -37,6 +37,8 @@ type
       FBaseIntf18                              : ICoreWebView2_18;
       FBaseIntf19                              : ICoreWebView2_19;
       FBaseIntf20                              : ICoreWebView2_20;
+      FBaseIntf21                              : ICoreWebView2_21;
+      FBaseIntf22                              : ICoreWebView2_22;
       FContainsFullScreenElementChangedToken   : EventRegistrationToken;
       FContentLoadingToken                     : EventRegistrationToken;
       FDocumentTitleChangedToken               : EventRegistrationToken;
@@ -434,6 +436,11 @@ type
       /// If you require CDP methods to run in a particular order, you should wait
       /// for the previous method's completed handler to run before calling the
       /// next method.</para>
+      /// <para>If the method is to run in add_NewWindowRequested handler it should be called
+      /// before the new window is set if the cdp message should affect the initial navigation. If
+      /// called after setting the NewWindow property, the cdp messages
+      /// may or may not apply to the initial navigation and may only apply to the subsequent navigation.
+      /// For more details see `ICoreWebView2NewWindowRequestedEventArgs::put_NewWindow`.</para>
       /// </summary>
       function    CallDevToolsProtocolMethod(const aMethodName, aParametersAsJson : wvstring; aExecutionID : integer; const aBrowserComponent : TComponent) : boolean;
       /// <summary>
@@ -581,6 +588,7 @@ type
       /// `defaultSyncProxy` | When calling a method on a synchronous proxy, the result should also be a synchronous proxy. But in some cases, the sync/async context is lost (for example, when providing to native code a reference to a function, and then calling that function in native code). In these cases, the proxy will be asynchronous, unless this property is set.
       /// `forceAsyncMethodMatches ` | This is an array of regular expressions. When calling a method on a synchronous proxy, the method call will be performed asynchronously if the method name matches a string or regular expression in this array. Setting this value to `Async` will make any method that ends with Async be an asynchronous method call. If an async method doesn't match here and isn't forced to be asynchronous, the method will be invoked synchronously, blocking execution of the calling JavaScript and then returning the resolution of the promise, rather than returning a promise.
       /// `ignoreMemberNotFoundError` | By default, an exception is thrown when attempting to get the value of a proxy property that doesn't exist on the corresponding native class. Setting this property to `true` switches the behavior to match Chakra WinRT projection (and general JavaScript) behavior of returning `undefined` with no error.
+      /// `shouldPassTypedArraysAsArrays` | By default, typed arrays will be passed to host as IDispatch. Otherwise, set to true to pass typed arrays to host as array.
       /// </code>
       /// Host object proxies additionally have the following methods which run
       /// locally.
@@ -750,6 +758,95 @@ type
       /// released. The underlying shared memory will be released when all the views are released.</para>
       /// </summary>
       function    PostSharedBufferToScript(const aSharedBuffer: ICoreWebView2SharedBuffer; aAccess: TWVSharedBufferAccess; const aAdditionalDataAsJson: wvstring): boolean;
+      /// <summary>
+      /// Run JavaScript code from the JavaScript parameter in the current
+      /// top-level document rendered in the WebView.
+      /// The result of the execution is returned asynchronously in the CoreWebView2ExecuteScriptResult object
+      /// which has methods and properties to obtain the successful result of script execution as well as any
+      /// unhandled JavaScript exceptions.
+      /// If this method is
+      /// run after the NavigationStarting event during a navigation, the script
+      /// runs in the new document when loading it, around the time
+      /// ContentLoading is run. This operation executes the script even if
+      /// ICoreWebView2Settings::IsScriptEnabled is set to FALSE.
+      ///
+      /// \snippet ScriptComponent.cpp ExecuteScriptWithResult
+      /// </summary>
+      function ExecuteScriptWithResult(const JavaScript: wvstring; aExecutionID : integer; const aBrowserComponent : TComponent): boolean;
+      /// <summary>
+      /// A web resource request with a resource context that matches this
+      /// filter's resource context and a URI that matches this filter's URI
+      /// wildcard string for corresponding request sources will be raised via
+      /// the `WebResourceRequested` event. To receive all raised events filters
+      /// have to be added before main page navigation.
+      ///
+      /// The `uri` parameter value is a wildcard string matched against the URI
+      /// of the web resource request. This is a glob style
+      /// wildcard string in which a `*` matches zero or more characters and a `?`
+      /// matches exactly one character.
+      /// These wildcard characters can be escaped using a backslash just before
+      /// the wildcard character in order to represent the literal `*` or `?`.
+      ///
+      /// The matching occurs over the URI as a whole string and not limiting
+      /// wildcard matches to particular parts of the URI.
+      /// The wildcard filter is compared to the URI after the URI has been
+      /// normalized, any URI fragment has been removed, and non-ASCII hostnames
+      /// have been converted to punycode.
+      ///
+      /// Specifying a `nullptr` for the uri is equivalent to an empty string which
+      /// matches no URIs.
+      ///
+      /// For more information about resource context filters, navigate to
+      /// [COREWEBVIEW2_WEB_RESOURCE_CONTEXT](/microsoft-edge/webview2/reference/win32/icorewebview2#corewebview2_web_resource_context).
+      ///
+      /// The `requestSourceKinds` is a mask of one or more
+      /// `COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS`. OR operation(s) can be
+      /// applied to multiple `COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS` to
+      /// create a mask representing those data types. API returns `E_INVALIDARG` if
+      /// `requestSourceKinds` equals to zero. For more information about request
+      /// source kinds, navigate to
+      /// [COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS](/microsoft-edge/webview2/reference/win32/icorewebview2#corewebview2_web_resource_request_source_kinds).
+      ///
+      /// Because service workers and shared workers run separately from any one
+      /// HTML document their WebResourceRequested will be raised for all
+      /// CoreWebView2s that have appropriate filters added in the corresponding
+      /// CoreWebView2Environment. You should only add a WebResourceRequested filter
+      /// for COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_SERVICE_WORKER or
+      /// COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_SHARED_WORKER on
+      /// one CoreWebView2 to avoid handling the same WebResourceRequested
+      /// event multiple times.
+      ///
+      /// | URI Filter String | Request URI | Match | Notes |
+      /// | ---- | ---- | ---- | ---- |
+      /// | `*` | `https://contoso.com/a/b/c` | Yes | A single * will match all URIs |
+      /// | `*://contoso.com/*` | `https://contoso.com/a/b/c` | Yes | Matches everything in contoso.com across all schemes |
+      /// | `*://contoso.com/*` | `https://example.com/?https://contoso.com/` | Yes | But also matches a URI with just the same text anywhere in the URI |
+      /// | `example` | `https://contoso.com/example` | No | The filter does not perform partial matches |
+      /// | `*example` | `https://contoso.com/example` | Yes | The filter matches across URI parts |
+      /// | `*example` | `https://contoso.com/path/?example` | Yes | The filter matches across URI parts |
+      /// | `*example` | `https://contoso.com/path/?query#example` | No | The filter is matched against the URI with no fragment |
+      /// | `*example` | `https://example` | No | The URI is normalized before filter matching so the actual URI used for comparison is `https://example/` |
+      /// | `*example/` | `https://example` | Yes | Just like above, but this time the filter ends with a / just like the normalized URI |
+      /// | `https://xn--qei.example/` | `https://&#x2764;.example/` | Yes | Non-ASCII hostnames are normalized to punycode before wildcard comparison |
+      /// | `https://&#x2764;.example/` | `https://xn--qei.example/` | No | Non-ASCII hostnames are normalized to punycode before wildcard comparison |
+      ///
+      /// \snippet ScenarioSharedWorkerWRR.cpp WebResourceRequested2
+      /// </summary>
+      function AddWebResourceRequestedFilterWithRequestSourceKinds(const uri: wvstring;
+                                                                   ResourceContext: TWVWebResourceContext;
+                                                                   requestSourceKinds: TWVWebResourceRequestSourceKind): boolean;
+      /// <summary>
+      /// Removes a matching WebResource filter that was previously added for the
+      /// `WebResourceRequested` event.  If the same filter was added multiple
+      /// times, then it must be removed as many times as it was added for the
+      /// removal to be effective. Returns `E_INVALIDARG` for a filter that was
+      /// not added or is already removed.
+      /// If the filter was added for multiple requestSourceKinds and removed just for one of them
+      /// the filter remains for the non-removed requestSourceKinds.
+      /// </summary>
+      function RemoveWebResourceRequestedFilterWithRequestSourceKinds(const uri: wvstring;
+                                                                      ResourceContext: TWVWebResourceContext;
+                                                                      requestSourceKinds: TWVWebResourceRequestSourceKind): boolean;
 
       /// <summary>
       /// Returns true when the interface implemented by this class is fully initialized.
@@ -960,8 +1057,10 @@ begin
      LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2_16, FBaseIntf16) and
      LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2_17, FBaseIntf17) and
      LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2_18, FBaseIntf18) and
-     LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2_19, FBaseIntf19) then
-    LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2_20, FBaseIntf20);
+     LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2_19, FBaseIntf19) and
+     LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2_20, FBaseIntf20) and
+     LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2_21, FBaseIntf21) then
+    LoggedQueryInterface(FBaseIntf, IID_ICoreWebView2_22, FBaseIntf22);
 end;
 
 destructor TCoreWebView2.Destroy;
@@ -1013,6 +1112,8 @@ begin
   FBaseIntf18          := nil;
   FBaseIntf19          := nil;
   FBaseIntf20          := nil;
+  FBaseIntf21          := nil;
+  FBaseIntf22          := nil;
   FDevToolsEventTokens := nil;
   FDevToolsEventNames  := nil;
   FFrameIDCopy         := WEBVIEW4DELPHI_INVALID_FRAMEID;
@@ -2023,6 +2124,37 @@ function TCoreWebView2.PostSharedBufferToScript(const aSharedBuffer         : IC
 begin
   Result := assigned(FBaseIntf17) and
             succeeded(FBaseIntf17.PostSharedBufferToScript(aSharedBuffer, aAccess, PWideChar(aAdditionalDataAsJson)));
+end;
+
+function TCoreWebView2.ExecuteScriptWithResult(const JavaScript: wvstring; aExecutionID : integer; const aBrowserComponent : TComponent): boolean;
+var
+  TempHandler : ICoreWebView2ExecuteScriptWithResultCompletedHandler;
+begin
+  Result := False;
+
+  if assigned(FBaseIntf21) then
+    try
+      TempHandler := TCoreWebView2ExecuteScriptWithResultCompletedHandler.Create(TWVBrowserBase(aBrowserComponent), aExecutionID);
+      Result      := succeeded(FBaseIntf21.ExecuteScriptWithResult(PWideChar(JavaScript), TempHandler));
+    finally
+      TempHandler := nil;
+    end;
+end;
+
+function TCoreWebView2.AddWebResourceRequestedFilterWithRequestSourceKinds(const uri                : wvstring;
+                                                                                 ResourceContext    : TWVWebResourceContext;
+                                                                                 requestSourceKinds : TWVWebResourceRequestSourceKind): boolean;
+begin
+  Result := assigned(FBaseIntf22) and
+            succeeded(FBaseIntf22.AddWebResourceRequestedFilterWithRequestSourceKinds(PWideChar(uri), ResourceContext, requestSourceKinds));
+end;
+
+function TCoreWebView2.RemoveWebResourceRequestedFilterWithRequestSourceKinds(const uri                : wvstring;
+                                                                                    ResourceContext    : TWVWebResourceContext;
+                                                                                    requestSourceKinds : TWVWebResourceRequestSourceKind): boolean;
+begin
+  Result := assigned(FBaseIntf22) and
+            succeeded(FBaseIntf22.RemoveWebResourceRequestedFilterWithRequestSourceKinds(PWideChar(uri), ResourceContext, requestSourceKinds));
 end;
 
 function TCoreWebView2.GetBrowserProcessID : cardinal;
