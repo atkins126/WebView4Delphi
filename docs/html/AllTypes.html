@@ -135,7 +135,7 @@
 <tr class="list2">
 <td class="itemname"><a class="bold" href="uWVTypeLibrary.html#COREWEBVIEW2_NON_CLIENT_REGION_KIND">COREWEBVIEW2_NON_CLIENT_REGION_KIND</a></td>
 <td class="itemunit"><a class="bold" href="uWVTypeLibrary.html">uWVTypeLibrary</a></td>
-<td class="itemdesc"><p> This enum contains values representing possible regions a given point lies within. </p></td>
+<td class="itemdesc"><p> This enum contains values representing possible regions a given point lies within. The values of this enum align with the matching WM_NCHITTEST* window message return values. </p></td>
 </tr>
 <tr class="list">
 <td class="itemname"><a class="bold" href="uWVTypeLibrary.html#COREWEBVIEW2_PDF_TOOLBAR_ITEMS">COREWEBVIEW2_PDF_TOOLBAR_ITEMS</a></td>
@@ -232,6 +232,18 @@
 <p> </p></td>
 </tr>
 <tr class="list">
+<td class="itemname"><a class="bold" href="uWVTypeLibrary.html#COREWEBVIEW2_SAVE_AS_KIND">COREWEBVIEW2_SAVE_AS_KIND</a></td>
+<td class="itemunit"><a class="bold" href="uWVTypeLibrary.html">uWVTypeLibrary</a></td>
+<td class="itemdesc"><p> Specifies Save As kind selection options for `ICoreWebView2SaveAsUIShowingEventArgs`.
+
+<p>For HTML documents, we support 3 Save As kinds: HTML_ONLY, SINGLE_FILE and COMPLETE. For non-HTML documents, you must use DEFAULT. MIME types of `text/html` and `application/xhtml+xml` are considered HTML documents. </p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="uWVTypeLibrary.html#COREWEBVIEW2_SAVE_AS_UI_RESULT">COREWEBVIEW2_SAVE_AS_UI_RESULT</a></td>
+<td class="itemunit"><a class="bold" href="uWVTypeLibrary.html">uWVTypeLibrary</a></td>
+<td class="itemdesc"><p> Status of a programmatic Save As call. Indicates the result of the `ShowSaveAsUI` method. </p></td>
+</tr>
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVTypeLibrary.html#COREWEBVIEW2_SCRIPT_DIALOG_KIND">COREWEBVIEW2_SCRIPT_DIALOG_KIND</a></td>
 <td class="itemunit"><a class="bold" href="uWVTypeLibrary.html">uWVTypeLibrary</a></td>
 <td class="itemdesc"><p> Specifies the JavaScript dialog type used in the ICoreWebView2ScriptDialogOpeningEventHandler interface. </p></td>
@@ -252,222 +264,232 @@
 <td class="itemdesc"><p> Specifies the desired access from script to CoreWebView2SharedBuffer. </p></td>
 </tr>
 <tr class="list">
+<td class="itemname"><a class="bold" href="uWVTypeLibrary.html#COREWEBVIEW2_TEXT_DIRECTION_KIND">COREWEBVIEW2_TEXT_DIRECTION_KIND</a></td>
+<td class="itemunit"><a class="bold" href="uWVTypeLibrary.html">uWVTypeLibrary</a></td>
+<td class="itemdesc"><p> Indicates the text direction of the notification. </p></td>
+</tr>
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVTypeLibrary.html#COREWEBVIEW2_TRACKING_PREVENTION_LEVEL">COREWEBVIEW2_TRACKING_PREVENTION_LEVEL</a></td>
 <td class="itemunit"><a class="bold" href="uWVTypeLibrary.html">uWVTypeLibrary</a></td>
 <td class="itemdesc"><p> Tracking prevention levels. </p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVTypeLibrary.html#COREWEBVIEW2_WEB_ERROR_STATUS">COREWEBVIEW2_WEB_ERROR_STATUS</a></td>
 <td class="itemunit"><a class="bold" href="uWVTypeLibrary.html">uWVTypeLibrary</a></td>
 <td class="itemdesc"><p> Indicates the error status values for web navigations. </p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVTypeLibrary.html#COREWEBVIEW2_WEB_RESOURCE_CONTEXT">COREWEBVIEW2_WEB_RESOURCE_CONTEXT</a></td>
 <td class="itemunit"><a class="bold" href="uWVTypeLibrary.html">uWVTypeLibrary</a></td>
 <td class="itemdesc"><p> Specifies the web resource request contexts. </p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVTypeLibrary.html#COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS">COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS</a></td>
 <td class="itemunit"><a class="bold" href="uWVTypeLibrary.html">uWVTypeLibrary</a></td>
 <td class="itemdesc"><p> Specifies the source of `WebResourceRequested` event. </p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVTypeLibrary.html#PPCoreWebView2CustomSchemeRegistration">PPCoreWebView2CustomSchemeRegistration</a></td>
 <td class="itemunit"><a class="bold" href="uWVTypeLibrary.html">uWVTypeLibrary</a></td>
-<td class="itemdesc"><p>* Missing HANDLE declaration ************** WEBVIEW4DELPHI ************** *</p></td>
+<td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVTypeLibrary.html#tagRECT">tagRECT</a></td>
 <td class="itemunit"><a class="bold" href="uWVTypeLibrary.html">uWVTypeLibrary</a></td>
 <td class="itemdesc"><p>* tagRect is identical to TRect. ************** WEBVIEW4DELPHI ************** *</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TLoaderBrowserProcessExitedEvent">TLoaderBrowserProcessExitedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TLoaderGetCustomSchemesEvent">TLoaderGetCustomSchemesEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TLoaderNewBrowserVersionAvailableEvent">TLoaderNewBrowserVersionAvailableEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TLoaderNotifyEvent">TLoaderNotifyEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>Loader events</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TLoaderProcessInfosChangedEvent">TLoaderProcessInfosChangedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnAcceleratorKeyPressedEvent">TOnAcceleratorKeyPressedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnAddScriptToExecuteOnDocumentCreatedCompletedEvent">TOnAddScriptToExecuteOnDocumentCreatedCompletedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnBasicAuthenticationRequestedEvent">TOnBasicAuthenticationRequestedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnBrowserExtensionEnableCompletedEvent">TOnBrowserExtensionEnableCompletedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnBrowserExtensionRemoveCompletedEvent">TOnBrowserExtensionRemoveCompletedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnBrowserProcessExitedEvent">TOnBrowserProcessExitedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnBytesReceivedChangedEvent">TOnBytesReceivedChangedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnCallDevToolsProtocolMethodCompletedEvent">TOnCallDevToolsProtocolMethodCompletedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnCapturePreviewCompletedEvent">TOnCapturePreviewCompletedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnClearBrowsingDataCompletedEvent">TOnClearBrowsingDataCompletedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnClearCacheCompletedEvent">TOnClearCacheCompletedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnClearDataForOriginCompletedEvent">TOnClearDataForOriginCompletedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnClientCertificateRequestedEvent">TOnClientCertificateRequestedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnCompMsgEvent">TOnCompMsgEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>Custom events</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnContentLoadingEvent">TOnContentLoadingEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnContextMenuRequestedEvent">TOnContextMenuRequestedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnCustomItemSelectedEvent">TOnCustomItemSelectedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnDevToolsProtocolEventReceivedEvent">TOnDevToolsProtocolEventReceivedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnDOMContentLoadedEvent">TOnDOMContentLoadedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnDownloadStartingEvent">TOnDownloadStartingEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnDownloadStateChangedEvent">TOnDownloadStateChangedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnEstimatedEndTimeChangedEvent">TOnEstimatedEndTimeChangedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnExecuteScriptCompletedEvent">TOnExecuteScriptCompletedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>Browser events</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnExecuteScriptWithResultCompletedEvent">TOnExecuteScriptWithResultCompletedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnFaviconChangedEvent">TOnFaviconChangedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnFrameContentLoadingEvent">TOnFrameContentLoadingEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnFrameCreatedEvent">TOnFrameCreatedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnFrameDestroyedEvent">TOnFrameDestroyedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnFrameDOMContentLoadedEvent">TOnFrameDOMContentLoadedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnFrameNameChangedEvent">TOnFrameNameChangedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnFrameNavigationCompletedEvent">TOnFrameNavigationCompletedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnFrameNavigationStartingEvent">TOnFrameNavigationStartingEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnFramePermissionRequestedEvent">TOnFramePermissionRequestedEvent</a></td>
+<td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
+<td class="itemdesc"><p>&nbsp;</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="uWVEvents.html#TOnFrameScreenCaptureStartingEvent">TOnFrameScreenCaptureStartingEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
@@ -557,6 +579,16 @@
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
 <tr class="list2">
+<td class="itemname"><a class="bold" href="uWVEvents.html#TOnNotificationCloseRequestedEvent">TOnNotificationCloseRequestedEvent</a></td>
+<td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
+<td class="itemdesc"><p>&nbsp;</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="uWVEvents.html#TOnNotificationReceivedEvent">TOnNotificationReceivedEvent</a></td>
+<td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
+<td class="itemdesc"><p>&nbsp;</p></td>
+</tr>
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnOfflineCompletedEvent">TOnOfflineCompletedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
@@ -627,22 +659,42 @@
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
 <tr class="list2">
-<td class="itemname"><a class="bold" href="uWVEvents.html#TOnScriptDialogOpeningEvent">TOnScriptDialogOpeningEvent</a></td>
+<td class="itemname"><a class="bold" href="uWVEvents.html#TOnSaveAsUIShowingEvent">TOnSaveAsUIShowingEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
 <tr class="list">
-<td class="itemname"><a class="bold" href="uWVEvents.html#TOnServerCertificateErrorActionsCompletedEvent">TOnServerCertificateErrorActionsCompletedEvent</a></td>
+<td class="itemname"><a class="bold" href="uWVEvents.html#TOnSaveFileSecurityCheckStartingEvent">TOnSaveFileSecurityCheckStartingEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
 <tr class="list2">
-<td class="itemname"><a class="bold" href="uWVEvents.html#TOnServerCertificateErrorDetectedEvent">TOnServerCertificateErrorDetectedEvent</a></td>
+<td class="itemname"><a class="bold" href="uWVEvents.html#TOnScreenCaptureStartingEvent">TOnScreenCaptureStartingEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
 <tr class="list">
+<td class="itemname"><a class="bold" href="uWVEvents.html#TOnScriptDialogOpeningEvent">TOnScriptDialogOpeningEvent</a></td>
+<td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
+<td class="itemdesc"><p>&nbsp;</p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="uWVEvents.html#TOnServerCertificateErrorActionsCompletedEvent">TOnServerCertificateErrorActionsCompletedEvent</a></td>
+<td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
+<td class="itemdesc"><p>&nbsp;</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="uWVEvents.html#TOnServerCertificateErrorDetectedEvent">TOnServerCertificateErrorDetectedEvent</a></td>
+<td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
+<td class="itemdesc"><p>&nbsp;</p></td>
+</tr>
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVEvents.html#TOnSetPermissionStateCompletedEvent">TOnSetPermissionStateCompletedEvent</a></td>
+<td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
+<td class="itemdesc"><p>&nbsp;</p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="uWVEvents.html#TOnShowSaveAsUICompletedEvent">TOnShowSaveAsUICompletedEvent</a></td>
 <td class="itemunit"><a class="bold" href="uWVEvents.html">uWVEvents</a></td>
 <td class="itemdesc"><p>&nbsp;</p></td>
 </tr>
@@ -856,7 +908,7 @@
 <tr class="list">
 <td class="itemname"><a class="bold" href="uWVTypes.html#TWVNonClientRegionKind">TWVNonClientRegionKind</a></td>
 <td class="itemunit"><a class="bold" href="uWVTypes.html">uWVTypes</a></td>
-<td class="itemdesc"><p> This enum contains values representing possible regions a given point lies within. </p></td>
+<td class="itemdesc"><p> This enum contains values representing possible regions a given point lies within. The values of this enum align with the matching WM_NCHITTEST* window message return values. </p></td>
 </tr>
 <tr class="list2">
 <td class="itemname"><a class="bold" href="uWVTypes.html#TWVPDFToolbarItems">TWVPDFToolbarItems</a></td>
@@ -953,6 +1005,18 @@
 <p> </p></td>
 </tr>
 <tr class="list2">
+<td class="itemname"><a class="bold" href="uWVTypes.html#TWVSaveAsKind">TWVSaveAsKind</a></td>
+<td class="itemunit"><a class="bold" href="uWVTypes.html">uWVTypes</a></td>
+<td class="itemdesc"><p> Specifies Save As kind selection options for `ICoreWebView2SaveAsUIShowingEventArgs`.
+
+<p>For HTML documents, we support 3 Save As kinds: HTML_ONLY, SINGLE_FILE and COMPLETE. For non-HTML documents, you must use DEFAULT. MIME types of `text/html` and `application/xhtml+xml` are considered HTML documents. </p></td>
+</tr>
+<tr class="list">
+<td class="itemname"><a class="bold" href="uWVTypes.html#TWVSaveAsUIResult">TWVSaveAsUIResult</a></td>
+<td class="itemunit"><a class="bold" href="uWVTypes.html">uWVTypes</a></td>
+<td class="itemdesc"><p> Status of a programmatic Save As call. Indicates the result of the `ShowSaveAsUI` method. </p></td>
+</tr>
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVTypes.html#TWVScriptDialogKind">TWVScriptDialogKind</a></td>
 <td class="itemunit"><a class="bold" href="uWVTypes.html">uWVTypes</a></td>
 <td class="itemdesc"><p> Specifies the JavaScript dialog type used in the ICoreWebView2ScriptDialogOpeningEventHandler interface. </p></td>
@@ -978,24 +1042,34 @@
 <td class="itemdesc"><p> Represents the state of a setting. </p></td>
 </tr>
 <tr class="list">
+<td class="itemname"><a class="bold" href="uWVTypes.html#TWVTextDirectionKind">TWVTextDirectionKind</a></td>
+<td class="itemunit"><a class="bold" href="uWVTypes.html">uWVTypes</a></td>
+<td class="itemdesc"><p> Indicates the text direction of the notification. </p></td>
+</tr>
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVTypes.html#TWVTrackingPreventionLevel">TWVTrackingPreventionLevel</a></td>
 <td class="itemunit"><a class="bold" href="uWVTypes.html">uWVTypes</a></td>
 <td class="itemdesc"><p> Tracking prevention levels. </p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVTypes.html#TWVWebErrorStatus">TWVWebErrorStatus</a></td>
 <td class="itemunit"><a class="bold" href="uWVTypes.html">uWVTypes</a></td>
 <td class="itemdesc"><p> Indicates the error status values for web navigations. </p></td>
 </tr>
-<tr class="list">
+<tr class="list2">
 <td class="itemname"><a class="bold" href="uWVTypes.html#TWVWebResourceContext">TWVWebResourceContext</a></td>
 <td class="itemunit"><a class="bold" href="uWVTypes.html">uWVTypes</a></td>
 <td class="itemdesc"><p> Specifies the web resource request contexts. </p></td>
 </tr>
-<tr class="list2">
+<tr class="list">
 <td class="itemname"><a class="bold" href="uWVTypes.html#TWVWebResourceRequestSourceKind">TWVWebResourceRequestSourceKind</a></td>
 <td class="itemunit"><a class="bold" href="uWVTypes.html">uWVTypes</a></td>
 <td class="itemdesc"><p> Specifies the source of `WebResourceRequested` event. </p></td>
+</tr>
+<tr class="list2">
+<td class="itemname"><a class="bold" href="uWVTypeLibrary.html#Uint64Array">Uint64Array</a></td>
+<td class="itemunit"><a class="bold" href="uWVTypeLibrary.html">uWVTypeLibrary</a></td>
+<td class="itemdesc"><p>* Missing HANDLE declaration ************** WEBVIEW4DELPHI ************** *</p></td>
 </tr>
 <tr class="list">
 <td class="itemname"><a class="bold" href="uWVTypes.html#wvstring">wvstring</a></td>

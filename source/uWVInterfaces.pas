@@ -267,6 +267,27 @@ type
 
     // ICoreWebView2NonClientRegionChangedEventHandler
     function NonClientRegionChangedEventHandler_Invoke(const sender: ICoreWebView2CompositionController; const args: ICoreWebView2NonClientRegionChangedEventArgs): HResult;
+
+    // ICoreWebView2NonClientRegionChangedEventHandler
+    function NotificationReceivedEventHandler_Invoke(const sender: ICoreWebView2; const args: ICoreWebView2NotificationReceivedEventArgs): HResult;
+
+    // ICoreWebView2NotificationCloseRequestedEventHandler
+    function NotificationCloseRequestedEventHandler_Invoke(const sender: ICoreWebView2Notification; const args: IUnknown): HResult;
+
+    // ICoreWebView2SaveAsUIShowingEventHandler
+    function SaveAsUIShowingEventHandler_Invoke(const sender: ICoreWebView2; const args: ICoreWebView2SaveAsUIShowingEventArgs): HResult;
+
+    // ICoreWebView2ShowSaveAsUICompletedHandler
+    function ShowSaveAsUICompletedHandler_Invoke(errorCode: HResult; result_: COREWEBVIEW2_SAVE_AS_UI_RESULT): HResult;
+
+    // ICoreWebView2SaveFileSecurityCheckStartingEventHandler
+    function SaveFileSecurityCheckStartingEventHandler_Invoke(const sender: ICoreWebView2; const args: ICoreWebView2SaveFileSecurityCheckStartingEventArgs): HResult;
+
+    // ICoreWebView2ScreenCaptureStartingEventHandler
+    function ScreenCaptureStartingEventHandler_Invoke(const sender: ICoreWebView2; const args: ICoreWebView2ScreenCaptureStartingEventArgs): HResult;
+
+    // ICoreWebView2FrameScreenCaptureStartingEventHandler
+    function FrameScreenCaptureStartingEventHandler_Invoke(const sender: ICoreWebView2Frame; const args: ICoreWebView2ScreenCaptureStartingEventArgs; aFrameID: cardinal): HResult;
   end;
 
 implementation

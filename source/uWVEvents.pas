@@ -98,6 +98,13 @@ type
   TOnProfileDeletedEvent                                   = procedure(Sender: TObject; const aProfile: ICoreWebView2Profile) of object;
   TOnExecuteScriptWithResultCompletedEvent                 = procedure(Sender: TObject; errorCode: HResult; const aResult: ICoreWebView2ExecuteScriptResult; aExecutionID : integer) of object;
   TOnNonClientRegionChangedEvent                           = procedure(Sender: TObject; const aController : ICoreWebView2CompositionController; const aArgs : ICoreWebView2NonClientRegionChangedEventArgs) of object;
+  TOnNotificationReceivedEvent                             = procedure(Sender: TObject; const aWebView : ICoreWebView2; const aArgs : ICoreWebView2NotificationReceivedEventArgs) of object;
+  TOnNotificationCloseRequestedEvent                       = procedure(Sender: TObject; const aNotification: ICoreWebView2Notification; const aArgs: IUnknown) of object;
+  TOnSaveAsUIShowingEvent                                  = procedure(Sender: TObject; const aWebView: ICoreWebView2; const aArgs: ICoreWebView2SaveAsUIShowingEventArgs) of object;
+  TOnShowSaveAsUICompletedEvent                            = procedure(Sender: TObject; aErrorCode: HResult; aResult: TWVSaveAsUIResult) of object;
+  TOnSaveFileSecurityCheckStartingEvent                    = procedure(Sender: TObject; const aWebView: ICoreWebView2; const aArgs: ICoreWebView2SaveFileSecurityCheckStartingEventArgs) of object;
+  TOnScreenCaptureStartingEvent                            = procedure(Sender: TObject; const aWebView: ICoreWebView2; const aArgs: ICoreWebView2ScreenCaptureStartingEventArgs) of object;
+  TOnFrameScreenCaptureStartingEvent                       = procedure(Sender: TObject; const aFrame: ICoreWebView2Frame; const aArgs: ICoreWebView2ScreenCaptureStartingEventArgs; aFrameID: cardinal) of object;
 
   // Custom events
   TOnCompMsgEvent                                          = procedure(Sender: TObject; var aMessage: TMessage; var aHandled: Boolean) of object;
