@@ -22,8 +22,6 @@ object MainForm: TMainForm
     TabStop = True
     TabOrder = 0
     Browser = WVBrowser1
-    ExplicitWidth = 991
-    ExplicitHeight = 675
   end
   object AddressPnl: TPanel
     Left = 0
@@ -34,7 +32,6 @@ object MainForm: TMainForm
     BevelOuter = bvNone
     Enabled = False
     TabOrder = 1
-    ExplicitWidth = 991
     DesignSize = (
       995
       24)
@@ -76,7 +73,6 @@ object MainForm: TMainForm
         'https://www.youtube.com'
         'https://html5demos.com/drag/'
         'https://frames-per-second.appspot.com/')
-      ExplicitWidth = 939
     end
     object GoBtn: TButton
       Left = 945
@@ -88,7 +84,6 @@ object MainForm: TMainForm
       TabOrder = 1
       WordWrap = True
       OnClick = GoBtnClick
-      ExplicitLeft = 941
     end
   end
   object Timer1: TTimer

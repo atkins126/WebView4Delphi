@@ -18530,6 +18530,10 @@
 <param name="Local" value="uWVLoader.TWVLoader.html#FPostQuantumKyber">
 </object>
 <li><object type="text/sitemap">
+<param name="Name" value="FUserAgent">
+<param name="Local" value="uWVLoader.TWVLoader.html#FUserAgent">
+</object>
+<li><object type="text/sitemap">
 <param name="Name" value="FAutoAcceptCamAndMicCapture">
 <param name="Local" value="uWVLoader.TWVLoader.html#FAutoAcceptCamAndMicCapture">
 </object>
@@ -18804,6 +18808,10 @@
 <param name="Local" value="uWVLoader.TWVLoader.html#TLS13HybridizedKyberSupport">
 </object>
 <li><object type="text/sitemap">
+<param name="Name" value="UserAgent">
+<param name="Local" value="uWVLoader.TWVLoader.html#UserAgent">
+</object>
+<li><object type="text/sitemap">
 <param name="Name" value="AutoAcceptCamAndMicCapture">
 <param name="Local" value="uWVLoader.TWVLoader.html#AutoAcceptCamAndMicCapture">
 </object>
@@ -18853,6 +18861,10 @@
 <param name="Local" value="uWVLoader.TWVLoader.html#@Methods">
 </object>
 <ul>
+<li><object type="text/sitemap">
+<param name="Name" value="GetInternalAvailableBrowserVersion">
+<param name="Local" value="uWVLoader.TWVLoader.html#GetInternalAvailableBrowserVersion">
+</object>
 <li><object type="text/sitemap">
 <param name="Name" value="GetAvailableBrowserVersion">
 <param name="Local" value="uWVLoader.TWVLoader.html#GetAvailableBrowserVersion">
@@ -52890,6 +52902,10 @@
 <param name="Local" value="uWVLoader.TWVLoader.html#FUseInternalLoader">
 </object>
 <li><object type="text/sitemap">
+<param name="Name" value="FUserAgent">
+<param name="Local" value="uWVLoader.TWVLoader.html#FUserAgent">
+</object>
+<li><object type="text/sitemap">
 <param name="Name" value="FUserDataFolder">
 <param name="Local" value="uWVLoader.TWVLoader.html#FUserDataFolder">
 </object>
@@ -53204,6 +53220,10 @@
 <param name="Local" value="uWVLoader.TWVLoader.html#UseInternalLoader">
 </object>
 <li><object type="text/sitemap">
+<param name="Name" value="UserAgent">
+<param name="Local" value="uWVLoader.TWVLoader.html#UserAgent">
+</object>
+<li><object type="text/sitemap">
 <param name="Name" value="UserDataFolder">
 <param name="Local" value="uWVLoader.TWVLoader.html#UserDataFolder">
 </object>
@@ -53320,6 +53340,10 @@
 <li><object type="text/sitemap">
 <param name="Name" value="GetInstalledRuntimeVersion">
 <param name="Local" value="uWVLoader.TWVLoader.html#GetInstalledRuntimeVersion">
+</object>
+<li><object type="text/sitemap">
+<param name="Name" value="GetInternalAvailableBrowserVersion">
+<param name="Local" value="uWVLoader.TWVLoader.html#GetInternalAvailableBrowserVersion">
 </object>
 <li><object type="text/sitemap">
 <param name="Name" value="GetProcessInfos">

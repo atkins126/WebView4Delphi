@@ -14,7 +14,7 @@ uses
   {$ENDIF}
   uWVBrowser, uWVWinControl, uWVWindowParent, uWVTypes, uWVConstants, uWVTypeLibrary,
   uWVLibFunctions, uWVLoader, uWVInterfaces, uWVCoreWebView2Args,
-  uWVBrowserBase;
+  uWVBrowserBase, Menus;
 
 type
   TMainForm = class(TForm)
